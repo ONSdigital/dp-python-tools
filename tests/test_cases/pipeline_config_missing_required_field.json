@@ -1,0 +1,19 @@
+{
+    "schema": "airflow.schemas.ingress.sdmx.v1.schema.json",
+    "required_files": [
+        {
+            "matches": "*.sdmx",
+            "count": 1
+        }
+    ],
+    "supplementary_distributions": [
+        {
+            "matches": "*.sdmx",
+            "count": 1
+        }
+    ],
+    "contact": [
+        "jobloggs@ons.gov.uk"
+    ],
+    "pipeline": "default"
+}

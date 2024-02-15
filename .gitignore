@@ -1,4 +1,7 @@
-.coverage
 .venv
-.DS_Store
 .vscode
+.coverage
+.DS_Store
+*.pyc
+__pycache__
+.pytest_cache
