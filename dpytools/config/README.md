@@ -4,7 +4,11 @@ Configuration class to enforce and police python application settings.
 
 ## Usage
 
-Getting configuration properties from env vars:
+The from_env() method is used to define a config object and populate it with 
+a dictionary as input. The attributes of the created Config object are generated 
+from the contents of the dictionary. See below example.
+
+Instantiation of a config from an input dictionary with values taken from env variables:
 
 ```python
 from dpytools import Config
@@ -36,16 +40,14 @@ config = Config.from_env({
     },
 })
 
-# Note: separate from instantiation to allow some nuance, but you'd likely
-# not want to start an app with invalid config.
+# Note: Validation checks are separate from instantiation to allow some nuance, 
+# but you'd likely not want to start an app with invalid configuration.
 config.assert_valid_config()
-
-# Accessed via
-foo = config.name1.value
 ```
 
-## What about default values?
+The attributes of the config object can be accessed like you would expect from a class' attributes,
+but they are generated dynamically:
 
-For env var defaults use [a .env file](https://dev.to/jakewitcher/using-env-files-for-environment-variables-in-python-applications-55a1) which should be excluded from the build.
-
-If a default _is_ intended for the build the consider whether its a constant rather than an env var.
+```python
+foo = config.name1.value
+```

@@ -15,18 +15,18 @@ class IntegerProperty(BaseProperty):
         try:
             int(self._value)
         except Exception as err:
-            raise Exception(f"Cannot cast {self._name} value {self._value} to integer.") from err
+            raise Exception(f"Cannot cast {self.name} value {self.value} to integer.") from err
 
     def secondary_validation(self):
         """
         Non type based validation you might want to
         run against a configuration value of this kind.
         """
-        if not self._value:
-            raise ValueError(f"Integer value for {self._name} does not exist.")
+        if not self.value:
+            raise ValueError(f"Integer value for {self.name} does not exist.")
 
-        if self.min_val and self._value < self.min_val:
-            raise ValueError(f"Integer value for {self._name} is lower than allowed minimum.")
+        if self.min_val and int(self.value) < self.min_val:
+            raise ValueError(f"Integer value for {self.name} is lower than allowed minimum.")
 
-        if self.max_val and self._value > self.max_val:
-            raise ValueError(f"Integer value for {self._name} is higher than allowed maximum.")
+        if self.max_val and int(self.value) > self.max_val:
+            raise ValueError(f"Integer value for {self.name} is higher than allowed maximum.")

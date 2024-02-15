@@ -15,7 +15,7 @@ def test_config_loader(monkeypatch):
     # Assigning environment variable values for config dictionary values
     monkeypatch.setenv("SOME_STRING_ENV_VAR", "Some string value")
     monkeypatch.setenv("SOME_URL_ENV_VAR", "https://test.com/some-url")
-    monkeypatch.setenv("SOME_INT_ENV_VAR", "6")
+    monkeypatch.setenv("SOME_INT_ENV_VAR", 6)
 
     config_dictionary = {
     "SOME_STRING_ENV_VAR": {
@@ -45,6 +45,7 @@ def test_config_loader(monkeypatch):
 }
 
     config = Config.from_env(config_dictionary)
+    config.assert_valid_config()
     
     # Assertions
 
