@@ -26,3 +26,10 @@ This repository is provided as an installable python package
 All commits that make it to PR should have black and ruff already ran against them, you can do this via `make fmt` and you can lint via `make lint`.
 
 Given this is a lower level resource to be relied on by other things, all classes and functions should have good unit test coverage. You can run the unit tests via `make test`.
+
+Licence
+-------
+
+Copyright ©‎ 2024, Office for National Statistics (https://www.ons.gov.uk)
+
+Released under MIT license, see [LICENSE](LICENSE) for details.

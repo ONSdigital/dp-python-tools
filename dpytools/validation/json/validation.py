@@ -21,16 +21,6 @@ def validate_json_schema(
 
     `error_msg` and `indent` can be used to format the error message if validation fails.
     """
-    # Confirm that *either* `data_dict` *or* `data_path` has been provided, otherwise raise ValueError
-    if data_dict and data_path:
-        raise ValueError(
-            "Both a dictionary and file path of data have been provided - please specify either one or the other, not both."
-        )
-    if data_dict is None and data_path is None:
-        raise ValueError(
-            "Please provide either a dictionary or a file path of the data to be validated against the schema."
-        )
-
     # Load schema as dict
     if isinstance(schema_path, str):
         parsed_schema_path = urlparse(schema_path)
@@ -44,6 +34,14 @@ def validate_json_schema(
         raise ValueError(f"Schema path '{schema_path}' does not exist")
     with open(schema_path, "r") as f:
         schema_from_path = json.load(f)
+
+    # Confirm that *either* `data_dict` *or* `data_path` has been provided, otherwise raise ValueError
+    assert not all(
+        [data_dict, data_path]
+    ), "Both a dictionary and file path of data have been provided - please specify either one or the other, not both."
+    assert any(
+        [data_dict, data_path]
+    ), "Please provide either a dictionary or a file path of the data to be validated against the schema."
 
     # Load data to be validated
     if data_dict:

@@ -11,12 +11,9 @@ def test_validate_json_schema_data_path():
     """
     pipeline_config_schema = "tests/test_cases/pipeline_config_schema.json"
     pipeline_config = "tests/test_cases/pipeline_config.json"
-    assert (
-        validate_json_schema(
-            schema_path=pipeline_config_schema,
-            data_path=pipeline_config,
-        )
-        is None
+    validate_json_schema(
+        schema_path=pipeline_config_schema,
+        data_path=pipeline_config,
     )
 
 
@@ -33,12 +30,9 @@ def test_validate_json_schema_data_dict():
         "contact": ["jobloggs@ons.gov.uk"],
         "pipeline": "default",
     }
-    assert (
-        validate_json_schema(
-            schema_path=pipeline_config_schema,
-            data_dict=pipeline_config,
-        )
-        is None
+    validate_json_schema(
+        schema_path=pipeline_config_schema,
+        data_dict=pipeline_config,
     )
 
 
@@ -56,7 +50,7 @@ def test_validate_json_schema_data_dict_and_data_path():
         "contact": ["jobloggs@ons.gov.uk"],
         "pipeline": "default",
     }
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(AssertionError) as err:
         validate_json_schema(
             schema_path=pipeline_config_schema,
             data_dict=pipeline_config_dict,
@@ -74,7 +68,7 @@ def test_validate_json_schema_no_data_dict_or_data_path():
     """
     pipeline_config_schema = "tests/test_cases/pipeline_config_schema.json"
 
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(AssertionError) as err:
         validate_json_schema(
             schema_path=pipeline_config_schema,
         )
