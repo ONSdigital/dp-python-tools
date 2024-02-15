@@ -68,7 +68,6 @@ def validate_json_schema(
     # Validate data against schema
     try:
         jsonschema.validate(data_to_validate, schema_from_path)
-    # TODO Handle jsonschema.SchemaError?
     except jsonschema.ValidationError as err:
         # If error is in a specific field, get the JSON path of the error location
         if err.json_path != "$":
