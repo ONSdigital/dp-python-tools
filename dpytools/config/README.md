@@ -11,7 +11,7 @@ from the contents of the dictionary. See below example.
 ## Basic Example
 
 Say we want to instantiate a config object, setting our configuration with an environment variable.
-The environment variable will be called `MY_SERVER_ENDPOINT` and we want it to be a URL.
+The environment variable will be called `MY_SERVER_ENDPOINT` and we want its value to be a URL.
 
 ```python
 # The environment variable we want to use for our config. The value is a string of a URL.
@@ -20,7 +20,7 @@ MY_SERVER_ENDPOINT = "http://my-url.com"
 
 When using the from_env() method to instantiate the config, we want to look up the  environment 
 variable's value and to also make sure that value is a string that looks like a URL, so let's say
-it should begin with "http".
+it should begin with "http://".
 
 The code below shows how this instantiation would work using the from_env() method.
 
@@ -40,8 +40,7 @@ config = Config.from_env({
 
 ```
 
-After it is instantiated, we want to be able to access the config's values using its class 
-attributes with this notation: 
+After it is instantiated, we can access the config's values using its class attributes with this notation: 
 
 config.server.value
 
@@ -65,7 +64,7 @@ This type of property ensures configuration values are non-blank strings, while 
 configuration to be done on the value, such as regex to check for matching strings, and setting a 
 minimum length and a maximum length.
 
-An example of a config with a StringProperty being instantiated using its optional configuration:
+An example of a config with a StringProperty being instantiated, also using all the optional configuration:
 
 ```python
 SOME_STRING_ENV_VAR = "Test string"
@@ -91,7 +90,8 @@ This type of property ensures configuration values are an integer, or an object 
 The optional configuration that can be used with IntegerProperty allows restrictions on the minimum 
 or maximum values of the integer.
 
-An example of a config with an IntegerProperty being instantiated:
+An example of a config with an IntegerProperty being instantiated, using the minimum and maximmum value
+options:
 
 ```python
 SOME_INT_ENV_VAR = 8
