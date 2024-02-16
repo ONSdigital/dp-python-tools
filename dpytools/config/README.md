@@ -4,7 +4,7 @@ Configuration class to enforce and police python application settings.
 
 ## Usage
 
-The from_env() method is used to define a config object and populate it with 
+The `from_env()` method is used to define a Config object and populate it with 
 a dictionary as input. The attributes of the created Config object are generated 
 from the contents of the dictionary. See below example.
 
@@ -15,14 +15,14 @@ The environment variable will be called `MY_SERVER_ENDPOINT` and we want its val
 
 ```python
 # The environment variable we want to use for our config. The value is a string of a URL.
-MY_SERVER_ENDPOINT = "http://my-url.com"
+os.environ["MY_SERVER_ENDPOINT"] = "http://my-url.com"
 ```
 
-When using the from_env() method to instantiate the config, we want to look up the  environment 
+When using the `from_env()` method to instantiate the config, we want to look up the  environment 
 variable's value and to also make sure that value is a string that looks like a URL, so let's say
 it should begin with "http://".
 
-The code below shows how this instantiation would work using the from_env() method.
+The code below shows how this instantiation would work using the `from_env()` method.
 
 ```python
 from dpytools import Config
@@ -31,7 +31,7 @@ from dpytools.config.properties import StringProperty, IntegerProperty
 config = Config.from_env({
     "MY_SERVER_ENDPOINT": {
         "class": StringProperty,
-        "property", "server"
+        "property": "server"
         "kwargs": {
             "regex": "http://.*"
         },
@@ -42,7 +42,7 @@ config = Config.from_env({
 
 After it is instantiated, we can access the config's values using its class attributes with this notation: 
 
-config.server.value
+`config.server.value`
 
 Where "config" is the name of the config object, "server" is the property name taken from the environment 
 variable, and "value" represents the URL value of the "server" property.
@@ -51,12 +51,12 @@ variable, and "value" represents the URL value of the "server" property.
 print(config.server.value)
 ```
 
-Would return http://myurl.com
+Would return `http://myurl.com`
 
 ## Properties
 
 When providing the input dictionary for instantiating the config, you can specify different property types 
-that determine what they represent, how they can be configured, how they are validated.
+that determine what they represent, how they can be configured and how they are validated.
 
 ### StringProperty
 
@@ -64,10 +64,10 @@ This type of property ensures configuration values are non-blank strings, while 
 configuration to be done on the value, such as regex to check for matching strings, and setting a 
 minimum length and a maximum length.
 
-An example of a config with a StringProperty being instantiated, also using all the optional configuration:
+An example of a config with a `StringProperty` being instantiated, also using all the optional configuration:
 
 ```python
-SOME_STRING_ENV_VAR = "Test string"
+os.environ["SOME_STRING_ENV_VAR"] = "Test string"
 
 config = Config.from_env({
     "SOME_STRING_ENV_VAR": {
@@ -75,7 +75,7 @@ config = Config.from_env({
         "property": "mystring",
         "kwargs": {
             "regex": "Test",
-            "min_len": 10
+            "min_len": 10,
             "max_len": 100
         },
     }
@@ -87,19 +87,19 @@ config = Config.from_env({
 ### IntegerProperty
 
 This type of property ensures configuration values are an integer, or an object that can be cast to int.
-The optional configuration that can be used with IntegerProperty allows restrictions on the minimum 
+The optional configuration that can be used with `IntegerProperty` allows restrictions on the minimum 
 or maximum values of the integer.
 
-An example of a config with an IntegerProperty being instantiated, using the minimum and maximmum value
+An example of a config with an `IntegerProperty` being instantiated, using the minimum and maximmum value
 options:
 
 ```python
-SOME_INT_ENV_VAR = 8
+os.environ["SOME_INT_ENV_VAR"] = 8
 
 config = Config.from_env({
     "SOME_INT_ENV_VAR": {
         "class": IntegerProperty,
-        "property": "myinteger"
+        "property": "myinteger",
         "kwargs": {
             "min_value": 1,
             "max_value": 10
@@ -112,7 +112,7 @@ config = Config.from_env({
 
 ## Larger example
 Instantiation of a config can use multiple properties of varying types by including them in 
-the input dictionary, their values will all be taken from env variables if they correspond 
+the input dictionary, their values will all be taken from environment variables if they correspond 
 correctly. An example with a more detailed configuration being created is shown below.
 
 ```python
@@ -124,20 +124,20 @@ config = Config.from_env({
         "class": StringProperty,
         "property": "name1",
         "kwargs": {
-            "regex": "I match a thing",
+            "regex": "Test",
             "min_len": 10
         },
     },
     "SOME_URL_ENV_VAR": {
         "class": StringProperty,
-        "property", "name2"
+        "property": "name2",
         "kwargs": {
             "regex": "https://.*"
         },
     },
     "SOME_INT_ENV_VAR": {
         "class": IntegerProperty,
-        "property": "name3"
+        "property": "name3",
         "kwargs": {
             "min_value": 5,
             "max_value": 27
@@ -151,7 +151,7 @@ config.assert_valid_config()
 ```
 
 The attributes of the config object can be accessed like you would expect from a class' attributes,
-but they are generated dynamically. Accessing the value for the first property, name1, would be 
+but they are generated dynamically. Accessing the value for the first property, `name1`, would be 
 done like so:
 
 ```python
