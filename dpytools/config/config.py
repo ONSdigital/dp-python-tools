@@ -3,9 +3,9 @@ from __future__ import annotations
 import os
 from typing import Any, Dict, List
 
-from .properties.base import BaseProperty
-from .properties.intproperty import IntegerProperty
-from properties.string import StringProperty
+from dpytools.config.properties.base import BaseProperty
+from dpytools.config.properties.intproperty import IntegerProperty
+from dpytools.config.properties.string import StringProperty
 
 class Config:
     
