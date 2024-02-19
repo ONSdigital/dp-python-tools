@@ -1,0 +1,72 @@
+{
+    "$id": "airflow.schemas.ingress.sdmx.v1.schema.json",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "schema": {
+            "type": "string"
+        },
+        "required_files": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "matches": {
+                            "type": "string"
+                        },
+                        "count": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "matches",
+                        "count"
+                    ]
+                }
+            ]
+        },
+        "supplementary_distributions": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "matches": {
+                            "type": "string"
+                        },
+                        "count": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "matches",
+                        "count"
+                    ]
+                }
+            ]
+        },
+        "priority": {
+            "type": "integer"
+        },
+        "contact": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "string"
+                }
+            ]
+        },
+        "pipeline": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "schema",
+        "required_files",
+        "supplementary_distributions",
+        "priority",
+        "contact",
+        "pipeline"
+    ]
+}
