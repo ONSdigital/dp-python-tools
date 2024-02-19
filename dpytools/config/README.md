@@ -25,13 +25,13 @@ it should begin with "http://".
 The code below shows how this instantiation would work using the `from_env()` method.
 
 ```python
-from dpytools import Config
+from dpytools.config.config import Config
 from dpytools.config.properties import StringProperty, IntegerProperty
 
 config = Config.from_env({
     "MY_SERVER_ENDPOINT": {
         "class": StringProperty,
-        "property": "server"
+        "property": "server",
         "kwargs": {
             "regex": "http://.*"
         },
@@ -116,8 +116,12 @@ the input dictionary, their values will all be taken from environment variables 
 correctly. An example with a more detailed configuration being created is shown below.
 
 ```python
-from dpytools import Config
+from dpytools.config.config import Config
 from dpytools.config.properties import StringProperty, IntegerProperty
+
+os.environ["SOME_STRING_ENV_VAR"] = "Test string"
+os.environ["SOME_URL_ENV_VAR"] = "https://my-url.com"
+os.environ["SOME_INT_ENV_VAR"] = "8"
 
 config = Config.from_env({
     "SOME_STRING_ENV_VAR": {
