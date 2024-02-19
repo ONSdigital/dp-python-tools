@@ -22,7 +22,7 @@ def get_s3_object(
 
 def read_s3_file_content(
     object_name: str, profile_name: Optional[str] = None, client=boto3.client("s3")
-) -> Any:
+) -> bytes:
     """
     Given an s3 object identifer, i.e "my-bucket/things/file.txt" fetches then read()'s
     the body (content) of s3 object (file).
