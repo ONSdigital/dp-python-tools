@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 from .properties.base import BaseProperty
 from .properties.intproperty import IntegerProperty
-from properties.string import StringProperty
+from .properties.string import StringProperty
 
 class Config:
     
@@ -72,8 +72,8 @@ class Config:
 
     def assert_valid_config(self):
         """
-        Assert that then Config class has the properties that
-        provided properties.
+        Assert that the Config class has valid properties
+        generated from its given configuration.
         """
         for property in self._properties_to_validate:
             property.type_is_valid()
