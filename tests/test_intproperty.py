@@ -25,8 +25,8 @@ def test_int_property():
 
 def test_int_property_type_invalid():
     """
-    Tests if an integer property with a type of value that 
-    cannot be cast to string raises an exception.
+    Tests if an integer property instantiated with a type of value that 
+    cannot be cast to integer raises an exception.
     """
 
     test_property = IntegerProperty(
