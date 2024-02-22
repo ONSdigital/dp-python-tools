@@ -2,31 +2,29 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod, abstractstaticmethod
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from stores.directory.base import BaseWritableSingleDirectoryStore
 
 
 class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
-    local_path: Path
-
-    def __init__(self, local_dir):
+    def __init__(self, local_dir: Union[str, Path]):
         # Takes a path or a string representing a path as input
 
         # If it is not a path, pathify it
-        if type(local_dir) != Path:
-            try:
-                local_dir = Path(local_dir)
-            except:
-                raise TypeError(f"Given path {local_dir} is not a path and cannot be converted to a path.")
+        if not isinstance(local_dir, Path):
+            local_dir_path = Path(local_dir)
+        else:
+            local_dir_path = local_dir
 
-        # Make sure it exists
-        assert local_dir.exists(), "Given path does not exist as a local directory."
+        # Make sure it exists and it's a directory.
+        assert local_dir_path.exists(), f"Given path {local_dir_path} does not exist."
+        assert local_dir_path.is_dir(), f"Given path {local_dir_path} is not a directory."
 
         # Store that location against the class
 
-        self.local_path = local_dir
+        self.local_path = local_dir_path
 
 
     def add_file(self, file: Path):
