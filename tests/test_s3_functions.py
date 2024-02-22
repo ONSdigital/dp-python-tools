@@ -15,6 +15,7 @@ from dpytools.s3.basic import (
 def mock_s3_client():
     return boto3.client('s3')
 
+
 @mock_aws
 def test_get_s3_object(mock_s3_client):
     mock_s3_client.create_bucket(Bucket='mybucket', CreateBucketConfiguration={
@@ -26,7 +27,7 @@ def test_get_s3_object(mock_s3_client):
         Key="mykey"
     )
     
-    result = get_s3_object('mybucket/mykey', client=mock_s3_client)
+    result = get_s3_object('mybucket/mykey')
     assert result['Body'].read() == b'myvalue'
 
 
@@ -40,7 +41,7 @@ def test_read_s3_file_content(mock_s3_client):
         Body="myvalue",
         Key="mykey"
     )
-    result = read_s3_file_content('mybucket/mykey', client=mock_s3_client)
+    result = read_s3_file_content('mybucket/mykey')
     assert result == b"myvalue"
 
 
@@ -54,18 +55,18 @@ def test_read_s3_file_content_as_dict(mock_s3_client):
         Body=b'{"key":"value"}',
         Key="mykey.json"
     )
-    result = read_s3_file_content_as_dict('mybucket/mykey.json', client=mock_s3_client)
+    result = read_s3_file_content_as_dict('mybucket/mykey.json')
     assert result == {"key":"value"}
 
 
 @mock_aws
-def test_read_s3_file_content_as_dict_raises_without_json_extension(mock_s3_client):
+def test_read_s3_file_content_as_dict_raises_without_json_extension():
     """
     Attempting to use read_s3_file_content_as_dict against a non json
     file extension should raise a value error.
     """
     with pytest.raises(ValueError):
-        read_s3_file_content_as_dict('mybucket/mykey', client=mock_s3_client)
+        read_s3_file_content_as_dict('mybucket/mykey')
 
 
 @mock_aws
@@ -80,7 +81,7 @@ def test_download_s3_object_to_local(mock_s3_client, tmp_path):
     )
     local_path = tmp_path / 'mykey'
 
-    download_s3_file_content_to_local('mybucket/mykey', str(local_path), client=mock_s3_client)
+    download_s3_file_content_to_local('mybucket/mykey', str(local_path))
 
     assert local_path.read_text() == 'myvalue'
 
@@ -97,7 +98,7 @@ def test_upload_local_file_to_s3_with_path(mock_s3_client, tmp_path):
     local_file = tmp_path / 'myfile'
     local_file.write_text('myvalue')
 
-    upload_local_file_to_s3(local_file, 'mybucket/mykey', client=mock_s3_client)
+    upload_local_file_to_s3(local_file, 'mybucket/mykey')
 
     result = mock_s3_client.get_object(Bucket='mybucket', Key='mykey')
 
@@ -115,7 +116,7 @@ def test_upload_local_file_to_s3_with_str_as_path(mock_s3_client, tmp_path):
     local_file = tmp_path / 'myfile'
     local_file.write_text('myvalue')
 
-    upload_local_file_to_s3(str(local_file), 'mybucket/mykey', client=mock_s3_client)
+    upload_local_file_to_s3(str(local_file), 'mybucket/mykey')
 
     result = mock_s3_client.get_object(Bucket='mybucket', Key='mykey')
 
