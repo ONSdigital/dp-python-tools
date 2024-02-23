@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod, abstractstaticmethod
 from pathlib import Path
 from typing import List, Union
 
-from stores.directory.base import BaseWritableSingleDirectoryStore
+from dpytools.stores.directory.base import BaseWritableSingleDirectoryStore
 
 
 class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
