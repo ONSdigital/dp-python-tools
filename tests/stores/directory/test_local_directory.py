@@ -1,8 +1,12 @@
-from _pytest.monkeypatch import monkeypatch
 import pytest
 from pathlib import Path, PosixPath
 
-from stores.directory.local import LocalDirectoryStore
+from dpytools.stores.directory.local import LocalDirectoryStore
+
+# note, directory doesnt matter, we're just using this
+# as it'll always exist here relatively.
+TEST_DIRECTORY = Path(__file__).parent.parent.parent.absolute()
+
 
 def test_local_directory_store_path():
     """
@@ -11,11 +15,11 @@ def test_local_directory_store_path():
     existing local directory.
     """
 
-    test_path = Path("tests/")
+    test_path = Path(TEST_DIRECTORY)
     
     test_local_dir_store = LocalDirectoryStore(test_path)
 
-    assert test_local_dir_store.local_path == PosixPath('tests/')
+    assert test_local_dir_store.local_path == PosixPath(TEST_DIRECTORY)
 
 
 def test_local_directory_store_string():
@@ -25,11 +29,11 @@ def test_local_directory_store_string():
     which represents a correct existing local directory.
     """
 
-    test_path = "tests/"
+    test_path = TEST_DIRECTORY
     
     test_local_dir_store = LocalDirectoryStore(test_path)
 
-    assert test_local_dir_store.local_path == PosixPath('tests/')
+    assert test_local_dir_store.local_path == PosixPath(TEST_DIRECTORY)
 
 
 def test_local_directory_store_non_existing():
@@ -42,7 +46,7 @@ def test_local_directory_store_non_existing():
     test_path = "not/a/real/path"
 
     with pytest.raises(AssertionError) as err:
-        test_local_dir_store = LocalDirectoryStore(test_path)
+        LocalDirectoryStore(test_path)
 
     assert "Given path not/a/real/path does not exist." in str(err.value)
 
@@ -54,9 +58,9 @@ def test_local_directory_store_non_directory():
     Path raises the expected error if the path is not a directory.   
     """
 
-    test_path = "tests/test_local_directory.py"
+    test_path = Path(f"{TEST_DIRECTORY}/conftest.py").absolute()
 
     with pytest.raises(AssertionError) as err:
-        test_local_dir_store = LocalDirectoryStore(test_path)
+        LocalDirectoryStore(test_path)
 
-    assert "Given path tests/test_local_directory.py is not a directory." in str(err.value)
+    assert "is not a directory." in str(err.value)
