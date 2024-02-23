@@ -65,8 +65,10 @@ def test_read_s3_file_content_as_dict_raises_without_json_extension():
     Attempting to use read_s3_file_content_as_dict against a non json
     file extension should raise a value error.
     """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         read_s3_file_content_as_dict('mybucket/mykey')
+
+    assert "Object name must end with '.json'" in str(e.value)
 
 
 @mock_aws
@@ -104,6 +106,7 @@ def test_upload_local_file_to_s3_with_path(mock_s3_client, tmp_path):
 
     assert result["Body"].read() == b'myvalue'
 
+
 @mock_aws
 def test_upload_local_file_to_s3_with_str_as_path(mock_s3_client, tmp_path):
     """
@@ -121,3 +124,19 @@ def test_upload_local_file_to_s3_with_str_as_path(mock_s3_client, tmp_path):
     result = mock_s3_client.get_object(Bucket='mybucket', Key='mykey')
 
     assert result["Body"].read() == b'myvalue'
+
+
+@mock_aws
+def test_upload_local_file_to_s3_raise_for_file_doesnt_exist(mock_s3_client):
+    """
+    Confirm we get the expected assertion error if the file to be
+    uploaded does not exist
+    """
+    mock_s3_client.create_bucket(Bucket='mybucket', CreateBucketConfiguration={
+        'LocationConstraint': "eu-west-1"
+    })
+
+    with pytest.raises(AssertionError) as e:
+        upload_local_file_to_s3("im-not-a-file-that-exists", 'mybucket/mykey')
+
+    assert "does not exist." in str(e.value)
