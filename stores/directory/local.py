@@ -38,7 +38,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         matching_files = [
             f for f in self.get_file_names if re.search(pattern, f)]
 
-        # check that exactly one file name match the regex pattern, no files match or more than one file matches.
+        # check that exactly 1 file name match the regex pattern, 0 files match or more than 1 file matches.
         if not matching_files.count == 1:
             return True
         elif matching_files.count < 1:
