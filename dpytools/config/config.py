@@ -7,7 +7,6 @@ from dpytools.config.properties.base import BaseProperty
 from dpytools.config.properties.intproperty import IntegerProperty
 from dpytools.config.properties.string import StringProperty
 
-
 class Config:
 
     def __init__(self):
