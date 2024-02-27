@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import List, Optional, Union
 import re
+import os
 
 from stores.directory.base import BaseWritableSingleDirectoryStore
 
@@ -38,74 +39,61 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         matching_files = [
             f for f in self.get_file_names if re.search(pattern, f)]
 
-        # check that exactly 1 file name match the regex pattern, 0 files match or more than 1 file matches.
-        if not matching_files.count == 1:
+        if matching_files.count == 1:  # 1 file matched
             return True
-        elif matching_files.count < 1:
-            raise ValueError("No files matching regex patten found")
-        elif matching_files.count > 1:
-            raise ValueError(
-                "More than one file found that matches the regex pattern")
+        elif matching_files.count == 0:  # 0 file matched
+            return False
+        elif matching_files.count > 1:  # 2+ files matched
+            raise ValueError(f"More than 1 file found that matches the regex pattern in gven directory {matching_files}") 
 
     def save_lone_file_matching(self, pattern: str, destination: Optional[Union[Path, str]] = None):
-        """
-        Asserts there's exactly one file in the directory matching the provided regex
-
-        If no destination is provided, save it in the current working directory with
-        its current filename.
-
-        If a destination is provided, if that destination is a str, change to to a python
-        pathlib.Path object then save it there.
-
-        In both cases raise an exception if a file with that name already exists where
-        we've been asked to save a new one.
-        """
+        # Assert 1 file matches
         if self.has_lone_file_matching(pattern):
-
+            file_name_list = self.get_file_names()
+            file_name = file_name_list[0]  
+            
             if not destination:
-                open(pattern, "x")
-
+                open(file_name, "x")
             else:
                 if isinstance(destination, str):
-                    full_path = destination + "/" + pattern
-                    save_path = Path(full_path)
+                    save_path = Path(destination)
                     assert not save_path.is_file(), "Given file already exists in directory."
-                    with (save_path / pattern).open("w") as saved_pattern:
+                    with (save_path).open("w") as saved_pattern:
                         pass
                 else:
-                    save_path = destination / pattern
-                    assert not save_path.is_file(), "Given file already exists in directory."
-                    with (destination / pattern).open("w") as saved_pattern:
+
+                    assert not destination.is_file(), "Given file already exists in directory."
+                    with (destination).open("w") as saved_pattern:
                         pass
 
-    def get_lone_matching_json_as_dict(self, pattern: str, pattern_directory: Union[Path, str]) -> dict:
-        """"
-        Asserts exactly 1 file matches pattern.
-        Raise if someone doesent end their pattern with .json?
-        Return the contents of the matching json as a dictionary.
-        """
-
-        if self.has_lone_file_matching(pattern):
+    def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
+        # Assert 1 file matches
+        if self.has_lone_file_matching(pattern): 
+            file_names = self.get_file_names()
+            file_name = file_names[0] 
             assert pattern.endswith(".json"), "File doesn't end with .json"
-            if isinstance(pattern_directory, str):
-                str_path = pattern_directory + "/" + pattern
-                full_path = Path(str_path)
-                assert full_path.isfile(), "Given path to pattern does not exist."
+            if isinstance(file_name, str):
+                file_name = Path(file_name)
+                assert file_name.isfile(), "Given path to pattern does not exist."
             else:
-                full_path = pattern_directory / pattern
-                assert full_path.isfile(), "Given path to pattern does not exist."
+                assert file_name.isfile(), "Given path to pattern does not exist."
 
-            # use json.load to put contents of file into variable and return dic.
-            pattern_dict = json.load(full_path)
-            return pattern_dict
+            # use json.load to put contents of file into variable and return dict.
+            with open(file_name) as f:
+                json_dict = json.load(f)
+            return json_dict
 
     def save_lone_file_matching_regex(self, regex_str) -> Path:
         # Abstract methods can remain without implementation for now.
         ...
 
     def get_file_names(self) -> List[str]:
-        # Abstract methods can remain without implementation for now.
-        ...
+        file_names = os.listdir(self.local_path) #grab list of full paths to files,
+        #Check some files actually exist. 
+        if file_names.count < 1:  # should this raise an error if empty or just fail silently and do nothing.. ?
+            raise ValueError(f"No files found in given directory {file_names}")
+        else:
+            return file_names
 
     def get_current_source_pathlike(self) -> str:
         # Abstract methods can remain without implementation for now.
