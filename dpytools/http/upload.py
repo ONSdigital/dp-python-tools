@@ -1,24 +1,16 @@
 import datetime
 import os
 
-from dpytools.http.base import BaseHttpClient
+import requests
 
-# get platform name
-# hack to tell if using on network machine - windows implies on network
-# if sys.platform.lower().startswith("win"):
-#     verify = False
-#     operating_system = "windows"
-#     requests.packages.urllib3.disable_warnings()
-# else:
-#     verify = True
-#     operating_system = "not windows"
+from dpytools.http.base import BaseHttpClient
 
 
 class UploadClient(BaseHttpClient):
     def __init__(
         self,
-        upload_url: str = "http://localhost:10800/v1/upload",
-        headers: dict = {"X-Florence-Token": "X-Florence-Token"},
+        upload_url: str = "",
+        headers: dict = {"X-Florence-Token": ""},
     ):
         super().__init__()
         # TODO Actual values for `upload_url` and `headers` (see `POST` request  in `upload_new()`)
@@ -26,7 +18,7 @@ class UploadClient(BaseHttpClient):
         self.headers = headers
 
     def upload_new(
-        self, csv_path: str, is_publishable: bool = False, output_path: str = None
+        self, csv_path: str, output_path: str = None, is_publishable: bool = False
     ):
         """
         Upload files to the DP Upload Service. Files are chunked (default chunk size 5242880 bytes)
@@ -37,12 +29,12 @@ class UploadClient(BaseHttpClient):
         # Get file name from file path
         resumable_file_name = csv_path.split("/")[-1]
 
-        # Get teimstamp to create `path` value in `POST` params
+        # Get timestamp to create `path` value in `POST` params
         timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
 
         # Chunk file
         file_chunks = self._create_temp_chunks(
-            csv_path=csv_path, output_path=output_path
+            csv_path=csv_path, output_path=output_path, chunk_size=1000
         )
 
         resumable_chunk_number = 1
@@ -72,10 +64,9 @@ class UploadClient(BaseHttpClient):
                     "resumableChunkNumber": resumable_chunk_number,
                     "resumableTotalChunks": len(file_chunks),
                 }
-                # Query string: ?resumableFilename=countries.csv&path=270224095333-countries-csv&isPublishable=False&collectionId=optional+for+upload%2C+required+before+publishing&title=title+value&resumableTotalSize=6198846&resumableType=text%2Fcsv&licence=licence+value&licenceUrl=licenceUrl+value&resumableChunkNumber=1&resumableTotalChunks=2
 
                 # Submit `POST` request to `upload_url`
-                response = self.post(
+                response = requests.post(
                     url=self.upload_url,
                     headers=self.headers,
                     params=params,
@@ -101,8 +92,9 @@ class UploadClient(BaseHttpClient):
 
         return s3_url
 
+    # TODO Check max chunk size
     def _create_temp_chunks(
-        self, csv_path: str, chunk_size: int = 5242880, output_path: str = None
+        self, csv_path: str, output_path: str = None, chunk_size: int = 5242880
     ) -> list[str]:
         """
         Chunks up the data into text files, returns list of temp files
@@ -130,3 +122,44 @@ class UploadClient(BaseHttpClient):
         """
         for file in temporary_files:
             os.remove(file)
+
+    # def _get_access_token(self):
+    #     # gets florence access token
+    #     try:  # so that token isn't generate for each __init__
+    #         if self.access_token:
+    #             pass
+    #     except:
+    #         # getting credential from environment variables
+    #         email, password = self._get_credentials()
+    #         login = {"email": email, "password": password}
+
+    #         r = requests.post(self.login_url, json=login, verify=True)
+    #         if r.status_code == 200:
+    #             access_token = r.text.strip('"')
+    #             self.access_token = access_token
+    #         else:
+    #             raise Exception(f"Token not created, returned a {r.status_code} error")
+
+    # def _get_credentials(self):
+    #     email = os.getenv("FLORENCE_EMAIL")
+    #     password = os.getenv("FLORENCE_PASSWORD")
+    #     if email and password:
+    #         pass
+    #     else:
+    #         print("Florence credentials not found in environment variables")
+    #         print("Will need to be passed")
+
+    #         email = input("Florence email: ")
+    #         password = input("Florence password: ")
+    #     return email, password
+
+
+# get platform name
+# hack to tell if using on network machine - windows implies on network
+# if sys.platform.lower().startswith("win"):
+#     verify = False
+#     operating_system = "windows"
+#     requests.packages.urllib3.disable_warnings()
+# else:
+#     verify = True
+#     operating_system = "not windows"
