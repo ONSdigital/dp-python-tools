@@ -98,7 +98,7 @@ def test_add_file_as_path():
 
 def test_add_file_does_not_exist():
     """
-    Ensures that the specified file is added to the local directory store.
+    Ensures that an error is raised if the file to be added to the local directory store does not exist.
     """
     with TemporaryDirectory() as tmp_dir:
         test_local_dir_store = LocalDirectoryStore(tmp_dir)
@@ -122,6 +122,9 @@ def test_get_file_names():
 
 
 def test_get_current_source_pathlike():
+    """
+    Ensures that the `get_current_source_pathlike()` method returns the LocalDirectoryStore.local_path as a string
+    """
     with TemporaryDirectory() as tmp_dir:
         test_local_dir_store = LocalDirectoryStore(tmp_dir)
         current_source_pathlike = test_local_dir_store.get_current_source_pathlike()
