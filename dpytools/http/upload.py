@@ -19,7 +19,7 @@ class UploadClient(BaseHttpClient):
 
     def upload_new(
         self, csv_path: str, output_path: str = None, is_publishable: bool = False
-    ):
+    ) -> str:
         """
         Upload files to the DP Upload Service. Files are chunked (default chunk size 5242880 bytes)
         """
@@ -32,7 +32,7 @@ class UploadClient(BaseHttpClient):
         # Get timestamp to create `path` value in `POST` params
         timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
 
-        # Chunk file
+        # Create file chunks
         file_chunks = self._create_temp_chunks(
             csv_path=csv_path, output_path=output_path, chunk_size=1000
         )
@@ -46,7 +46,7 @@ class UploadClient(BaseHttpClient):
                 # Construct `POST` request params for each file chunk
                 params = {
                     "resumableFilename": resumable_file_name,
-                    # TODO Check `path` value (replaces resumableIdentifier?).
+                    # TODO Check `path` value (replaces resumableIdentifier?)
                     # Description: The path to the file being stored. Note that this will be part of the AWS S3 bucket name so should adhere to the S3 bucket naming rules
                     "path": f"{timestamp}-{resumable_file_name.replace('.', '-')}",
                     "isPublishable": is_publishable,
@@ -66,7 +66,7 @@ class UploadClient(BaseHttpClient):
                 }
 
                 # Submit `POST` request to `upload_url`
-                response = requests.post(
+                response = self.post(
                     url=self.upload_url,
                     headers=self.headers,
                     params=params,
@@ -92,7 +92,6 @@ class UploadClient(BaseHttpClient):
 
         return s3_url
 
-    # TODO Check max chunk size
     def _create_temp_chunks(
         self, csv_path: str, output_path: str = None, chunk_size: int = 5242880
     ) -> list[str]:
