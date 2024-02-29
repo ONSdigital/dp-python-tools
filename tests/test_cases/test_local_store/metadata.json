@@ -1,0 +1,42 @@
+{
+    "@type": [
+        "dcat:Distribution",
+        "csvw:Table"
+    ],
+    "@id": "https://staging.idpd.uk/datasets/population-under-devolution/editions/2023-03/versions/1",
+    "identifier": "1",
+    "issued": "2023-03-31T12:14:51Z",
+    "title": "Population under devolution deal in England",
+    "summary": "Percentage population area of the highest level of devolution in England.",
+    "description": "This dataset shows the percentage of the population living in an area covered by the highest level of devolution, in England, as of 13 January 2023.",
+    "download_url": "https://staging.idpd.uk/datasets/population-under-devolution/editions/2023-03/versions/1.csv",
+    "media_type": "text/csv",
+    "table_schema": {
+        "columns": [
+            {
+                "name": "areacd",
+                "datatype": "string",
+                "titles": "ONS Geography Code",
+                "description": "The geography code associated with the observation."
+            },
+            {
+                "name": "period",
+                "datatype": "string",
+                "titles": "Year",
+                "description": "The time period associated with the observation."
+            },
+            {
+                "name": "observation",
+                "datatype": "decimal",
+                "titles": "Population under devolution deal in England",
+                "description": "Observation value of population under devolution deal in England."
+            },
+            {
+                "name": "measure",
+                "datatype": "string",
+                "titles": "Measure type",
+                "description": "Measure type of the observation value"
+            }
+        ]
+    }
+}
