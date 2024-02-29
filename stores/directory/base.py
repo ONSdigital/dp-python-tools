@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod, abstractstaticmethod
 from pathlib import Path
 from typing import List, Optional, Union
 
+
 class BaseReadableSingleDirectoryStore(ABC):
     """
     A base class for a directory like store, i.e some abstraction for organising files, examples:

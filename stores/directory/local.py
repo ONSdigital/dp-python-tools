@@ -22,10 +22,8 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             local_dir_path = local_dir
 
         # Make sure it exists and it's a directory.
-        assert local_dir_path.exists(), f"Given path {
-            local_dir_path} does not exist."
-        assert local_dir_path.is_dir(), f"Given path {
-            local_dir_path} is not a directory."
+        assert local_dir_path.exists(), f"Given path {local_dir_path} does not exist."
+        assert local_dir_path.is_dir(), f"Given path {local_dir_path} is not a directory."
 
         # Store that location against the class
         self.local_path = local_dir_path
@@ -35,16 +33,16 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         pass
 
     def has_lone_file_matching(self, pattern: str) -> bool:
-        # Grab a list of files matching the regex pattern to determin how many exist.
+        # Grab a list of files matching the regex pattern to determine how many exist.
         matching_files = [
-            f for f in self.get_file_names if re.search(pattern, f)]
+            f for f in self.get_file_names() if re.search(pattern, f)]
 
-        if matching_files.count == 1:  # 1 file matched
+        if len(matching_files) == 1:  # 1 file matched
             return True
-        elif matching_files.count == 0:  # 0 file matched
-            return False
-        elif matching_files.count > 1:  # 2+ files matched
-            raise ValueError(f"More than 1 file found that matches the regex pattern in gven directory {matching_files}") 
+        elif len(matching_files) == 0:  # 0 file matched
+            raise FileNotFoundError(f"No files found matching given pattern '{pattern}' in directory {self.local_path}")          
+        elif len(matching_files) > 1:  # 2+ files matched
+            raise FileNotFoundError(f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}")
 
     def save_lone_file_matching(self, pattern: str, destination: Optional[Union[Path, str]] = None):
         # Assert 1 file matches
@@ -57,29 +55,28 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             else:
                 if isinstance(destination, str):
                     save_path = Path(destination)
-                    assert not save_path.is_file(), "Given file already exists in directory."
+                    save_path = save_path / file_name
+                    assert not save_path.exists(), f"Given file already exists in directory {save_path}."
                     with (save_path).open("w") as saved_pattern:
                         pass
                 else:
-
-                    assert not destination.is_file(), "Given file already exists in directory."
-                    with (destination).open("w") as saved_pattern:
+                    save_path = destination / file_name
+                    assert not save_path.exists(), f"Given file already exists in directory {save_path}."
+                    with (save_path).open("w") as saved_pattern:
                         pass
 
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
         # Assert 1 file matches
         if self.has_lone_file_matching(pattern): 
             file_names = self.get_file_names()
-            file_name = file_names[0] 
-            assert pattern.endswith(".json"), "File doesn't end with .json"
+            file_name = file_names[0]
+            file_path = self.local_path / file_names[0]
+            
             if isinstance(file_name, str):
-                file_name = Path(file_name)
-                assert file_name.isfile(), "Given path to pattern does not exist."
-            else:
-                assert file_name.isfile(), "Given path to pattern does not exist."
+                file_path = Path(file_path)
 
             # use json.load to put contents of file into variable and return dict.
-            with open(file_name) as f:
+            with open(file_path) as f:
                 json_dict = json.load(f)
             return json_dict
 
@@ -90,10 +87,19 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
     def get_file_names(self) -> List[str]:
         file_names = os.listdir(self.local_path) #grab list of full paths to files,
         #Check some files actually exist. 
-        if file_names.count < 1:  # should this raise an error if empty or just fail silently and do nothing.. ?
-            raise ValueError(f"No files found in given directory {file_names}")
+        if len(file_names) < 1:  # should this raise an error if empty or just fail silently and do nothing.. ?
+            raise ValueError(f"No files found in given directory {self.local_path}")
         else:
             return file_names
+
+    def _files_that_match_pattern(self, pattern) -> List[str]:
+     # given a pattern, return a list of all files that match it.
+     # use self.get_files_names() in here as well.
+        matching_files = [
+            f for f in self.get_file_names() if re.search(pattern, f)]
+
+        return matching_files
+
 
     def get_current_source_pathlike(self) -> str:
         # Abstract methods can remain without implementation for now.
