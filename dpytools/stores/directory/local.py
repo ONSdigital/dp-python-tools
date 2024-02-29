@@ -71,6 +71,8 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         Returns a list of the files in the store
         """
         file_names = os.listdir(self.local_path)
+        if len(file_names) == 0:
+            raise ValueError(f"No files found in given directory {self.local_path}")
         return file_names
 
     def get_current_source_pathlike(self) -> str:

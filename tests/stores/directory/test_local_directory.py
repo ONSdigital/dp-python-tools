@@ -121,6 +121,14 @@ def test_get_file_names():
     assert "data.csv" in file_names
 
 
+def test_get_file_names_no_files():
+    with TemporaryDirectory() as tmp_dir:
+        test_local_dir_store = LocalDirectoryStore(tmp_dir)
+        with pytest.raises(ValueError) as err:
+            test_local_dir_store.get_file_names()
+        assert "No files found in given directory" in str(err.value)
+
+
 def test_get_current_source_pathlike():
     """
     Ensures that the `get_current_source_pathlike()` method returns the LocalDirectoryStore.local_path as a string
