@@ -75,6 +75,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         if destination is not None:
             if isinstance(destination, str):
                 destination = Path(destination)
+            assert destination.exists(), f"Destination directory {destination} does not exist."
             save_path = Path(destination / file_name)
         else:
             save_path = Path(file_name)

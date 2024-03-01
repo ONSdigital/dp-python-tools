@@ -166,21 +166,23 @@ def test_save_lone_file_destination():
     """
     Checks that a LocalDirectoryStore can retrieve a lone matching file 
     from a given pattern in its local path directory, and save that file 
-    in another destination directory.
+    in a given destination directory.
     """
+
+    destination_dir = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_destination")
+    destination_dir.mkdir(exist_ok=True)
 
     test_path = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file")
     test_local_directory_store = LocalDirectoryStore(test_path)
-
-    destination_dir = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_destination")
 
     test_local_directory_store.save_lone_file_matching(".json", destination_dir)
     test_result_file = destination_dir / "local_directory_test.json"
 
     assert test_result_file.exists()
 
-    # Delete the saved file after test is completed.
+    # Delete the saved file and directory after test is completed.
     os.remove(test_result_file)
+    Path.rmdir(destination_dir)
 
 
 def test_save_lone_file_destination_file_already_exists():
@@ -201,6 +203,28 @@ def test_save_lone_file_destination_file_already_exists():
 
     assert (
     "Given file already exists in directory tests/test_cases/test_local_store/local_directory_folders/local_directory_destination_error/local_directory_test.json"
+     == str(err.value)
+    )
+
+
+def test_save_lone_file_destination_exists_false():
+    """
+    Checks that a LocalDirectoryStore can retrieve a lone matching file 
+    from a given pattern in its local path directory, but the expected 
+    error is returned if the destination given by the user does not 
+    exist.
+    """
+
+    test_path = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file")
+    test_local_directory_store = LocalDirectoryStore(test_path)
+
+    destination_dir = Path("tests/test_cases/test_local_store/local_directory_folders/does_not_exist")
+
+    with pytest.raises(AssertionError) as err:
+        test_local_directory_store.save_lone_file_matching(".json", destination_dir)
+
+    assert (
+    "Destination directory tests/test_cases/test_local_store/local_directory_folders/does_not_exist does not exist."
      == str(err.value)
     )
 
@@ -234,6 +258,7 @@ def test_get_file_names_no_files():
 
     assert file_name_list == []
     
+    # Remove the empty directory, we don't want it to exist in the repo.
     Path.rmdir(test_path_dir)
 
 
