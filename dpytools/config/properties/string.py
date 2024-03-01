@@ -1,6 +1,6 @@
 from typing import Optional
 from dataclasses import dataclass
-from .base import BaseProperty
+from dpytools.config.properties.base import BaseProperty
 
 import re
 

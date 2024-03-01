@@ -1,5 +1,5 @@
 .venv
-.vscode
+launch.json
 .coverage
 .DS_Store
 *.pyc
