@@ -226,13 +226,15 @@ def test_get_file_names_no_files():
     Checks that an empty list is returned as expected when 
     no matching files are found in the given directory.
     """
-
-    test_path = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_no_files")
-    test_local_directory_store = LocalDirectoryStore(test_path)
+    test_path_dir = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_no_files")
+    test_path_dir.mkdir(exist_ok=True)
+    test_local_directory_store = LocalDirectoryStore(test_path_dir)
 
     file_name_list = test_local_directory_store.get_file_names()
 
     assert file_name_list == []
+    
+    Path.rmdir(test_path_dir)
 
 
 def test_get_lone_file_matching_json_dict():
