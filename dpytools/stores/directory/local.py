@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod, abstractstaticmethod
 import os
+import re
+import json
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Optional
 
 from dpytools.stores.directory.base import BaseWritableSingleDirectoryStore
 
@@ -51,29 +53,69 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         return local_file_path
 
     def has_lone_file_matching(self, pattern: str) -> bool:
-        #  To be implemented in local directory store 1 #5
-        ...
+        # Grab a list of files matching the regex pattern to determine how many exist.
 
-    def save_lone_file_matching(self, pattern: str, save_as: str) -> Path:
-        #  To be implemented in local directory store 1 #5
-        ...
+        matching_files = self._files_that_match_pattern(pattern)
+
+        if len(matching_files) == 1:  # 1 file matched
+            return True
+        elif len(matching_files) == 0:  # 0 file matched
+            return False         
+        else:  # 2+ files matched
+            raise FileNotFoundError(f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}. Matching: {matching_files}")
+
+    def save_lone_file_matching(self, pattern: str, destination: Optional[Union[Path, str]] = None):
+        # Assert 1 file matches
+        if not self.has_lone_file_matching(pattern):
+            raise FileNotFoundError(f"No matching files found for pattern {pattern} in directory {self.local_path}")
+
+        file_to_save = self._files_that_match_pattern(pattern)[0]
+        file_name = Path(file_to_save).name
+
+        if destination is not None:
+            if isinstance(destination, str):
+                destination = Path(destination)
+            save_path = Path(destination / file_name)
+        else:
+            save_path = Path(file_name)
+
+        if save_path.exists():
+            raise ValueError(f"Given file already exists in directory {save_path}")
+
+        with open(file_to_save) as f:
+            file_data = f.read()
+
+        with open(save_path, "w") as f:
+            f.write(file_data)
 
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
-        #  To be implemented in local directory store 1 #5
-        ...
+        # Assert 1 file matches
+        if self.has_lone_file_matching(pattern): 
+            file_path = Path(self.local_path / self._files_that_match_pattern(pattern)[0])
 
-    def save_lone_file_matching_regex(self, regex_str) -> Path:
-        # Abstract methods can remain without implementation for now.
-        ...
+            # use json.load to put contents of file into variable and return dict.
+            with open(file_path) as f:
+                json_dict = json.load(f)
+            return json_dict
+
 
     def get_file_names(self) -> List[str]:
         """
-        Returns a list of the files in the store
+        Returns a list of the files in the store.
         """
-        file_names = os.listdir(self.local_path)
+        file_names = os.listdir(self.local_path) #grab list of full paths to files,
         if len(file_names) == 0:
-            raise ValueError(f"No files found in given directory {self.local_path}")
-        return file_names
+            return []
+        else:
+            return file_names
+
+    def _files_that_match_pattern(self, pattern) -> List[str]:
+     # given a pattern, return a list of all files that match it.
+     # use self.get_files_names() in here as well.
+        matching_files = [
+            f for f in self.get_file_names() if re.search(pattern, f)]
+
+        return matching_files
 
     def get_current_source_pathlike(self) -> str:
         """
