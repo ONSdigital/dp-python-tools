@@ -125,23 +125,6 @@ def test_save_lone_file_destination():
     os.remove(test_result_file)
 
 
-def test_save_lone_file_no_destination():
-    """
-    TODO
-    Checks that a LocalDirectoryStore can retrieve a lone matching file 
-    from a given pattern in its local path directory, and save that file 
-    in 
-    """
-
-    test_path = Path("tests/test_cases/local_directory_store/local_directory_lone_file")
-    test_local_directory_store = LocalDirectoryStore(test_path)
-
-    # test_local_directory_store.save_lone_file_matching(".json")
-    # test_result_file = test_path / "local_directory_test.json"
-
-    #assert test_result_file.exists()
-
-
 def test_save_lone_file_destination_file_already_exists():
     """
     Checks that a LocalDirectoryStore can retrieve a lone matching file 
