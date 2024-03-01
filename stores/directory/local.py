@@ -34,46 +34,46 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
     def has_lone_file_matching(self, pattern: str) -> bool:
         # Grab a list of files matching the regex pattern to determine how many exist.
-        matching_files = [
-            f for f in self.get_file_names() if re.search(pattern, f)]
+
+        matching_files = self._files_that_match_pattern(pattern)
 
         if len(matching_files) == 1:  # 1 file matched
             return True
         elif len(matching_files) == 0:  # 0 file matched
-            raise FileNotFoundError(f"No files found matching given pattern '{pattern}' in directory {self.local_path}")          
-        elif len(matching_files) > 1:  # 2+ files matched
-            raise FileNotFoundError(f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}")
+            return False         
+        else:  # 2+ files matched
+            raise FileNotFoundError(f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}. Matching: {matching_files}")
 
     def save_lone_file_matching(self, pattern: str, destination: Optional[Union[Path, str]] = None):
         # Assert 1 file matches
-        if self.has_lone_file_matching(pattern):
-            file_name_list = self.get_file_names()
-            file_name = file_name_list[0]  
+        if not self.has_lone_file_matching(pattern):
+            raise FileNotFoundError(f"No matching files found for pattern {pattern} in directory {self.local_path}")
+
+        file_to_save = self._files_that_match_pattern(pattern)[0]
+        file_name = Path(file_to_save).name
+
+        if destination is not None:
+            if isinstance(destination, str):
+                destination = Path(destination)
             
-            if not destination:
-                open(file_name, "x")
-            else:
-                if isinstance(destination, str):
-                    save_path = Path(destination)
-                    save_path = save_path / file_name
-                    assert not save_path.exists(), f"Given file already exists in directory {save_path}."
-                    with (save_path).open("w") as saved_pattern:
-                        pass
-                else:
-                    save_path = destination / file_name
-                    assert not save_path.exists(), f"Given file already exists in directory {save_path}."
-                    with (save_path).open("w") as saved_pattern:
-                        pass
+            save_path = Path(destination / file_name)
+        else:
+            save_path = Path(file_name)
+
+        if save_path.exists():
+            raise ValueError(f"Given file already exists in directory {save_path}")
+
+        with open(file_to_save) as f:
+            file_data = f.read()
+
+        with open(save_path, "w") as f:
+            f.write(file_data)
+
 
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
         # Assert 1 file matches
         if self.has_lone_file_matching(pattern): 
-            file_names = self.get_file_names()
-            file_name = file_names[0]
-            file_path = self.local_path / file_names[0]
-            
-            if isinstance(file_name, str):
-                file_path = Path(file_path)
+            file_path = Path(self.local_path / self._files_that_match_pattern(pattern)[0])
 
             # use json.load to put contents of file into variable and return dict.
             with open(file_path) as f:
@@ -87,8 +87,8 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
     def get_file_names(self) -> List[str]:
         file_names = os.listdir(self.local_path) #grab list of full paths to files,
         #Check some files actually exist. 
-        if len(file_names) < 1:  # should this raise an error if empty or just fail silently and do nothing.. ?
-            raise ValueError(f"No files found in given directory {self.local_path}")
+        if len(file_names) < 1:
+            return []
         else:
             return file_names
 

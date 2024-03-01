@@ -85,9 +85,8 @@ def test_has_lone_file_matching_none():
     test_path = Path("tests/test_cases/local_directory_store/local_directory_lone_file")
     test_local_directory_store = LocalDirectoryStore(test_path)
 
-    with pytest.raises(FileNotFoundError) as err:
-        test_local_directory_store.has_lone_file_matching(".py")
-    assert "No files found matching given pattern '.py' in directory tests/test_cases/local_directory_store/local_directory_lone_file" == str(err.value)
+    assert not test_local_directory_store.has_lone_file_matching(".py")
+
 
 def test_has_lone_file_matching_multiple():
     """
@@ -101,7 +100,7 @@ def test_has_lone_file_matching_multiple():
 
     with pytest.raises(FileNotFoundError) as err:
         test_local_directory_store.has_lone_file_matching(".py")
-    assert "More than 1 file found that matches the regex pattern '.py' in directory tests" == str(err.value)
+    assert "More than 1 file found that matches the regex pattern '.py' in directory tests. Matching: ['test_json_validation.py', 'test_stringproperty.py', '__pycache__', 'test_local_directory.py', 'test_config.py', 'test_intproperty.py']" == str(err.value)
 
 
 def test_save_lone_file_destination():
@@ -138,11 +137,11 @@ def test_save_lone_file_destination_file_already_exists():
 
     destination_dir = Path("tests/test_cases/local_directory_store/local_directory_destination_error")
 
-    with pytest.raises(AssertionError) as err:
+    with pytest.raises(ValueError) as err:
         test_local_directory_store.save_lone_file_matching(".json", destination_dir)
 
     assert (
-    "Given file already exists in directory tests/test_cases/local_directory_store/local_directory_destination_error/local_directory_test.json."
+    "Given file already exists in directory tests/test_cases/local_directory_store/local_directory_destination_error/local_directory_test.json"
      == str(err.value)
     )
 
@@ -164,16 +163,16 @@ def test_get_matching_file_names():
 
 def test_get_matching_file_names_none():
     """
-    Checks that the expected error is returned when 
-    retrieving file names from an empty directory.
+    Checks that an empty list is returned as expected when 
+    no matching files are found in the given directory.
     """
 
     test_path = Path("tests/test_cases/local_directory_store/local_directory_no_files")
     test_local_directory_store = LocalDirectoryStore(test_path)
 
-    with pytest.raises(ValueError) as err:
-        test_local_directory_store.get_file_names()
-    assert "No files found in given directory tests/test_cases/local_directory_store/local_directory_no_files" == str(err.value)
+    file_name_list = test_local_directory_store.get_file_names()
+
+    assert file_name_list == []
 
 
 def test_get_lone_file_matching_json_dict():
