@@ -1,0 +1,20 @@
+{
+    "schema": "airflow.schemas.ingress.config.v1.json",
+    "required_files": [
+        {
+            "matches": "*.sdmx",
+            "count": 1
+        }
+    ],
+    "supplementary_files": [
+        {
+            "matches": "*.sdmx",
+            "count": 1
+        }
+    ],
+    "priority": 1,
+    "contact": [
+        "admin@example.org"
+    ],
+    "pipeline": "sdmx.default"
+}
