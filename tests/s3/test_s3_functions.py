@@ -1,13 +1,16 @@
 import boto3
 from moto import mock_aws
 import pytest
+from pathlib import Path
+import tarfile
 
 from dpytools.s3.basic import (
     get_s3_object,
     read_s3_file_content,
     read_s3_file_content_as_dict,
     download_s3_file_content_to_local,
-    upload_local_file_to_s3
+    upload_local_file_to_s3,
+    decompress_s3_tar
 )
 
 @pytest.fixture
@@ -140,3 +143,98 @@ def test_upload_local_file_to_s3_raise_for_file_doesnt_exist(mock_s3_client):
         upload_local_file_to_s3("im-not-a-file-that-exists", 'mybucket/mykey')
 
     assert "does not exist." in str(e.value)
+
+@mock_aws
+def test_decompress_s3_tar_with_given_dir_path(mock_s3_client, tmp_path):
+    """
+    By creating a s3 bucket and uploding a tar file to it, 
+    confirm that the user can get the tar file from the s3 bucket and
+    decompress it to a given directory.
+    """
+    mock_s3_client.create_bucket(Bucket='mybucket', CreateBucketConfiguration={
+        'LocationConstraint': "eu-west-1"
+    })
+    csv_file = tmp_path / 's3.csv'
+    csv_file.write_text('myvalue')
+    json_file = tmp_path / 's3.json'
+    json_file.write_text('somevalue')
+    tar_file = tmp_path / 's3.tar'
+
+    with tarfile.open(tar_file, 'a') as tar:
+      tar.add(csv_file)
+      tar.add(json_file)
+
+    upload_local_file_to_s3(tar_file, 'mybucket/mykey')
+
+    decompress_s3_tar('mybucket/mykey', "outputs", profile_name="dp-bleed-dev")
+
+    assert Path('./outputs').exists
+    assert Path('./outputs/decompress_from_s3.csv').exists
+    assert Path('./outputs/decompress_from_s3.json').exists
+
+    # Path(Path.cwd() / "outputs/decompress_from_s3.csv").unlink()
+    # Path(Path.cwd() / "outputs/decompress_from_s3.json").unlink()
+    # Path(Path.cwd() / "outputs").rmdir()
+
+@mock_aws
+def test_decompress_s3_tar_with_not_given_dir_path(mock_s3_client, tmp_path):
+    """
+    By creating a s3 bucket and uploding a tar file to it, 
+    confirm that the user can get the tar file from the s3 bucket and
+    decompress it to the current working directory. 
+    """
+    mock_s3_client.create_bucket(Bucket='mybucket', CreateBucketConfiguration={
+        'LocationConstraint': "eu-west-2"
+    })
+    local_file = 'tests/test_cases/s3_bucket.tar'
+
+    upload_local_file_to_s3(local_file, 'mybucket/mykey')
+
+    decompress_s3_tar('mybucket/mykey', profile_name="dp-bleed-dev")
+
+    assert Path('./decompress_from_s3.csv').exists
+    assert Path('./decompress_from_s3.json').exists
+
+    Path(Path.cwd() / "decompress_from_s3.csv").unlink()
+    Path(Path.cwd() / "decompress_from_s3.json").unlink()
+
+@mock_aws
+def test_decompress_s3_tar_raises_error_when_file_is_not_tar(mock_s3_client):
+    """
+    Confirm we get the expected assertion error if the file to be
+    uploaded does not exist
+    """
+    mock_s3_client.create_bucket(Bucket='mybucket', CreateBucketConfiguration={
+        'LocationConstraint': "eu-west-2"
+    })
+    local_file = 'tests/test_cases/decompress_from_s3.json'
+
+    upload_local_file_to_s3(local_file, 'mybucket/mykey')
+
+    with pytest.raises(AssertionError) as e:
+        decompress_s3_tar('mybucket/mykey', "outputs", profile_name="dp-bleed-dev")
+
+    assert "Object from s3 bucket is not a tar file." in str(e.value)
+
+@mock_aws
+def test_decompress_s3_tar_raises_error_when_dir_already_exists(mock_s3_client):
+    """
+    Confirm we get the expected assertion error if the file to be
+    uploaded does not exist
+    """
+    mock_s3_client.create_bucket(Bucket='mybucket', CreateBucketConfiguration={
+        'LocationConstraint': "eu-west-2"
+    })
+    local_file = 'tests/test_cases/s3_bucket.tar'
+
+    upload_local_file_to_s3(local_file, 'mybucket/mykey')
+
+    dir_path = Path(Path.cwd() / "outputs")
+    dir_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with pytest.raises(AssertionError) as e:
+        decompress_s3_tar('mybucket/mykey', "outputs", profile_name="dp-bleed-dev")
+
+    assert "Specified directory already exists." in str(e.value)
+    
+    Path(Path.cwd() / "outputs").rmdir()

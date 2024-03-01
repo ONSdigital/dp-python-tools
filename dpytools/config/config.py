@@ -7,20 +7,20 @@ from dpytools.config.properties.base import BaseProperty
 from dpytools.config.properties.intproperty import IntegerProperty
 from dpytools.config.properties.string import StringProperty
 
+
 class Config:
-    
     def __init__(self):
         self._properties_to_validate: List[BaseProperty] = []
 
     @staticmethod
     def from_env(config_dict: Dict[str, Dict[str, Any]]) -> Config:
-
         config = Config()
 
         for env_var_name, value in config_dict.items():
-
             value_for_property = os.environ.get(env_var_name, None)
-            assert value_for_property is not None, f'Required environment value "{env_var_name}" could not be found.'
+            assert (
+                value_for_property is not None
+            ), f'Required environment value "{env_var_name}" could not be found.'
 
             if value["class"] == StringProperty:
                 if value["kwargs"]:
@@ -31,13 +31,13 @@ class Config:
                     regex = None
                     min_len = None
                     max_len = None
-  
+
                 stringprop = StringProperty(
-                    _name = value["property"],
-                    _value = value_for_property,
-                    regex = regex,
-                    min_len = min_len,
-                    max_len = max_len
+                    _name=value["property"],
+                    _value=value_for_property,
+                    regex=regex,
+                    min_len=min_len,
+                    max_len=max_len,
                 )
 
                 prop_name = value["property"]
@@ -53,10 +53,10 @@ class Config:
                     max_val = None
 
                 intprop = IntegerProperty(
-                    _name = value["property"],
-                    _value = value_for_property,
-                    min_val = min_val,
-                    max_val = max_val
+                    _name=value["property"],
+                    _value=value_for_property,
+                    min_val=min_val,
+                    max_val=max_val,
                 )
 
                 prop_name = value["property"]
@@ -65,10 +65,11 @@ class Config:
 
             else:
                 prop_type = value["class"]
-                raise TypeError(f"Unsupported property type specified via 'property' field, got {prop_type}. Should be of type StringProperty or IntegerProperty")
+                raise TypeError(
+                    f"Unsupported property type specified via 'property' field, got {prop_type}. Should be of type StringProperty or IntegerProperty"
+                )
 
-        return  config
-
+        return config
 
     def assert_valid_config(self):
         """
