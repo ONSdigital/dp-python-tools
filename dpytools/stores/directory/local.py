@@ -65,6 +65,9 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             raise FileNotFoundError(f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}. Matching: {matching_files}")
 
     def save_lone_file_matching(self, pattern: str, destination: Optional[Union[Path, str]] = None):
+        """
+        Asserts a file matches the given pattern, then saves it to the given destination.
+        """
         # Assert 1 file matches
         if not self.has_lone_file_matching(pattern):
             raise FileNotFoundError(f"No matching files found for pattern {pattern} in directory {self.local_path}")
@@ -72,14 +75,17 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         file_to_save = self._files_that_match_pattern(pattern)[0]
         file_name = Path(file_to_save).name
 
+        # If a destination is given, save the matched file there.
         if destination is not None:
             if isinstance(destination, str):
                 destination = Path(destination)
             assert destination.exists(), f"Destination directory {destination} does not exist."
             save_path = Path(destination / file_name)
+        # If no destination is given, save the matched file in the current directory.
         else:
             save_path = Path(file_name)
 
+        # If the file already exists in the save directory, raise an error.
         if save_path.exists():
             raise ValueError(f"Given file already exists in directory {save_path}")
 

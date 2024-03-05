@@ -150,7 +150,7 @@ def test_has_lone_file_matching_none():
 def test_has_lone_file_matching_multiple():
     """
     Checks that a LocalDirectoryStore can run the has_lone_file_matching()
-    function against its local directory and successfully returns False if 
+    function against its local directory and raises the expected error if 
     the directory has more than one file that matches the given pattern.
     """
 
@@ -169,20 +169,14 @@ def test_save_lone_file_destination():
     in a given destination directory.
     """
 
-    destination_dir = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_destination")
-    destination_dir.mkdir(exist_ok=True)
+    with TemporaryDirectory() as tmp_dir:
 
-    test_path = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file")
-    test_local_directory_store = LocalDirectoryStore(test_path)
+        test_path = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file")
+        test_local_directory_store = LocalDirectoryStore(test_path)
 
-    test_local_directory_store.save_lone_file_matching(".json", destination_dir)
-    test_result_file = destination_dir / "local_directory_test.json"
-
-    assert test_result_file.exists()
-
-    # Delete the saved file and directory after test is completed.
-    os.remove(test_result_file)
-    Path.rmdir(destination_dir)
+        test_local_directory_store.save_lone_file_matching(".json", tmp_dir)
+        test_result_file = Path(tmp_dir + "/local_directory_test.json")
+        assert test_result_file.name in os.listdir(tmp_dir)
 
 
 def test_save_lone_file_destination_file_already_exists():
@@ -250,16 +244,13 @@ def test_get_file_names_no_files():
     Checks that an empty list is returned as expected when 
     no matching files are found in the given directory.
     """
-    test_path_dir = Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_no_files")
-    test_path_dir.mkdir(exist_ok=True)
-    test_local_directory_store = LocalDirectoryStore(test_path_dir)
 
-    file_name_list = test_local_directory_store.get_file_names()
+    with TemporaryDirectory() as tmp_dir:
 
-    assert file_name_list == []
-    
-    # Remove the empty directory, we don't want it to exist in the repo.
-    Path.rmdir(test_path_dir)
+        test_local_directory_store = LocalDirectoryStore(tmp_dir)
+
+        file_name_list = test_local_directory_store.get_file_names()
+        assert file_name_list == []
 
 
 def test_get_lone_file_matching_json_dict():
