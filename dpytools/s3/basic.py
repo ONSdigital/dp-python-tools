@@ -1,9 +1,8 @@
 import json
 import tarfile
 import tempfile
-from io import BytesIO
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 import boto3
 
@@ -87,11 +86,14 @@ def decompress_s3_tar(
 
     if not object_name.endswith(".tar"):
         raise NotImplementedError(
-            f"This function currently only handles archives using the tar extension. Got {object_name}")
+            f"This function currently only handles archives using the tar extension. Got {object_name}"
+        )
 
     # Use tempfile so our tar file automagically dissapears after its been extracted from
     tmp_tar = tempfile.NamedTemporaryFile()
-    download_s3_file_content_to_local(object_name, tmp_tar.name, profile_name=profile_name)
+    download_s3_file_content_to_local(
+        object_name, tmp_tar.name, profile_name=profile_name
+    )
 
     if isinstance(directory, str):
         directory = Path(directory)
