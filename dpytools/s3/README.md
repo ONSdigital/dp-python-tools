@@ -85,3 +85,23 @@ upload_local_file_to_s3(
     object_name="my-bucket/myfile.txt"
 )
 ```
+
+### `decompress_s3_tar`
+
+The `decompress_s3_tar` function is a helper to let you decompress a tar archive held in a bucket to a specified directory. 
+
+
+```python
+from pathlib import Path
+from dpytool.s3.basic import decompress_s3_tar
+
+# To a local directory
+decompress_s3_tar("my-bucket/data.tar", "my-local-dir")
+
+# To a local directory specified by a python Path object
+some_complex_relative_path = Path(__file__).parent.parent
+decompress_s3_tar("my-bucket/data.tar", some_complex_relative_path)
+
+# To the current working directory
+decompress_s3_tar("my-bucket/data.tar", ".")
+```

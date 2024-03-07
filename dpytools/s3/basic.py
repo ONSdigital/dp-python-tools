@@ -1,5 +1,6 @@
 import json
 import tarfile
+import tempfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -76,30 +77,36 @@ def upload_local_file_to_s3(
         client.put_object(Body=f.read(), Bucket=bucket_name, Key=key)
 
 
+def list_files(directory):
+    files = []
+    # Iterate over all files in the directory
+    for filepath in directory.iterdir():
+        # Check if the path is a file (not a directory)
+        if filepath.is_file():
+            files.append(str(filepath))
+    return files
+
+
 def decompress_s3_tar(
-    s3_url: str, directory: Optional[Path] = ".", profile_name: Optional[str] = None
+    object_name: str, directory: Union[str, Path], profile_name: Optional[str] = None
 ):
     """
     Given a url to an s3 object that is a tar file, decompress it
     to the provided directory path.
     """
-    # following error occurs when not logged into aws for long periods of time/not logged in at all:
-    # botocore.exceptions.TokenRetrievalError: Error when retrieving token from sso: Token has expired and refresh failed
-    obj = get_s3_object(object_name=s3_url, profile_name=profile_name)
 
-    # Making sure it actually is a tar file.
-    if "tar" not in str(obj["ContentType"]):
-        raise Exception("Object from s3 bucket is not a tar file.")
+    if not object_name.endswith(".tar"):
+        raise NotImplementedError(
+            f"This function currently only handles archives using the tar extension. Got {object_name}")
 
-    # If directory does exist, raise an error
-    if directory != "." and (Path.cwd() / directory).exists():
-        raise Exception("Specified directory already exists.")
-    else:
-        # If the directory does not exist, create it
-        dir_path = Path(Path.cwd() / directory)
-        dir_path.parent.mkdir(parents=True, exist_ok=True)
+    # Use tempfile so our tar file automagically dissapears after its been extracted from
+    tmp_tar = tempfile.NamedTemporaryFile()
+    download_s3_file_content_to_local(object_name, tmp_tar.name, profile_name=profile_name)
 
-        # Decompress all the files to the directory specified.
-        tar = tarfile.open(fileobj=BytesIO(obj["Body"]._raw_stream.data), mode="r:*")
-        tar.extractall(path=directory)
-        tar.close()
+    if isinstance(directory, str):
+        directory = Path(directory)
+    directory.parent.mkdir(parents=True, exist_ok=True)
+
+    # Decompress all the files to the directory specified.
+    with tarfile.open(tmp_tar.name, mode="r:*") as tar:
+        tar.extractall(directory)
