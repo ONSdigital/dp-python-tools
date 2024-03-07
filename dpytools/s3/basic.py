@@ -77,16 +77,6 @@ def upload_local_file_to_s3(
         client.put_object(Body=f.read(), Bucket=bucket_name, Key=key)
 
 
-def list_files(directory):
-    files = []
-    # Iterate over all files in the directory
-    for filepath in directory.iterdir():
-        # Check if the path is a file (not a directory)
-        if filepath.is_file():
-            files.append(str(filepath))
-    return files
-
-
 def decompress_s3_tar(
     object_name: str, directory: Union[str, Path], profile_name: Optional[str] = None
 ):
