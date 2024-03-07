@@ -2,17 +2,6 @@
     "python.testing.pytestArgs": [
         "tests"
     ],
-<<<<<<< HEAD
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "python.analysis.extraPaths": [
-        "./s3"
-    ],
-    "python.testing.pytestArgs": [
-        "."
-    ]
-=======
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
->>>>>>> develop
 }
