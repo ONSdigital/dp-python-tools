@@ -15,7 +15,7 @@ def _get_s3_client(profile_name):
 def get_s3_object(object_name: str, profile_name: Optional[str] = None) -> dict:
     """
     Given an s3 object identifier, i.e "my-bucket/things/file.txt" returns a dictionary which
-    is the boto3 aws represetation of an s3 object.
+    is the boto3 aws representation of an s3 object.
 
     Please see "Response Syntax" here:
     https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/get_object.html
