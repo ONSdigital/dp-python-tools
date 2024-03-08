@@ -1,6 +1,8 @@
 import json
+import tarfile
+import tempfile
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 import boto3
 
@@ -10,12 +12,10 @@ def _get_s3_client(profile_name):
     return client
 
 
-def get_s3_object(
-    object_name: str, profile_name: Optional[str] = None
-) -> dict:
+def get_s3_object(object_name: str, profile_name: Optional[str] = None) -> dict:
     """
     Given an s3 object identifier, i.e "my-bucket/things/file.txt" returns a dictionary which
-    is the boto3 aws represetation of an s3 object.
+    is the boto3 aws representation of an s3 object.
 
     Please see "Response Syntax" here:
     https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/get_object.html
@@ -25,9 +25,7 @@ def get_s3_object(
     return client.get_object(Bucket=bucket_name, Key=key)
 
 
-def read_s3_file_content(
-    object_name: str, profile_name: Optional[str] = None
-) -> bytes:
+def read_s3_file_content(object_name: str, profile_name: Optional[str] = None) -> bytes:
     """
     Given an s3 object identifer, i.e "my-bucket/things/file.txt" fetches then read()'s
     the body (content) of s3 object (file).
@@ -45,31 +43,23 @@ def read_s3_file_content_as_dict(
     """
     if not object_name.endswith(".json"):
         raise ValueError("Object name must end with '.json'")
-    s3_file_content = read_s3_file_content(
-        object_name, profile_name=profile_name
-    )
+    s3_file_content = read_s3_file_content(object_name, profile_name=profile_name)
     return json.loads(s3_file_content.decode("utf-8"))
 
 
 def download_s3_file_content_to_local(
-    object_name: str,
-    local_file: str,
-    profile_name: Optional[str] = None
+    object_name: str, local_file: str, profile_name: Optional[str] = None
 ):
     """
     Download the file represented by a given s3 object to the local path provided
     """
-    s3_file_content = read_s3_file_content(
-        object_name, profile_name=profile_name
-    )
+    s3_file_content = read_s3_file_content(object_name, profile_name=profile_name)
     with open(local_file, "w") as f:
         f.write(s3_file_content.decode("utf-8"))
 
 
 def upload_local_file_to_s3(
-    local_file: Union[str, Path],
-    object_name: str,
-    profile_name: Optional[str] = None
+    local_file: Union[str, Path], object_name: str, profile_name: Optional[str] = None
 ):
     """
     Uploads the provided file from local to s3 as the provided object name.
@@ -84,3 +74,31 @@ def upload_local_file_to_s3(
     bucket_name, key = object_name.split("/", 1)
     with open(local_file) as f:
         client.put_object(Body=f.read(), Bucket=bucket_name, Key=key)
+
+
+def decompress_s3_tar(
+    object_name: str, directory: Union[str, Path], profile_name: Optional[str] = None
+):
+    """
+    Given a url to an s3 object that is a tar file, decompress it
+    to the provided directory path.
+    """
+
+    if not object_name.endswith(".tar"):
+        raise NotImplementedError(
+            f"This function currently only handles archives using the tar extension. Got {object_name}"
+        )
+
+    # Use tempfile so our tar file automagically dissapears after its been extracted from
+    tmp_tar = tempfile.NamedTemporaryFile()
+    download_s3_file_content_to_local(
+        object_name, tmp_tar.name, profile_name=profile_name
+    )
+
+    if isinstance(directory, str):
+        directory = Path(directory)
+    directory.parent.mkdir(parents=True, exist_ok=True)
+
+    # Decompress all the files to the directory specified.
+    with tarfile.open(tmp_tar.name, mode="r:*") as tar:
+        tar.extractall(directory)

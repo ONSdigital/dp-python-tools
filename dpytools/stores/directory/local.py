@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod, abstractstaticmethod
 import os
 import re
 import json
@@ -11,7 +10,6 @@ from dpytools.stores.directory.base import BaseWritableSingleDirectoryStore
 
 
 class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
-
     def __init__(self, local_dir: Union[str, Path]):
         # Takes a path or a string representing a path as input
 
@@ -105,7 +103,6 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             with open(file_path) as f:
                 json_dict = json.load(f)
             return json_dict
-
 
     def get_file_names(self) -> List[str]:
         """
