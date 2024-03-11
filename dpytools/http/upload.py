@@ -1,164 +1,131 @@
 import datetime
 import os
-
-import requests
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import Tuple, Union
 
 from dpytools.http.base import BaseHttpClient
 
 
 class UploadClient(BaseHttpClient):
-    def __init__(
-        self,
-        upload_url: str = "",
-        headers: dict = {"X-Florence-Token": ""},
-    ):
+    def __init__(self, upload_url: str):
+        # Inherit backoff_max value from BaseHTTPClient.__init__
         super().__init__()
-        # TODO Actual values for `upload_url` and `headers` (see `POST` request  in `upload_new()`)
         self.upload_url = upload_url
-        self.headers = headers
+        # For security purposes, `self.access_token` should be set using a FLORENCE_TOKEN environment variable
+        self.access_token = os.environ.get("FLORENCE_TOKEN")
+        self.headers = {"X-Florence-Token": self.access_token}
 
-    def upload_new(
-        self, csv_path: str, output_path: str = None, is_publishable: bool = False
-    ) -> str:
+    # TODO The `upload` method is currently configured to match the old `upload` endpoint specification. Once the `upload-new` endpoint has been released, the `params` argument passed to `self.post` will need to be adjusted to the new specification (see https://github.com/ONSdigital/dp-upload-service/blob/b91b53a13b28c6ba1095abee71680c591862c68c/swagger.yaml).
+    def upload(
+        self,
+        csv_path: Union[Path, str],
+        s3_path: str,
+        chunk_size: int = 5242880,
+    ) -> Tuple[str, str]:
         """
-        Upload files to the DP Upload Service. Files are chunked (default chunk size 5242880 bytes)
+        Upload files to the DP Upload Service. Files (located at `csv_path`) are chunked (default chunk size 5242880 bytes) and uploaded to the S3 bucket located at `s3_path`.
+
+        Returns the S3 Object key and full S3 URL of the uploaded file.
         """
-        # Get size of file to be uploaded
-        resumable_total_size = str(os.path.getsize(csv_path))
+        # Get total size of file to be uploaded
+        total_size = str(os.path.getsize(csv_path))
 
-        # Get file name from file path
-        resumable_file_name = csv_path.split("/")[-1]
+        # Convert csv_path string to Path
+        if not isinstance(csv_path, Path):
+            csv_path = Path(csv_path).absolute()
 
-        # Get timestamp to create `path` value in `POST` params
+        # Get filename from csv filepath
+        filename = str(csv_path).split("/")[-1]
+
+        # Get timestamp to create `resumableIdentifier` value in `POST` params
         timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
 
         # Create file chunks
-        file_chunks = self._create_temp_chunks(
-            csv_path=csv_path, output_path=output_path, chunk_size=1000
-        )
+        file_chunks = self._create_temp_chunks(csv_path=csv_path, chunk_size=chunk_size)
 
-        resumable_chunk_number = 1
+        chunk_number = 1
 
         for file_chunk in file_chunks:
             with open(file_chunk, "rb") as f:
                 # Load file chunk as binary data
                 file = {"file": f}
+
+                # TODO current_chunk_size = len(f.read()) is causing the request to fail?
+                # current_chunk_size = len(f.read())
+
                 # Construct `POST` request params for each file chunk
                 params = {
-                    "resumableFilename": resumable_file_name,
-                    # TODO Check `path` value (replaces resumableIdentifier?)
-                    # Description: The path to the file being stored. Note that this will be part of the AWS S3 bucket name so should adhere to the S3 bucket naming rules
-                    "path": f"{timestamp}-{resumable_file_name.replace('.', '-')}",
-                    "isPublishable": is_publishable,
-                    # TODO delete `collectionId` as optional for upload?
-                    "collectionId": "optional for upload, required before publishing",
-                    # TODO `title` value (optional)
-                    "title": "title value",
-                    "resumableTotalSize": resumable_total_size,
-                    # TODO `resumableType` - accept other types?
-                    "resumableType": "text/csv",
-                    # TODO `licence` value
-                    "licence": "licence value",
-                    # TODO `licenceUrl` value
-                    "licenceUrl": "licenceUrl value",
-                    "resumableChunkNumber": resumable_chunk_number,
+                    "resumableChunkNumber": chunk_number,
                     "resumableTotalChunks": len(file_chunks),
+                    "resumableChunkSize": chunk_size,
+                    # TODO See comment above re current_chunk_size
+                    # "resumableCurrentChunkSize": current_chunk_size,
+                    "resumableTotalSize": total_size,
+                    "resumableType": "text/csv",
+                    "resumableIdentifier": f"{timestamp}-{filename.replace('.', '-')}",
+                    "resumableFilename": filename,
+                    # TODO resumableRelativePath and aliasName values
+                    # "resumableRelativePath": "",
+                    # "aliasName": "",
                 }
 
-                # Submit `POST` request to `upload_url`
-                response = self.post(
+                # Submit `POST` request to `self.upload_url`
+                self.post(
                     url=self.upload_url,
                     headers=self.headers,
                     params=params,
                     files=file,
                     verify=True,
                 )
-                if response.status_code != 200:
-                    raise Exception(
-                        f"{self.upload_url} returned error {response.status_code}"
-                    )
+                # TODO Replace print statements with logging
+                print(f"File chunk {chunk_number} of {len(file_chunks)} posted")
+                chunk_number += 1
 
-                print(f"Temp file number {resumable_chunk_number} posted")
-                resumable_chunk_number += 1
+        s3_key = params["resumableIdentifier"]
+        s3_url = f"{s3_path}/{s3_key}"
 
-        # TODO Check s3_key
-        s3_key = params["path"]
-
-        # TODO Check staging S3 URL
-        s3_url = f"https://s3-eu-west-2.amazonaws.com/ons-dp-staging-publishing-uploaded-datasets/{s3_key}"
-
+        # Delete temporary files
         self._delete_temp_chunks(file_chunks)
+        # TODO Replace print statements with logging
         print("Upload to s3 complete")
 
-        return s3_url
+        return s3_key, s3_url
 
     def _create_temp_chunks(
-        self, csv_path: str, output_path: str = None, chunk_size: int = 5242880
+        self,
+        csv_path: Union[Path, str],
+        chunk_size: int = 5242880,
     ) -> list[str]:
         """
-        Chunks up the data into text files, returns list of temp files
+        Chunks up the data into text files, saves them to a temporary directory and returns list of temp filenames
         """
-        if output_path is None:
-            output_path = "/".join(csv_path.split("/")[:-1]) + "/"
-        if output_path == "/":
-            output_path = ""
         chunk_number = 1
         temp_file_paths_list = []
-        with open(csv_path, "rb") as f:
-            chunk = f.read(chunk_size)
-            while chunk:
-                temp_file_path = f"{output_path}-temp-file-part-{str(chunk_number)}"
-                with open(temp_file_path, "wb") as temp_file:
-                    temp_file.write(chunk)
-                    temp_file_paths_list.append(temp_file_path)
-                chunk_number += 1
+        # Convert csv_path string to Path
+        if not isinstance(csv_path, Path):
+            csv_path = Path(csv_path).absolute()
+
+        # Create TemporaryDirectory to store temporary file chunks
+        with TemporaryDirectory() as output_path:
+            with open(csv_path, "rb") as f:
+                # Read chunk according to specified chunk size
                 chunk = f.read(chunk_size)
+                while chunk:
+                    # Create temporary filepath
+                    temp_file_path = f"{output_path}-temp-file-part-{str(chunk_number)}"
+                    # Write chunk to temporary filepath
+                    with open(temp_file_path, "wb") as temp_file:
+                        temp_file.write(chunk)
+                        temp_file_paths_list.append(temp_file_path)
+                    chunk_number += 1
+                    chunk = f.read(chunk_size)
+        # Return list of temporary filepaths
         return temp_file_paths_list
 
-    def _delete_temp_chunks(self, temporary_files: list):
+    def _delete_temp_chunks(self, temp_file_paths_list: list):
         """
         Deletes the temporary chunks that were uploaded
         """
-        for file in temporary_files:
+        for file in temp_file_paths_list:
             os.remove(file)
-
-    # def _get_access_token(self):
-    #     # gets florence access token
-    #     try:  # so that token isn't generate for each __init__
-    #         if self.access_token:
-    #             pass
-    #     except:
-    #         # getting credential from environment variables
-    #         email, password = self._get_credentials()
-    #         login = {"email": email, "password": password}
-
-    #         r = requests.post(self.login_url, json=login, verify=True)
-    #         if r.status_code == 200:
-    #             access_token = r.text.strip('"')
-    #             self.access_token = access_token
-    #         else:
-    #             raise Exception(f"Token not created, returned a {r.status_code} error")
-
-    # def _get_credentials(self):
-    #     email = os.getenv("FLORENCE_EMAIL")
-    #     password = os.getenv("FLORENCE_PASSWORD")
-    #     if email and password:
-    #         pass
-    #     else:
-    #         print("Florence credentials not found in environment variables")
-    #         print("Will need to be passed")
-
-    #         email = input("Florence email: ")
-    #         password = input("Florence password: ")
-    #     return email, password
-
-
-# get platform name
-# hack to tell if using on network machine - windows implies on network
-# if sys.platform.lower().startswith("win"):
-#     verify = False
-#     operating_system = "windows"
-#     requests.packages.urllib3.disable_warnings()
-# else:
-#     verify = True
-#     operating_system = "not windows"

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 import boto3
 
@@ -10,9 +10,7 @@ def _get_s3_client(profile_name):
     return client
 
 
-def get_s3_object(
-    object_name: str, profile_name: Optional[str] = None
-) -> dict:
+def get_s3_object(object_name: str, profile_name: Optional[str] = None) -> dict:
     """
     Given an s3 object identifier, i.e "my-bucket/things/file.txt" returns a dictionary which
     is the boto3 aws represetation of an s3 object.
@@ -25,9 +23,7 @@ def get_s3_object(
     return client.get_object(Bucket=bucket_name, Key=key)
 
 
-def read_s3_file_content(
-    object_name: str, profile_name: Optional[str] = None
-) -> bytes:
+def read_s3_file_content(object_name: str, profile_name: Optional[str] = None) -> bytes:
     """
     Given an s3 object identifer, i.e "my-bucket/things/file.txt" fetches then read()'s
     the body (content) of s3 object (file).
@@ -45,31 +41,23 @@ def read_s3_file_content_as_dict(
     """
     if not object_name.endswith(".json"):
         raise ValueError("Object name must end with '.json'")
-    s3_file_content = read_s3_file_content(
-        object_name, profile_name=profile_name
-    )
+    s3_file_content = read_s3_file_content(object_name, profile_name=profile_name)
     return json.loads(s3_file_content.decode("utf-8"))
 
 
 def download_s3_file_content_to_local(
-    object_name: str,
-    local_file: str,
-    profile_name: Optional[str] = None
+    object_name: str, local_file: str, profile_name: Optional[str] = None
 ):
     """
     Download the file represented by a given s3 object to the local path provided
     """
-    s3_file_content = read_s3_file_content(
-        object_name, profile_name=profile_name
-    )
+    s3_file_content = read_s3_file_content(object_name, profile_name=profile_name)
     with open(local_file, "w") as f:
         f.write(s3_file_content.decode("utf-8"))
 
 
 def upload_local_file_to_s3(
-    local_file: Union[str, Path],
-    object_name: str,
-    profile_name: Optional[str] = None
+    local_file: Union[str, Path], object_name: str, profile_name: Optional[str] = None
 ):
     """
     Uploads the provided file from local to s3 as the provided object name.

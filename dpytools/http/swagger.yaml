@@ -1,28 +1,24 @@
-swagger: "2.0"
+swagger: '2.0'
 info:
-  title: "dp-upload-service"
-  description: "Digital Publishing resumable file upload service that handles writing to S3. It updates images through the CMS."
+  title: dp-upload-service
+  description: Digital Publishing resumable file upload service that handles writing to S3. It updates images through the CMS.
   version: 1.0.0
   license:
-    name: "Open Government Licence v3.0"
-    url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-
+    name: Open Government Licence v3.0
+    url: http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
 schemes:
   - http
-
 host: localhost:25100
-
 tags:
-  - name: "private"
-
+  - name: private
 paths:
   /upload-new:
     post:
       tags:
-         - Upload file and provide metadata
+        - Upload file and provide metadata
       summary: POST's form with file to be uploaded and metadata
       consumes:
-         - multipart/form-data
+        - multipart/form-data
       parameters:
         - name: resumableFilename
           type: string
@@ -53,7 +49,6 @@ paths:
         - name: resumableType
           type: string
           in: formData
-          # Typo - desciption
           description: the mime type of the file being uploaded - used when being downloaded
           required: true
         - name: licence
@@ -80,39 +75,37 @@ paths:
           description: actual raw, binary file content for the chunk being uploaded. No character or text conversion is made.
           required: true
       produces:
-         - application/json
+        - application/json
       responses:
-        200:
+        '200':
           description: Continue sending file chucks
-        201:
+        '201':
           description: Upload complete and file registered
-        400:
+        '400':
           $ref: '#/responses/JsonErrors'
-        404:
+        '404':
           $ref: '#/responses/JsonErrors'
-        500:
+        '500':
           $ref: '#/responses/InternalError'
-
 responses:
   InternalError:
-    description: "Failed to process the request due to an internal error"
+    description: Failed to process the request due to an internal error
   JsonErrors:
-    description: "Common error response format"
+    description: Common error response format
     schema:
-      $ref: "#/definitions/Error"
-
+      $ref: '#/definitions/Error'
 definitions:
-    Error:
-      type: object
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            properties:
-              code:
-                type: string
-                example: BadJson
-              description:
-                type: string
-                example: The JSON is not in a valid format
+  Error:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            code:
+              type: string
+              example: BadJson
+            description:
+              type: string
+              example: The JSON is not in a valid format

@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Union, Tuple, Optional
+from typing import Any
+
 
 @dataclass
 class BaseProperty(metaclass=ABCMeta):
@@ -13,7 +14,9 @@ class BaseProperty(metaclass=ABCMeta):
 
     @name.setter
     def name(self, value):
-         raise ValueError(f"Trying to change name property to value {value} but you cannot change a property name after instantiation.")
+        raise ValueError(
+            f"Trying to change name property to value {value} but you cannot change a property name after instantiation."
+        )
 
     @property
     def value(self):
@@ -21,13 +24,15 @@ class BaseProperty(metaclass=ABCMeta):
 
     @value.setter
     def value(self, value):
-        raise ValueError(f"Trying to change value to {value} but you cannot change a property value after instantiation.")
+        raise ValueError(
+            f"Trying to change value to {value} but you cannot change a property value after instantiation."
+        )
 
     @abstractmethod
     def type_is_valid(self):
         """
         Validate that the property looks like
-        its of the correct type 
+        its of the correct type
         """
         ...
 
