@@ -9,10 +9,12 @@ class BaseReadableSingleDirectoryStore(ABC):
     """
     A base class for a directory like store, i.e some abstraction for organising files, examples:
 
+
     - local file system
     - amazon s3
     - google cloud storage
     - github repositories
+
 
     This class is instantiated to utlise/wrap a single "directory" and treats the contents at that (and only that) "directory" as the store.
     """
