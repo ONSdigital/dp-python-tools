@@ -89,12 +89,12 @@ def decompress_s3_tar(
             f"This function currently only handles archives using the tar extension. Got {object_name}"
         )
 
-    bucket_name = object_name.split("/")[0]
-    object_key = "/".join(object_name.split("/")[1:])
-
     if isinstance(directory, str):
         directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
+
+    bucket_name = object_name.split("/")[0]
+    object_key = "/".join(object_name.split("/")[1:])
 
     tmp_file = tempfile.NamedTemporaryFile()
     with open(tmp_file.name, "wb") as f:
