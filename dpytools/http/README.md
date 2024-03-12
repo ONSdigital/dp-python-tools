@@ -82,24 +82,33 @@ from dpytools.http.upload import UploadClient
 upload_client = UploadClient(upload_url="http://example.org/upload")
 ```
 
-To access the DP Upload Service, a Florence access control token must be provided. For security purposes this should be set in the command line using an environment variable:
-
-`$ export FLORENCE_TOKEN=<florence_token_value>`
+To access the DP Upload Service, a Florence access control token must be provided. For security purposes this should be set using an environment variable.
 
 #### upload()
 
-The `UploadClient` provides an `upload()` method which accepts a file to be uploaded (`csv_path`), an S3 Bucket identifier (`s3_path`), and an optional chunk size (default value 5242880 bytes). Calling the `upload()` method creates the temporary file chunks, uploads these to the `UploadClient.upload_url`, and finally deletes the temporary files. The method returns the S3 Object key and full S3 URL of the Object's location.
+The `UploadClient` provides an `upload()` method which accepts a file to be uploaded, an S3 Bucket identifier, a Florence access token, and an optional chunk size (default value 5242880 bytes).
+
+The S3 Bucket identifier and Florence access token should be set as environment variables.
+
+Calling the `upload()` method creates the temporary file chunks, uploads these to the `UploadClient.upload_url`, and finally deletes the temporary files. The method returns the S3 Object key and S3 URI of the Object's location:
 
 ```python
 from dpytools.http.upload import UploadClient
 
-upload_client = UploadClient(upload_url="http://example.org/upload")
+upload_client = UploadClient("http://example.org/upload")
 
-s3_key, s3_url = upload_client.upload(csv_path="path/to/countries.csv", s3_path="https://s3-eu-west-2.amazonaws.com/mybucket")
+s3_bucket = os.getenv("S3_BUCKET")
+florence_access_token = os.getenv("FLORENCE_TOKEN")
+
+s3_key, s3_uri = upload_client.upload(
+    "path/to/countries.csv",
+    s3_bucket,
+    florence_access_token,
+)
 
 # The s3_key is a unique identifier, and consists of the timestamp of when the upload process commenced and the filename of the uploaded file:
 # s3_key example: "110324094616-countries-csv"
 
-# The s3_url concatenates the s3_path and s3_key:
-# s3_url example: "https://s3-eu-west-2.amazonaws.com/mybucket/110324094616-countries-csv"
+# The s3_uri concatenates the s3_bucket and s3_key values:
+# s3_uri example: "s3://mybucket/110324094616-countries-csv"
 ```
