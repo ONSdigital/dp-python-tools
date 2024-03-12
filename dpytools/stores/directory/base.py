@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Union
 
 
 class BaseReadableSingleDirectoryStore(ABC):
@@ -25,7 +25,9 @@ class BaseReadableSingleDirectoryStore(ABC):
         ...
 
     @abstractmethod
-    def save_lone_file_matching(self, pattern: str, save_as: str) -> Path:
+    def save_lone_file_matching(
+        self, pattern: str, destination: Optional[Union[Path, str]] = None
+    ):
         """
         Assert 1 file matches
         Save it as the provided file to current path
@@ -34,7 +36,7 @@ class BaseReadableSingleDirectoryStore(ABC):
 
     @abstractmethod
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
-        """ "
+        """
         Asserts exactly 1 file matches pattern.
         Raise if someone doesent end their pattern with .json?
         Return the contents of the matching json as a dictionary.
@@ -77,7 +79,7 @@ class BaseWritableSingleDirectoryStore(BaseReadableSingleDirectoryStore):
     """
 
     @abstractmethod
-    def add_file(self, file: Path):
+    def add_file(self, file_name: Union[str, Path]) -> Path:
         """
         Add a local file to the directory like store.
         """

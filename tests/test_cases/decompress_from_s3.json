@@ -1,0 +1,4 @@
+{
+    "id": "some_id",
+    "identifier": "some json file to be decompressed from tsr file, stored in a s3 bucket"
+}
