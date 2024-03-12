@@ -25,7 +25,9 @@ class BaseReadableSingleDirectoryStore(ABC):
         ...
 
     @abstractmethod
-    def save_lone_file_matching(self, pattern: str, destination: Optional[Union[Path, str]]= None):
+    def save_lone_file_matching(
+        self, pattern: str, destination: Optional[Union[Path, str]] = None
+    ):
         """
         Assert 1 file matches
         Save it as the provided file to current path
@@ -40,8 +42,7 @@ class BaseReadableSingleDirectoryStore(ABC):
         Return the contents of the matching json as a dictionary.
         """
         ...
-        
-        
+
     @abstractmethod
     def get_file_names(self) -> List[str]:
         """

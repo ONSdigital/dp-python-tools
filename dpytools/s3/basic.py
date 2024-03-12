@@ -3,7 +3,6 @@ import tarfile
 import tempfile
 from pathlib import Path
 from typing import Optional, Union
-from io import BytesIO
 
 import boto3
 

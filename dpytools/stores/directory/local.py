@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import json
 import os
 import re
-import json
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 from dpytools.stores.directory.base import BaseWritableSingleDirectoryStore
 
@@ -58,17 +58,23 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         if len(matching_files) == 1:  # 1 file matched
             return True
         elif len(matching_files) == 0:  # 0 file matched
-            return False         
+            return False
         else:  # 2+ files matched
-            raise FileNotFoundError(f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}. Matching: {matching_files}")
+            raise FileNotFoundError(
+                f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}. Matching: {matching_files}"
+            )
 
-    def save_lone_file_matching(self, pattern: str, destination: Optional[Union[Path, str]] = None):
+    def save_lone_file_matching(
+        self, pattern: str, destination: Optional[Union[Path, str]] = None
+    ):
         """
         Asserts a file matches the given pattern, then saves it to the given destination.
         """
         # Assert 1 file matches
         if not self.has_lone_file_matching(pattern):
-            raise FileNotFoundError(f"No matching files found for pattern {pattern} in directory {self.local_path}")
+            raise FileNotFoundError(
+                f"No matching files found for pattern {pattern} in directory {self.local_path}"
+            )
 
         file_to_save = self._files_that_match_pattern(pattern)[0]
         file_name = Path(file_to_save).name
@@ -77,7 +83,9 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         if destination is not None:
             if isinstance(destination, str):
                 destination = Path(destination)
-            assert destination.exists(), f"Destination directory {destination} does not exist."
+            assert (
+                destination.exists()
+            ), f"Destination directory {destination} does not exist."
             save_path = Path(destination / file_name)
         # If no destination is given, save the matched file in the current directory.
         else:
@@ -96,8 +104,10 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
         # Assert 1 file matches
-        if self.has_lone_file_matching(pattern): 
-            file_path = Path(self.local_path / self._files_that_match_pattern(pattern)[0])
+        if self.has_lone_file_matching(pattern):
+            file_path = Path(
+                self.local_path / self._files_that_match_pattern(pattern)[0]
+            )
 
             # use json.load to put contents of file into variable and return dict.
             with open(file_path) as f:
@@ -108,17 +118,16 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         """
         Returns a list of the files in the store.
         """
-        file_names = os.listdir(self.local_path) #grab list of full paths to files,
+        file_names = os.listdir(self.local_path)  # grab list of full paths to files,
         if len(file_names) == 0:
             return []
         else:
             return file_names
 
     def _files_that_match_pattern(self, pattern) -> List[str]:
-     # given a pattern, return a list of all files that match it.
-     # use self.get_files_names() in here as well.
-        matching_files = [
-            f for f in self.get_file_names() if re.search(pattern, f)]
+        # given a pattern, return a list of all files that match it.
+        # use self.get_files_names() in here as well.
+        matching_files = [f for f in self.get_file_names() if re.search(pattern, f)]
 
         return matching_files
 
