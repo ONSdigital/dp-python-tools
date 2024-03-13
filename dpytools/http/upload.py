@@ -24,7 +24,7 @@ class UploadClient(BaseHttpClient):
         """
         Upload files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
-        The `s3_bucket` and `florence_access_token` arguments should be set as environment variables and accessed via os.getenv() or similar.
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as an argument to `upload()`.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
@@ -34,27 +34,8 @@ class UploadClient(BaseHttpClient):
         # Generate upload request params
         upload_params = _generate_upload_params(csv_path, chunk_size)
 
-        chunk_number = 1
-
-        for file_chunk in file_chunks:
-            with open(file_chunk, "rb") as f:
-                # Load file chunk as binary data
-                file = {"file": f}
-
-                # Add chunk number to upload request params
-                upload_params["resumableChunkNumber"] = chunk_number
-
-                # Submit `POST` request to `self.upload_url`
-                self.post(
-                    url=self.upload_url,
-                    headers={"X-Florence-Token": florence_access_token},
-                    params=upload_params,
-                    files=file,
-                    verify=True,
-                )
-                # TODO Replace print statements with logging
-                print(f"File chunk {chunk_number} of {len(file_chunks)} posted")
-                chunk_number += 1
+        # Upload file chunks to S3
+        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
 
         s3_key = upload_params["resumableIdentifier"]
         s3_uri = f"s3://{s3_bucket}/{s3_key}"
@@ -79,7 +60,7 @@ class UploadClient(BaseHttpClient):
         """
         Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
-        The `s3_bucket` and `florence_access_token` arguments should be set as environment variables and accessed via os.getenv() or similar.
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as an argument to `upload_new()`.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
@@ -95,8 +76,26 @@ class UploadClient(BaseHttpClient):
             is_publishable=is_publishable,
         )
 
-        chunk_number = 1
+        # Upload file chunks to S3
+        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
 
+        s3_key = upload_params["resumableFilename"]
+        s3_uri = f"s3://{s3_bucket}/{s3_key}"
+
+        # Delete temporary files
+        _delete_temp_chunks(file_chunks)
+        # TODO Replace print statements with logging
+        print("Upload to s3 complete")
+
+        return s3_key, s3_uri
+
+    def _upload_file_chunks(
+        self, file_chunks: list[str], upload_params: dict, florence_access_token: str
+    ) -> None:
+        """
+        Upload file chunks to DP Upload Service with the specified upload parameters.
+        """
+        chunk_number = 1
         for file_chunk in file_chunks:
             with open(file_chunk, "rb") as f:
                 # Load file chunk as binary data
@@ -116,16 +115,6 @@ class UploadClient(BaseHttpClient):
                 # TODO Replace print statements with logging
                 print(f"File chunk {chunk_number} of {len(file_chunks)} posted")
                 chunk_number += 1
-
-        s3_key = upload_params["resumableIdentifier"]
-        s3_uri = f"s3://{s3_bucket}/{s3_key}"
-
-        # Delete temporary files
-        _delete_temp_chunks(file_chunks)
-        # TODO Replace print statements with logging
-        print("Upload to s3 complete")
-
-        return s3_key, s3_uri
 
 
 def _generate_upload_params(csv_path: Union[Path, str], chunk_size: int) -> dict:
@@ -162,9 +151,11 @@ def _generate_upload_params(csv_path: Union[Path, str], chunk_size: int) -> dict
 def _generate_upload_new_params(
     csv_path: Union[Path, str],
     s3_path: str,
-    collection_id: str,
     title: str,
-    is_publishable: bool,
+    is_publishable: bool = False,
+    collection_id: str = "",
+    licence: str = "Open Government Licence v3.0",
+    licence_url: str = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
 ) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
@@ -173,6 +164,9 @@ def _generate_upload_new_params(
     """
     # Get total size of file to be uploaded
     total_size = os.path.getsize(csv_path)
+
+    if ceil(total_size / 5242880) > 10000:
+        raise ValueError("File too big")
 
     # Convert csv_path string to Path
     if not isinstance(csv_path, Path):
@@ -193,8 +187,8 @@ def _generate_upload_new_params(
         "title": title,
         "resumableTotalSize": total_size,
         "resumableType": "text/csv",
-        "licence": "Open Government Licence v3.0",
-        "licenceUrl": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+        "licence": licence,
+        "licenceUrl": licence_url,
         "resumableTotalChunks": ceil(total_size / 5242880),
     }
     return upload_params

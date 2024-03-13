@@ -88,7 +88,7 @@ To access the DP Upload Service, a Florence access control token must be provide
 
 The `UploadClient` provides an `upload()` method which accepts a file to be uploaded, an S3 Bucket identifier, a Florence access token, and an optional chunk size (default value 5242880 bytes).
 
-The S3 Bucket identifier and Florence access token should be set as environment variables.
+The S3 Bucket identifier should be set as an environment variable. The Florence access token should be generated via the DP Identity API and passed as an argument to `upload()`.
 
 Calling the `upload()` method creates the temporary file chunks, uploads these to the `UploadClient.upload_url`, and finally deletes the temporary files. The method returns the S3 Object key and S3 URI of the Object's location:
 
@@ -98,7 +98,7 @@ from dpytools.http.upload import UploadClient
 upload_client = UploadClient("http://example.org/upload")
 
 s3_bucket = os.getenv("S3_BUCKET")
-florence_access_token = os.getenv("FLORENCE_TOKEN")
+florence_access_token = "<florence-access-token-here>"
 
 s3_key, s3_uri = upload_client.upload(
     "path/to/countries.csv",

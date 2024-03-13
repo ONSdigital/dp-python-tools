@@ -46,20 +46,6 @@ class BaseReadableSingleDirectoryStore(ABC):
         ...
 
     @abstractmethod
-    def save_lone_file_matching_regex(self, regex_str) -> Path:
-        """
-        Looks for 1 matching file in the submission that matches the criteria.
-
-        error if 0 matchrs
-        error if > 1 matches
-
-        if match == 1, saves to current path with current filename.
-
-        returns Path to this newly saved ile.
-        """
-        ...
-
-    @abstractmethod
     def get_file_names(self) -> List[str]:
         """
         Returns the filename and extension of all files in the submission.

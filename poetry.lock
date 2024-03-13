@@ -78,17 +78,17 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.34.57"
+version = "1.34.61"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "boto3-1.34.57-py3-none-any.whl", hash = "sha256:f8046e3e2d1186a49b49f7464c4811c265c86001f404dd1a96c4365c773a4245"},
-    {file = "boto3-1.34.57.tar.gz", hash = "sha256:c26c31ceeeb2bc5d2bb96ba0fdc9a04d7b10e6e0b081c55b9cea9069a0be04dd"},
+    {file = "boto3-1.34.61-py3-none-any.whl", hash = "sha256:992e994c7e481a5d3259c699574882b79d631a46f7c369bea350b7ccb0651317"},
+    {file = "boto3-1.34.61.tar.gz", hash = "sha256:4b40bf2c8494647c9e88c180537dc9fc0c1047a9fffbb1e5b0da6596f1e59b7b"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.57,<1.35.0"
+botocore = ">=1.34.61,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -97,13 +97,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.57"
+version = "1.34.61"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "botocore-1.34.57-py3-none-any.whl", hash = "sha256:c8dafe0ad378a88bcf4153e6972870b03fb5aab406b694202307500709940baf"},
-    {file = "botocore-1.34.57.tar.gz", hash = "sha256:9a5aa2034de9f0c367b4b61a92af0fa827f5c21affa19e0a284838a142e71083"},
+    {file = "botocore-1.34.61-py3-none-any.whl", hash = "sha256:079f3288d38f97fd5656c25c44a94bea0e7090b938abfdeea463eaadb210c4a0"},
+    {file = "botocore-1.34.61.tar.gz", hash = "sha256:72df4af7e4e6392552c882d48c74e4be9bf7be4cd8d829711b312fbae13d7034"},
 ]
 
 [package.dependencies]
@@ -621,13 +621,13 @@ files = [
 
 [[package]]
 name = "moto"
-version = "5.0.2"
+version = "5.0.3"
 description = ""
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "moto-5.0.2-py2.py3-none-any.whl", hash = "sha256:71bb832a18b64f10fc4cec117b9b0e2305e5831d9a17eb74f6b9819ed7613843"},
-    {file = "moto-5.0.2.tar.gz", hash = "sha256:7e27395e5c63ff9554ae14b5baa41bfe6d6b1be0e59eb02977c6ce28411246de"},
+    {file = "moto-5.0.3-py2.py3-none-any.whl", hash = "sha256:261d312d1d69c2afccb450a0566666d7b75d76ed6a7d00aac278a9633b073ff0"},
+    {file = "moto-5.0.3.tar.gz", hash = "sha256:070ac2edf89ad7aee28534481ce68e2f344c8a6a8fefec5427eea0d599bfdbdb"},
 ]
 
 [package.dependencies]
@@ -776,13 +776,13 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "23.2"
+version = "24.0"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
-    {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
+    {file = "packaging-24.0-py3-none-any.whl", hash = "sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5"},
+    {file = "packaging-24.0.tar.gz", hash = "sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"},
 ]
 
 [[package]]
@@ -1501,4 +1501,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <3.12"
-content-hash = "5c9abc1c48445eb740a77ae3e6e5e40c2ec0ca9dac0a216831800a32cd842657"
+content-hash = "692edcda34046a9bf00fdbae583f1a3b65018ed88da315984d341bb601c139c9"

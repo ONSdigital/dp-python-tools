@@ -45,7 +45,6 @@ def test_generate_upload_new_params():
         s3_path="s3-path",
         collection_id="collection-id",
         title="title",
-        # is_publishable=True
     )
     assert upload_params["path"] == "s3-path"
     assert upload_params["collectionId"] == "collection-id"
