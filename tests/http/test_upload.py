@@ -27,11 +27,13 @@ def test_generate_upload_params():
     Ensures that _generate_upload_params() populates the upload_params dict with the correct values
     """
     upload_params = _generate_upload_params(
-        csv_path="tests/test_cases/countries.csv",
+        file_path="tests/test_cases/countries.csv",
+        mimetype="text/csv",
         chunk_size=5242880,
     )
     assert upload_params["resumableTotalChunks"] == 2
     assert upload_params["resumableTotalSize"] == 6198846
+    assert upload_params["resumableType"] == "text/csv"
     assert upload_params["resumableFilename"] == "countries.csv"
     assert "-countries-csv" in upload_params["resumableIdentifier"]
 
@@ -41,13 +43,15 @@ def test_generate_upload_new_params():
     Ensures that _generate_upload_new_params() populates the upload_params dict with the correct values
     """
     upload_params = _generate_upload_new_params(
-        csv_path="tests/test_cases/countries.csv",
+        file_path="tests/test_cases/countries.csv",
         s3_path="s3-path",
         title="title",
+        mimetype="text/csv",
         collection_id="collection-id",
     )
     assert upload_params["path"] == "s3-path"
     assert upload_params["title"] == "title"
+    assert upload_params["resumableType"] == "text/csv"
     assert upload_params["collectionId"] == "collection-id"
     assert upload_params["resumableTotalSize"] == 6198846
     assert upload_params["resumableTotalChunks"] == 2

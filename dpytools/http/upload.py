@@ -14,7 +14,7 @@ class UploadClient(BaseHttpClient):
         super().__init__()
         self.upload_url = upload_url
 
-    def upload(
+    def upload_csv(
         self,
         csv_path: Union[Path, str],
         s3_bucket: str,
@@ -24,7 +24,7 @@ class UploadClient(BaseHttpClient):
         """
         Upload files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
-        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as an argument to `upload()`.
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
@@ -36,7 +36,7 @@ class UploadClient(BaseHttpClient):
         file_chunks = _create_temp_chunks(csv_path, chunk_size)
 
         # Generate upload request params
-        upload_params = _generate_upload_params(csv_path, chunk_size)
+        upload_params = _generate_upload_params(csv_path, "text/csv", chunk_size)
 
         # Upload file chunks to S3
         self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
@@ -52,7 +52,47 @@ class UploadClient(BaseHttpClient):
 
         return s3_key, s3_uri
 
-    def upload_new(
+    def upload_sdmx(
+        self,
+        sdmx_path: Union[Path, str],
+        s3_bucket: str,
+        florence_access_token: str,
+        chunk_size: int = 5242880,
+    ) -> Tuple[str, str]:
+        """
+        Upload files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+
+        Returns the S3 Object key and S3 URL of the uploaded file.
+        """
+        # Convert sdmx_path string to Path
+        if isinstance(sdmx_path, str):
+            sdmx_path = Path(sdmx_path).absolute()
+
+        # Create file chunks
+        file_chunks = _create_temp_chunks(sdmx_path, chunk_size)
+
+        # Generate upload request params
+        upload_params = _generate_upload_params(
+            sdmx_path, "application/xml", chunk_size
+        )
+
+        # Upload file chunks to S3
+        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
+
+        s3_key = upload_params["resumableIdentifier"]
+        s3_uri = f"s3://{s3_bucket}/{s3_key}"
+
+        # Delete temporary files
+        _delete_temp_chunks(file_chunks)
+
+        # TODO Replace print statements with logging
+        print("Upload to s3 complete")
+
+        return s3_key, s3_uri
+
+    def upload_new_csv(
         self,
         csv_path: Union[Path, str],
         florence_access_token: str,
@@ -65,7 +105,7 @@ class UploadClient(BaseHttpClient):
         """
         Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
-        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as an argument to `upload_new()`.
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
@@ -81,6 +121,55 @@ class UploadClient(BaseHttpClient):
             csv_path,
             f"s3://{s3_bucket}",
             title,
+            "text/csv",
+            collection_id,
+            is_publishable,
+        )
+
+        # Upload file chunks to S3
+        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
+
+        s3_key = upload_params["resumableFilename"]
+        s3_uri = f"s3://{s3_bucket}/{s3_key}"
+
+        # Delete temporary files
+        _delete_temp_chunks(file_chunks)
+
+        # TODO Replace print statements with logging
+        print("Upload to s3 complete")
+
+        return s3_key, s3_uri
+
+    def upload_new_sdmx(
+        self,
+        sdmx_path: Union[Path, str],
+        florence_access_token: str,
+        s3_bucket: str,
+        title: str,
+        collection_id: Optional[str],
+        is_publishable: bool = False,
+        chunk_size: int = 5242880,
+    ) -> Tuple[str, str]:
+        """
+        Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+
+        Returns the S3 Object key and S3 URL of the uploaded file.
+        """
+        # Convert sdmx_path string to Path
+        if isinstance(sdmx_path, str):
+            sdmx_path = Path(sdmx_path).absolute()
+
+        # Create file chunks
+        file_chunks = _create_temp_chunks(sdmx_path, chunk_size)
+
+        # Generate upload request params
+        upload_params = _generate_upload_new_params(
+            sdmx_path,
+            f"s3://{s3_bucket}",
+            title,
+            "application/xml",
             collection_id,
             is_publishable,
         )
@@ -127,17 +216,17 @@ class UploadClient(BaseHttpClient):
                 chunk_number += 1
 
 
-def _generate_upload_params(csv_path: Path, chunk_size: int) -> dict:
+def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
 
     To be used with the `upload` endpoint.
     """
     # Get total size of file to be uploaded
-    total_size = os.path.getsize(csv_path)
+    total_size = os.path.getsize(file_path)
 
     # Get filename from csv filepath
-    filename = str(csv_path).split("/")[-1]
+    filename = str(file_path).split("/")[-1]
 
     # Get timestamp to create `resumableIdentifier` value in `POST` params
     timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
@@ -147,7 +236,7 @@ def _generate_upload_params(csv_path: Path, chunk_size: int) -> dict:
         "resumableTotalChunks": ceil(total_size / chunk_size),
         "resumableChunkSize": chunk_size,
         "resumableTotalSize": total_size,
-        "resumableType": "text/csv",
+        "resumableType": mimetype,
         "resumableIdentifier": f"{timestamp}-{filename.replace('.', '-')}",
         "resumableFilename": filename,
     }
@@ -155,9 +244,10 @@ def _generate_upload_params(csv_path: Path, chunk_size: int) -> dict:
 
 
 def _generate_upload_new_params(
-    csv_path: Path,
+    file_path: Path,
     s3_path: str,
     title: str,
+    mimetype: str,
     collection_id: Optional[str],
     is_publishable: bool = False,
     licence: str = "Open Government Licence v3.0",
@@ -169,10 +259,10 @@ def _generate_upload_new_params(
     To be used with the `upload-new` endpoint.
     """
     # Get total size of file to be uploaded
-    total_size = os.path.getsize(csv_path)
+    total_size = os.path.getsize(file_path)
 
     # Get filename from csv filepath
-    filename = str(csv_path).split("/")[-1]
+    filename = str(file_path).split("/")[-1]
 
     # Get timestamp to create `resumableFilename` value in `upload_params`
     timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
@@ -184,7 +274,7 @@ def _generate_upload_new_params(
         "isPublishable": is_publishable,
         "title": title,
         "resumableTotalSize": total_size,
-        "resumableType": "text/csv",
+        "resumableType": mimetype,
         "licence": licence,
         "licenceUrl": licence_url,
         "resumableTotalChunks": ceil(total_size / 5242880),
