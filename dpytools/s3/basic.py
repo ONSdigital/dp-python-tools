@@ -89,16 +89,18 @@ def decompress_s3_tar(
             f"This function currently only handles archives using the tar extension. Got {object_name}"
         )
 
-    # Use tempfile so our tar file automagically dissapears after its been extracted from
-    tmp_tar = tempfile.NamedTemporaryFile()
-    download_s3_file_content_to_local(
-        object_name, tmp_tar.name, profile_name=profile_name
-    )
-
     if isinstance(directory, str):
         directory = Path(directory)
-    directory.parent.mkdir(parents=True, exist_ok=True)
+    directory.mkdir(parents=True, exist_ok=True)
+
+    bucket_name = object_name.split("/")[0]
+    object_key = "/".join(object_name.split("/")[1:])
+
+    tmp_file = tempfile.NamedTemporaryFile()
+    with open(tmp_file.name, "wb") as f:
+        client = _get_s3_client(profile_name)
+        client.download_fileobj(bucket_name, object_key, f)
 
     # Decompress all the files to the directory specified.
-    with tarfile.open(tmp_tar.name, mode="r:*") as tar:
-        tar.extractall(directory)
+    with tarfile.open(tmp_file.name, mode="r:*") as tar:
+        tar.extractall(directory.absolute())

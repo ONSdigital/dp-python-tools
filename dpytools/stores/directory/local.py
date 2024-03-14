@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import os
-import re
 import json
 import os
 import re
-import json
 from pathlib import Path
-from typing import List, Union, Optional, Optional
+from typing import List, Optional, Union
 
 from dpytools.stores.directory.base import BaseWritableSingleDirectoryStore
 
