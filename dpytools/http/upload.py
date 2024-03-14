@@ -3,7 +3,7 @@ from math import ceil
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 from dpytools.http.base import BaseHttpClient
 
@@ -28,8 +28,12 @@ class UploadClient(BaseHttpClient):
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
+        # Convert csv_path string to Path
+        if isinstance(csv_path, str):
+            csv_path = Path(csv_path).absolute()
+
         # Create file chunks
-        file_chunks = _create_temp_chunks(csv_path=csv_path, chunk_size=chunk_size)
+        file_chunks = _create_temp_chunks(csv_path, chunk_size)
 
         # Generate upload request params
         upload_params = _generate_upload_params(csv_path, chunk_size)
@@ -42,6 +46,7 @@ class UploadClient(BaseHttpClient):
 
         # Delete temporary files
         _delete_temp_chunks(file_chunks)
+
         # TODO Replace print statements with logging
         print("Upload to s3 complete")
 
@@ -52,8 +57,8 @@ class UploadClient(BaseHttpClient):
         csv_path: Union[Path, str],
         florence_access_token: str,
         s3_bucket: str,
-        collection_id: str,
         title: str,
+        collection_id: Optional[str],
         is_publishable: bool = False,
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
@@ -64,16 +69,20 @@ class UploadClient(BaseHttpClient):
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
+        # Convert csv_path string to Path
+        if isinstance(csv_path, str):
+            csv_path = Path(csv_path).absolute()
+
         # Create file chunks
-        file_chunks = _create_temp_chunks(csv_path=csv_path, chunk_size=chunk_size)
+        file_chunks = _create_temp_chunks(csv_path, chunk_size)
 
         # Generate upload request params
         upload_params = _generate_upload_new_params(
-            csv_path=csv_path,
-            s3_path=f"s3://{s3_bucket}",
-            collection_id=collection_id,
-            title=title,
-            is_publishable=is_publishable,
+            csv_path,
+            f"s3://{s3_bucket}",
+            title,
+            collection_id,
+            is_publishable,
         )
 
         # Upload file chunks to S3
@@ -84,6 +93,7 @@ class UploadClient(BaseHttpClient):
 
         # Delete temporary files
         _delete_temp_chunks(file_chunks)
+
         # TODO Replace print statements with logging
         print("Upload to s3 complete")
 
@@ -106,7 +116,7 @@ class UploadClient(BaseHttpClient):
 
                 # Submit `POST` request to `self.upload_url`
                 self.post(
-                    url=self.upload_url,
+                    self.upload_url,
                     headers={"X-Florence-Token": florence_access_token},
                     params=upload_params,
                     files=file,
@@ -117,7 +127,7 @@ class UploadClient(BaseHttpClient):
                 chunk_number += 1
 
 
-def _generate_upload_params(csv_path: Union[Path, str], chunk_size: int) -> dict:
+def _generate_upload_params(csv_path: Path, chunk_size: int) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
 
@@ -125,10 +135,6 @@ def _generate_upload_params(csv_path: Union[Path, str], chunk_size: int) -> dict
     """
     # Get total size of file to be uploaded
     total_size = os.path.getsize(csv_path)
-
-    # Convert csv_path string to Path
-    if not isinstance(csv_path, Path):
-        csv_path = Path(csv_path).absolute()
 
     # Get filename from csv filepath
     filename = str(csv_path).split("/")[-1]
@@ -149,11 +155,11 @@ def _generate_upload_params(csv_path: Union[Path, str], chunk_size: int) -> dict
 
 
 def _generate_upload_new_params(
-    csv_path: Union[Path, str],
+    csv_path: Path,
     s3_path: str,
     title: str,
+    collection_id: Optional[str],
     is_publishable: bool = False,
-    collection_id: str = "",
     licence: str = "Open Government Licence v3.0",
     licence_url: str = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
 ) -> dict:
@@ -164,13 +170,6 @@ def _generate_upload_new_params(
     """
     # Get total size of file to be uploaded
     total_size = os.path.getsize(csv_path)
-
-    if ceil(total_size / 5242880) > 10000:
-        raise ValueError("File too big")
-
-    # Convert csv_path string to Path
-    if not isinstance(csv_path, Path):
-        csv_path = Path(csv_path).absolute()
 
     # Get filename from csv filepath
     filename = str(csv_path).split("/")[-1]
@@ -183,7 +182,6 @@ def _generate_upload_new_params(
         "resumableFilename": f"{timestamp}-{filename.replace('.', '-')}",
         "path": s3_path,
         "isPublishable": is_publishable,
-        "collectionId": collection_id,
         "title": title,
         "resumableTotalSize": total_size,
         "resumableType": "text/csv",
@@ -191,11 +189,15 @@ def _generate_upload_new_params(
         "licenceUrl": licence_url,
         "resumableTotalChunks": ceil(total_size / 5242880),
     }
+
+    if collection_id is not None:
+        upload_params["collectionId"] = collection_id
+
     return upload_params
 
 
 def _create_temp_chunks(
-    csv_path: Union[Path, str],
+    csv_path: Path,
     chunk_size: int = 5242880,
 ) -> list[str]:
     """
@@ -203,9 +205,6 @@ def _create_temp_chunks(
     """
     chunk_number = 1
     temp_file_paths_list = []
-    # Convert csv_path string to Path
-    if not isinstance(csv_path, Path):
-        csv_path = Path(csv_path).absolute()
 
     # Create TemporaryDirectory to store temporary file chunks
     with TemporaryDirectory() as output_path:
