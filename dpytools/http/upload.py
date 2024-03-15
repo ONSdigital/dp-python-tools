@@ -22,35 +22,13 @@ class UploadClient(BaseHttpClient):
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
-        Upload files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        Upload csv files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
         The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
-        # Convert csv_path string to Path
-        if isinstance(csv_path, str):
-            csv_path = Path(csv_path).absolute()
-
-        # Create file chunks
-        file_chunks = _create_temp_chunks(csv_path, chunk_size)
-
-        # Generate upload request params
-        upload_params = _generate_upload_params(csv_path, "text/csv", chunk_size)
-
-        # Upload file chunks to S3
-        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
-
-        s3_key = upload_params["resumableIdentifier"]
-        s3_uri = f"s3://{s3_bucket}/{s3_key}"
-
-        # Delete temporary files
-        _delete_temp_chunks(file_chunks)
-
-        # TODO Replace print statements with logging
-        print("Upload to s3 complete")
-
-        return s3_key, s3_uri
+        self._upload(csv_path, s3_bucket, florence_access_token, "text/csv", chunk_size)
 
     def upload_sdmx(
         self,
@@ -60,37 +38,15 @@ class UploadClient(BaseHttpClient):
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
-        Upload files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        Upload sdmx files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
         The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
-        # Convert sdmx_path string to Path
-        if isinstance(sdmx_path, str):
-            sdmx_path = Path(sdmx_path).absolute()
-
-        # Create file chunks
-        file_chunks = _create_temp_chunks(sdmx_path, chunk_size)
-
-        # Generate upload request params
-        upload_params = _generate_upload_params(
-            sdmx_path, "application/xml", chunk_size
+        self._upload(
+            sdmx_path, s3_bucket, florence_access_token, "application/xml", chunk_size
         )
-
-        # Upload file chunks to S3
-        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
-
-        s3_key = upload_params["resumableIdentifier"]
-        s3_uri = f"s3://{s3_bucket}/{s3_key}"
-
-        # Delete temporary files
-        _delete_temp_chunks(file_chunks)
-
-        # TODO Replace print statements with logging
-        print("Upload to s3 complete")
-
-        return s3_key, s3_uri
 
     def upload_new_csv(
         self,
@@ -103,42 +59,22 @@ class UploadClient(BaseHttpClient):
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
-        Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        Upload csv files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
         The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
-        # Convert csv_path string to Path
-        if isinstance(csv_path, str):
-            csv_path = Path(csv_path).absolute()
-
-        # Create file chunks
-        file_chunks = _create_temp_chunks(csv_path, chunk_size)
-
-        # Generate upload request params
-        upload_params = _generate_upload_new_params(
+        self._upload_new(
             csv_path,
-            f"s3://{s3_bucket}",
+            s3_bucket,
+            florence_access_token,
             title,
             "text/csv",
             collection_id,
             is_publishable,
+            chunk_size,
         )
-
-        # Upload file chunks to S3
-        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
-
-        s3_key = upload_params["resumableFilename"]
-        s3_uri = f"s3://{s3_bucket}/{s3_key}"
-
-        # Delete temporary files
-        _delete_temp_chunks(file_chunks)
-
-        # TODO Replace print statements with logging
-        print("Upload to s3 complete")
-
-        return s3_key, s3_uri
 
     def upload_new_sdmx(
         self,
@@ -151,25 +87,93 @@ class UploadClient(BaseHttpClient):
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
-        Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        Upload sdmx files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
         The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
 
         Returns the S3 Object key and S3 URL of the uploaded file.
         """
-        # Convert sdmx_path string to Path
-        if isinstance(sdmx_path, str):
-            sdmx_path = Path(sdmx_path).absolute()
+        self._upload_new(
+            sdmx_path,
+            s3_bucket,
+            florence_access_token,
+            title,
+            "application/xml",
+            collection_id,
+            is_publishable,
+            chunk_size,
+        )
+
+    def _upload(
+        self,
+        file_path: Union[Path, str],
+        s3_bucket: str,
+        florence_access_token: str,
+        mimetype: str,
+        chunk_size: int = 5242880,
+    ) -> Tuple[str, str]:
+        """
+        Upload files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype`.
+
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+
+        Returns the S3 Object key and S3 URL of the uploaded file.
+        """
+        # Convert file_path string to Path
+        if isinstance(file_path, str):
+            file_path = Path(file_path).absolute()
 
         # Create file chunks
-        file_chunks = _create_temp_chunks(sdmx_path, chunk_size)
+        file_chunks = _create_temp_chunks(file_path, chunk_size)
+
+        # Generate upload request params
+        upload_params = _generate_upload_params(file_path, mimetype, chunk_size)
+
+        # Upload file chunks to S3
+        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
+
+        s3_key = upload_params["resumableIdentifier"]
+        s3_uri = f"s3://{s3_bucket}/{s3_key}"
+
+        # Delete temporary files
+        _delete_temp_chunks(file_chunks)
+
+        # TODO Replace print statements with logging
+        print("Upload to s3 complete")
+
+        return s3_key, s3_uri
+
+    def _upload_new(
+        self,
+        file_path: Union[Path, str],
+        s3_bucket: str,
+        florence_access_token: str,
+        title: str,
+        mimetype: str,
+        collection_id: Optional[str],
+        is_publishable: bool = False,
+        chunk_size: int = 5242880,
+    ) -> Tuple[str, str]:
+        """
+        Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype`.
+
+        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+
+        Returns the S3 Object key and S3 URL of the uploaded file.
+        """
+        # Convert file_path string to Path
+        if isinstance(file_path, str):
+            file_path = Path(file_path).absolute()
+
+        # Create file chunks
+        file_chunks = _create_temp_chunks(file_path, chunk_size)
 
         # Generate upload request params
         upload_params = _generate_upload_new_params(
-            sdmx_path,
+            file_path,
             f"s3://{s3_bucket}",
             title,
-            "application/xml",
+            mimetype,
             collection_id,
             is_publishable,
         )
