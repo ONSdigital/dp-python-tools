@@ -52,7 +52,6 @@ def test_ses_client_send_invalid_recipient(mock_ses_client):
 
     with pytest.raises(ValueError) as e:
         mock_ses_client.send('invalid_email', 'subject', 'body')
-
     assert 'Invalid recipient email format' in str(e.value)
 
 @mock_aws
@@ -65,6 +64,7 @@ def test_ses_client_send_missing_subject(mock_ses_client):
 
     with pytest.raises(botocore.exceptions.ParamValidationError) as e:
         mock_ses_client.send('recipient@example.com', None, 'body')
+    assert "Invalid type for parameter Message.Subject.Data, value: None" in str(e.value)
 
 @mock_aws
 def test_ses_client_send_missing_body(mock_ses_client):
@@ -76,6 +76,8 @@ def test_ses_client_send_missing_body(mock_ses_client):
 
     with pytest.raises(botocore.exceptions.ParamValidationError) as e:
         mock_ses_client.send('recipient@example.com', 'subject', None)
+
+    assert "Invalid type for parameter Message.Body.Text.Data, value: None" in str(e.value)
 
 @mock_aws
 def test_ses_client_send_email(mock_ses_client):
