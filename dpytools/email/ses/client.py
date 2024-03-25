@@ -1,6 +1,6 @@
-import re
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
+from email_validator import validate_email, EmailNotValidError
 
 class SesClient:
     """
@@ -10,8 +10,6 @@ class SesClient:
         client: The boto3 SES client.
         sender: The sender's email address.
     """
-
-    EMAIL_REGEX = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 
     def __init__(self, sender: str, aws_region: str):
         """
@@ -24,13 +22,19 @@ class SesClient:
         Raises:
             ValueError: If the sender's email or AWS region is invalid.
         """
-        # check sender is actually a valid email (as in the format)
-        if not re.match(self.EMAIL_REGEX, sender):
-            raise ValueError("Invalid sender email format")
+        # check sender is actually a valid email
+        try:
+            validated_email = validate_email(sender)
+            sender =validated_email["email"]
+        except EmailNotValidError as err:
+            raise ValueError(f"Invalid sender email: {err}")
         
-        # check the aws region looks valid
-        if aws_region not in boto3.session.Session().get_available_regions('ses'):
-            raise ValueError("Invalid AWS region")
+        # check the AWS region is valid
+        try:
+            if aws_region not in boto3.session.Session().get_available_regions('ses'):
+                raise ValueError(f"Invalid AWS region: {aws_region}")
+        except Exception as err:
+            raise ValueError(f"Error checking AWS region: {err}")
         
         # create the boto3 client
         try:
@@ -55,9 +59,12 @@ class SesClient:
         Returns:
             dict: The response from the send_email method of the SES client.
         """
-        # check recipient is actually a valid email (as in the format)
-        if not re.match(self.EMAIL_REGEX, recipient):
-            raise ValueError("Invalid recipient email format")
+        # check recipient is actually a valid email
+        try:
+            validated_email = validate_email(recipient)
+            recipient = validated_email["email"]
+        except EmailNotValidError as err:
+            raise ValueError(f"Invalid recipient email: {err}")
 
         # send the email to the recipient using the client from init
         try:
