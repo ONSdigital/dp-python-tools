@@ -90,7 +90,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
     def save_lone_file_matching(
         self, pattern: str, destination: Optional[Union[Path, str]] = None
-    ):
+    ) -> Path:
         """
         Asserts a file matches the given pattern, then saves it to the given destination.
         """
@@ -125,6 +125,8 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
         with open(save_path, "w") as f:
             f.write(file_data)
+
+        return save_path
 
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
         # Assert 1 file matches
