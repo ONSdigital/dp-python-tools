@@ -63,7 +63,7 @@ class DpLogger:
         data : arbitrary key-value pairs that may be of use in providing context
         """
         self._log(event, 10, raw=raw, data=data)
-        
+
     def info(self, event: str, raw: str = None, data: Dict = None):
         """
         Log at the info level.
