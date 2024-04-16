@@ -24,7 +24,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         assert (
             local_dir_path.is_dir()
         ), f"Given path {local_dir_path} is not a directory."
-        
+
         # Store that location against the class
 
         self.local_path = local_dir_path

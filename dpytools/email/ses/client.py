@@ -1,6 +1,7 @@
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
-from email_validator import validate_email, EmailNotValidError
+from email_validator import EmailNotValidError, validate_email
+
 
 class SesClient:
     """
@@ -25,20 +26,20 @@ class SesClient:
         # check sender is actually a valid email
         try:
             validated_email = validate_email(sender)
-            sender =validated_email["email"]
+            sender = validated_email["email"]
         except EmailNotValidError as err:
             raise ValueError(f"Invalid sender email: {err}")
-        
+
         # check the AWS region is valid
         try:
-            if aws_region not in boto3.session.Session().get_available_regions('ses'):
+            if aws_region not in boto3.session.Session().get_available_regions("ses"):
                 raise ValueError(f"Invalid AWS region: {aws_region}")
         except Exception as err:
             raise ValueError(f"Error checking AWS region: {err}")
-        
+
         # create the boto3 client
         try:
-            self.client = boto3.client('ses', region_name=aws_region)
+            self.client = boto3.client("ses", region_name=aws_region)
             self.sender = sender
         except (BotoCoreError, ClientError) as err:
             print(f"Error creating SES client: {err}")
@@ -71,20 +72,20 @@ class SesClient:
             response = self.client.send_email(
                 Source=self.sender,
                 Destination={
-                    'ToAddresses': [
+                    "ToAddresses": [
                         recipient,
                     ],
                 },
                 Message={
-                    'Subject': {
-                        'Data': subject,
+                    "Subject": {
+                        "Data": subject,
                     },
-                    'Body': {
-                        'Text': {
-                            'Data': body,
+                    "Body": {
+                        "Text": {
+                            "Data": body,
                         },
                     },
-                }
+                },
             )
         except (BotoCoreError, ClientError) as error:
             print(f"Error sending email: {error}")
