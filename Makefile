@@ -8,11 +8,11 @@ install: ## Install LOCAL development dependencies
 	poetry install
 
 fmt: ## (Format) - runs black and isort against the codebase (auto triggered on pre-commit)
-	poetry run black ./dpytools/*
-	poetry run isort ./dpytools/*
+	poetry run black ./dpytools/* ./tests/*
+	poetry run isort ./dpytools/* ./tests/*
 
 lint: ## Run the ruff python linter (auto triggered on pre-commit)
-	poetry run ruff ./dpytools/*
+	poetry run ruff ./dpytools/* ./tests/*
 
 test: ## Run pytest and check test coverage (auto triggered on pre-push)
 	poetry run pytest --cov-report term-missing --cov=dpytools
