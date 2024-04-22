@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add repo root path for imports
 repo_root = Path(__file__).parent.parent

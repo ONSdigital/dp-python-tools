@@ -1,6 +1,7 @@
-import pytest
-from unittest.mock import patch, MagicMock
-from requests import HTTPError, Response
+from unittest.mock import MagicMock, patch
+
+from requests import Response
+
 from dpytools.http.base import BaseHttpClient
 from dpytools.slack.slack import SlackMessenger
 

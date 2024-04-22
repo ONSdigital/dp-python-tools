@@ -4,8 +4,8 @@ from pathlib import Path
 from dpytools.http.upload import (
     _create_temp_chunks,
     _delete_temp_chunks,
-    _generate_upload_params,
     _generate_upload_new_params,
+    _generate_upload_params,
 )
 
 
@@ -19,7 +19,7 @@ def test_create_and_delete_temp_chunks():
     assert len(temp_file_paths_list) == 2
     assert "temp-file-part-1" in temp_file_paths_list[0]
     _delete_temp_chunks(temp_file_paths_list)
-    assert os.path.exists(Path(temp_file_paths_list[0]).absolute()) == False
+    assert os.path.exists(Path(temp_file_paths_list[0]).absolute()) is False
 
 
 def test_generate_upload_params():
