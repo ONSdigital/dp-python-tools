@@ -1,6 +1,7 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from requests import HTTPError, Response
+
 from dpytools.http.base import BaseHttpClient
 
 

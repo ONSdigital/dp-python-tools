@@ -1,7 +1,8 @@
 from pathlib import Path
-from jsonschema import ValidationError
 
 import pytest
+from jsonschema import ValidationError
+
 from dpytools.validation.json.validation import validate_json_schema
 
 
