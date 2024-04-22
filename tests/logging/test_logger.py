@@ -129,7 +129,7 @@ def test_error_log_complex(logger: DpLogger, capfd):
         assert log["error"][0]["stack_trace"]["file"].endswith(
             "test_logger.py"
         ), _view_log(log)
-        assert log["error"][0]["stack_trace"]["line"] == 124, _view_log(log)
+        assert log["error"][0]["stack_trace"]["line"] == 117, _view_log(log)
         assert (
             log["error"][0]["stack_trace"]["function"] == "test_error_log_complex"
         ), _view_log(log)
@@ -160,7 +160,7 @@ def test_critical_log_complex(logger: DpLogger, capfd):
         assert log["error"][0]["stack_trace"]["file"].endswith(
             "test_logger.py"
         ), _view_log(log)
-        assert log["error"][0]["stack_trace"]["line"] == 154, _view_log(log)
+        assert log["error"][0]["stack_trace"]["line"] == 148, _view_log(log)
         assert (
             log["error"][0]["stack_trace"]["function"] == "test_critical_log_complex"
         ), _view_log(log)
