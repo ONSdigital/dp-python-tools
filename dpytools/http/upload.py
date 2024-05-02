@@ -52,10 +52,7 @@ class UploadClient(BaseHttpClient):
         self,
         csv_path: Union[Path, str],
         florence_access_token: str,
-        s3_bucket: str,
-        title: str,
-        collection_id: Optional[str],
-        is_publishable: bool = False,
+        alias_name: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
@@ -67,12 +64,9 @@ class UploadClient(BaseHttpClient):
         """
         self._upload_new(
             csv_path,
-            s3_bucket,
             florence_access_token,
-            title,
             "text/csv",
-            collection_id,
-            is_publishable,
+            alias_name,
             chunk_size,
         )
 
@@ -146,12 +140,9 @@ class UploadClient(BaseHttpClient):
     def _upload_new(
         self,
         file_path: Union[Path, str],
-        s3_bucket: str,
         florence_access_token: str,
-        title: str,
         mimetype: str,
-        collection_id: Optional[str],
-        is_publishable: bool = False,
+        alias_name: Optional[str],
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
@@ -170,19 +161,14 @@ class UploadClient(BaseHttpClient):
 
         # Generate upload request params
         upload_params = _generate_upload_new_params(
-            file_path,
-            f"s3://{s3_bucket}",
-            title,
-            mimetype,
-            collection_id,
-            is_publishable,
+            file_path, chunk_size, mimetype, alias_name
         )
 
         # Upload file chunks to S3
         self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
 
         s3_key = upload_params["resumableFilename"]
-        s3_uri = f"s3://{s3_bucket}/{s3_key}"
+        # s3_uri = f"s3://{s3_bucket}/{s3_key}"
 
         # Delete temporary files
         _delete_temp_chunks(file_chunks)
@@ -190,22 +176,28 @@ class UploadClient(BaseHttpClient):
         # TODO Replace print statements with logging
         print("Upload to s3 complete")
 
-        return s3_key, s3_uri
+        return s3_key
 
     def _upload_file_chunks(
-        self, file_chunks: list[str], upload_params: dict, florence_access_token: str
+        self,
+        file_chunks: list[str],
+        upload_params: dict,
+        florence_access_token: str,
     ) -> None:
         """
         Upload file chunks to DP Upload Service with the specified upload parameters.
         """
         chunk_number = 1
         for file_chunk in file_chunks:
+            current_chunk_size = os.path.getsize(Path(file_chunk))
             with open(file_chunk, "rb") as f:
                 # Load file chunk as binary data
                 file = {"file": f}
 
                 # Add chunk number to upload request params
                 upload_params["resumableChunkNumber"] = chunk_number
+
+                upload_params["resumableCurrentChunkSize"] = current_chunk_size
 
                 # Submit `POST` request to `self.upload_url`
                 self.post(
@@ -249,10 +241,9 @@ def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> 
 
 def _generate_upload_new_params(
     file_path: Path,
-    s3_path: str,
-    title: str,
+    chunk_size: int,
     mimetype: str,
-    collection_id: Optional[str],
+    alias_name: Optional[str],
     is_publishable: bool = False,
     licence: str = "Open Government Licence v3.0",
     licence_url: str = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
@@ -268,24 +259,30 @@ def _generate_upload_new_params(
     # Get filename from csv filepath
     filename = str(file_path).split("/")[-1]
 
-    # Get timestamp to create `resumableFilename` value in `upload_params`
+    # Get timestamp to create `resumableIdentifier` value in `upload_params`
     timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
+
+    # Create identifier from timestamp and filename
+    identifier = f"{timestamp}-{filename.replace('.', '-')}"
+
+    if alias_name is None:
+        alias_name = filename
 
     # Generate upload request params
     upload_params = {
-        "resumableFilename": f"{timestamp}-{filename.replace('.', '-')}",
-        "path": s3_path,
-        "isPublishable": is_publishable,
-        "title": title,
+        "resumableTotalChunks": ceil(total_size / 5242880),
+        "resumableChunkSize": chunk_size,
         "resumableTotalSize": total_size,
         "resumableType": mimetype,
-        "licence": licence,
-        "licenceUrl": licence_url,
-        "resumableTotalChunks": ceil(total_size / 5242880),
+        "resumableIdentifier": identifier,
+        "resumableFilename": filename,
+        "resumableRelativePath": str(file_path),
+        "aliasName": alias_name,
+        "isPublishable": is_publishable,
+        "Licence": licence,
+        "LicenceUrl": licence_url,
+        "Path": f"datasets/{identifier}",
     }
-
-    if collection_id is not None:
-        upload_params["collectionId"] = collection_id
 
     return upload_params
 
