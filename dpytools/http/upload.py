@@ -188,7 +188,7 @@ class UploadClient(BaseHttpClient):
         Upload file chunks to DP Upload Service with the specified upload parameters.
         """
         chunk_number = 1
-        for file_chunk in file_chunks:
+        for idx, file_chunk in enumerate(file_chunks):
             current_chunk_size = os.path.getsize(Path(file_chunk))
             with open(file_chunk, "rb") as f:
                 # Load file chunk as binary data
@@ -196,8 +196,11 @@ class UploadClient(BaseHttpClient):
 
                 # Add chunk number to upload request params
                 upload_params["resumableChunkNumber"] = chunk_number
-
+                upload_params["resumableChunkSize"] = current_chunk_size
                 upload_params["resumableCurrentChunkSize"] = current_chunk_size
+                upload_params["resumableRelativePath"] = (
+                    upload_params["resumableFilename"] + "chunk" + str(idx)
+                )
 
                 # Submit `POST` request to `self.upload_url`
                 self.post(
@@ -271,12 +274,12 @@ def _generate_upload_new_params(
     # Generate upload request params
     upload_params = {
         "resumableTotalChunks": ceil(total_size / 5242880),
-        "resumableChunkSize": chunk_size,
+        # "resumableChunkSize": chunk_size,
         "resumableTotalSize": total_size,
         "resumableType": mimetype,
         "resumableIdentifier": identifier,
         "resumableFilename": filename,
-        "resumableRelativePath": str(file_path),
+        # "resumableRelativePath": str(file_path),
         "aliasName": alias_name,
         "isPublishable": is_publishable,
         "Licence": licence,
