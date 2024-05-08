@@ -53,6 +53,7 @@ class UploadClient(BaseHttpClient):
         csv_path: Union[Path, str],
         florence_access_token: str,
         alias_name: Optional[str] = None,
+        title: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
@@ -67,6 +68,7 @@ class UploadClient(BaseHttpClient):
             florence_access_token,
             "text/csv",
             alias_name,
+            title,
             chunk_size,
         )
 
@@ -74,10 +76,8 @@ class UploadClient(BaseHttpClient):
         self,
         sdmx_path: Union[Path, str],
         florence_access_token: str,
-        s3_bucket: str,
-        title: str,
-        collection_id: Optional[str],
-        is_publishable: bool = False,
+        alias_name: Optional[str] = None,
+        title: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
@@ -89,12 +89,10 @@ class UploadClient(BaseHttpClient):
         """
         self._upload_new(
             sdmx_path,
-            s3_bucket,
             florence_access_token,
-            title,
             "application/xml",
-            collection_id,
-            is_publishable,
+            alias_name,
+            title,
             chunk_size,
         )
 
@@ -168,8 +166,7 @@ class UploadClient(BaseHttpClient):
         # Upload file chunks to S3
         self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
 
-        s3_key = upload_params["resumableFilename"]
-        # s3_uri = f"s3://{s3_bucket}/{s3_key}"
+        s3_key = upload_params["Path"]
 
         # Delete temporary files
         _delete_temp_chunks(file_chunks)
