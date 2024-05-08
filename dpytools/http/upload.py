@@ -143,6 +143,7 @@ class UploadClient(BaseHttpClient):
         florence_access_token: str,
         mimetype: str,
         alias_name: Optional[str],
+        title: Optional[str],
         chunk_size: int = 5242880,
     ) -> Tuple[str, str]:
         """
@@ -161,7 +162,7 @@ class UploadClient(BaseHttpClient):
 
         # Generate upload request params
         upload_params = _generate_upload_new_params(
-            file_path, chunk_size, mimetype, alias_name
+            file_path, chunk_size, mimetype, alias_name, title
         )
 
         # Upload file chunks to S3
@@ -243,6 +244,7 @@ def _generate_upload_new_params(
     chunk_size: int,
     mimetype: str,
     alias_name: Optional[str],
+    title: Optional[str],
     is_publishable: bool = False,
     licence: str = "Open Government Licence v3.0",
     licence_url: str = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
@@ -267,6 +269,9 @@ def _generate_upload_new_params(
     if alias_name is None:
         alias_name = filename
 
+    if title is None:
+        title = filename.split(".")[0]
+
     # Generate upload request params
     upload_params = {
         "resumableTotalChunks": ceil(total_size / 5242880),
@@ -277,13 +282,19 @@ def _generate_upload_new_params(
         "resumableFilename": filename,
         "resumableRelativePath": str(file_path),
         "aliasName": alias_name,
-        "isPublishable": is_publishable,
-        "Licence": licence,
-        "LicenceUrl": licence_url,
-        # TODO Currently the POST request is failing due to an potential issue with the Go code (HTTP 500 error: `bad request: unknown error: : duplicate file path`)
-        # Once the Go issue is resolved, check that the Path is in the correct format.
+        # TODO Currently the POST request in `_upload_file_chunks` is failing due to an potential issue with the Go code (HTTP 500 error: `bad request: unknown error: : duplicate file path`)
+        # Once the Go issue is resolved, check that the Path is in the correct format
         # See https://github.com/ONSdigital/dp-api-clients-go/blob/a26491512a8336ad9c31b694c045d8e3a3ed0578/files/client.go#L160
         "Path": f"datasets/{identifier}",
+        "isPublishable": is_publishable,
+        "Title": title,
+        # `SizeInBytes` may be populated from `resumableTotalSize` - check once `Path` issue has been resolved
+        "SizeInBytes": total_size,
+        # `Type` may be populated from `resumableType` - check once `Path` issue has been resolved
+        "Type": mimetype,
+        "Licence": licence,
+        "LicenceUrl": licence_url,
+        # `CollectionID`, `State` and `Etag` fields omitted as not required
     }
 
     return upload_params
