@@ -44,15 +44,16 @@ def test_generate_upload_new_params():
     """
     upload_params = _generate_upload_new_params(
         file_path="tests/test_cases/countries.csv",
-        s3_path="s3-path",
+        chunk_size=5242880,
         title="title",
+        alias_name="alias-name",
         mimetype="text/csv",
-        collection_id="collection-id",
     )
-    assert upload_params["path"] == "s3-path"
-    assert upload_params["title"] == "title"
-    assert upload_params["resumableType"] == "text/csv"
-    assert upload_params["collectionId"] == "collection-id"
-    assert upload_params["resumableTotalSize"] == 6198846
     assert upload_params["resumableTotalChunks"] == 2
-    assert "-countries-csv" in upload_params["resumableFilename"]
+    assert upload_params["resumableTotalSize"] == 6198846
+    assert upload_params["resumableType"] == "text/csv"
+    assert "-countries-csv" in upload_params["resumableIdentifier"]
+    assert upload_params["resumableFilename"] == "countries.csv"
+    assert upload_params["resumableRelativePath"] == "tests/test_cases/countries.csv"
+    assert upload_params["aliasName"] == "alias-name"
+    assert upload_params["Title"] == "title"
