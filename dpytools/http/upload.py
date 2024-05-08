@@ -188,19 +188,15 @@ class UploadClient(BaseHttpClient):
         Upload file chunks to DP Upload Service with the specified upload parameters.
         """
         chunk_number = 1
-        for idx, file_chunk in enumerate(file_chunks):
+        for file_chunk in file_chunks:
             current_chunk_size = os.path.getsize(Path(file_chunk))
             with open(file_chunk, "rb") as f:
                 # Load file chunk as binary data
                 file = {"file": f}
 
-                # Add chunk number to upload request params
+                # Add chunk number and current chunk size to upload request params
                 upload_params["resumableChunkNumber"] = chunk_number
-                upload_params["resumableChunkSize"] = current_chunk_size
                 upload_params["resumableCurrentChunkSize"] = current_chunk_size
-                upload_params["resumableRelativePath"] = (
-                    upload_params["resumableFilename"] + "chunk" + str(idx)
-                )
 
                 # Submit `POST` request to `self.upload_url`
                 self.post(
@@ -274,16 +270,19 @@ def _generate_upload_new_params(
     # Generate upload request params
     upload_params = {
         "resumableTotalChunks": ceil(total_size / 5242880),
-        # "resumableChunkSize": chunk_size,
+        "resumableChunkSize": chunk_size,
         "resumableTotalSize": total_size,
         "resumableType": mimetype,
         "resumableIdentifier": identifier,
         "resumableFilename": filename,
-        # "resumableRelativePath": str(file_path),
+        "resumableRelativePath": str(file_path),
         "aliasName": alias_name,
         "isPublishable": is_publishable,
         "Licence": licence,
         "LicenceUrl": licence_url,
+        # TODO Currently the POST request is failing due to an potential issue with the Go code (HTTP 500 error: `bad request: unknown error: : duplicate file path`)
+        # Once the Go issue is resolved, check that the Path is in the correct format.
+        # See https://github.com/ONSdigital/dp-api-clients-go/blob/a26491512a8336ad9c31b694c045d8e3a3ed0578/files/client.go#L160
         "Path": f"datasets/{identifier}",
     }
 
