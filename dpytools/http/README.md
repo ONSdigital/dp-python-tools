@@ -70,45 +70,71 @@ response = http_client.post(
 
 If the `POST` request fails for a network-related reason, this will raise an `HTTPError`.
 
-### UploadClient
+### UploadServiceClient
 
-The `UploadClient` class facilitates the process of uploading a file to an AWS S3 bucket by splitting the file into chunks and transmitting these chunks individually. This is done via the `upload()` method.
+The `UploadServiceClient` class facilitates the process of uploading a file to an AWS S3 bucket by splitting the file into chunks and transmitting these chunks individually. It implements methods for uploading CSV and SDMX files to the DP Upload Service. Which method you use will depend on whether you are accessing the `/upload` or `upload-new` endpoint. Details on using each method are provided below.
 
-A new `UploadClient` object can be created by passing an `upload_url`:
+A new `UploadServiceClient` object can be created by passing an `upload_url`:
 
 ```python
-from dpytools.http.upload import UploadClient
+from dpytools.http.upload import UploadServiceClient
 
-upload_client = UploadClient(upload_url="http://example.org/upload")
+upload_client = UploadServiceClient(upload_url="http://example.org/upload")
 ```
 
-To access the DP Upload Service, a Florence access control token must be provided. For security purposes this should be set using an environment variable.
+To access the DP Upload Service, a Florence access control token must be provided. This should be generated via the DP Identity API.
 
-#### upload()
+#### upload_csv() and upload_sdmx()
 
-The `UploadClient` provides an `upload()` method which accepts a file to be uploaded, an S3 Bucket identifier, a Florence access token, and an optional chunk size (default value 5242880 bytes).
+To upload files to the `/upload` endpoint, use the `upload_csv()` and `upload_sdmx()` methods. Both of these methods accept a file to be uploaded, an S3 Bucket identifier, a Florence access token, and an optional chunk size with a default value of 5242880 bytes (5MB).
 
-The S3 Bucket identifier should be set as an environment variable. The Florence access token should be generated via the DP Identity API and passed as an argument to `upload()`.
-
-Calling the `upload()` method creates the temporary file chunks, uploads these to the `UploadClient.upload_url`, and finally deletes the temporary files. The method returns the S3 Object key and S3 URI of the Object's location:
+Calling these methods will create the temporary file chunks, upload these to the `UploadServiceClient.upload_url`, and finally delete the temporary files.
 
 ```python
-from dpytools.http.upload import UploadClient
+from dpytools.http.upload import UploadServiceClient
 
-upload_client = UploadClient("http://example.org/upload")
+upload_client = UploadServiceClient("http://example.org/upload")
 
-s3_bucket = os.getenv("S3_BUCKET")
+s3_bucket = "<s3-bucket-name-here>"
 florence_access_token = "<florence-access-token-here>"
 
-s3_key, s3_uri = upload_client.upload(
-    "path/to/countries.csv",
-    s3_bucket,
-    florence_access_token,
+upload_client.upload_csv(
+    csv_path="path/to/file.csv",
+    s3_bucket=s3_bucket,
+    florence_access_token=florence_access_token
 )
 
-# The s3_key is a unique identifier, and consists of the timestamp of when the upload process commenced and the filename of the uploaded file:
-# s3_key example: "110324094616-countries-csv"
+upload_client.upload_sdmx(
+    sdmx_path="path/to/file.sdmx",
+    s3_bucket=s3_bucket,
+    florence_access_token=florence_access_token
+)
+```
 
-# The s3_uri concatenates the s3_bucket and s3_key values:
-# s3_uri example: "s3://mybucket/110324094616-countries-csv"
+#### upload_new_csv() and upload_new_sdmx()
+
+To upload files to the `/upload-new` endpoint, use the `upload_new_csv()` and `upload_new_sdmx()` methods. Both of these methods accept a file to be uploaded, a Florence access token, and an optional chunk size with a default value of 5242880 bytes (5MB).
+
+The `/upload-new` endpoint also requires an `alias_name` and `title` to be provided in the HTTP request parameters. If these are not explicitly stated in the method call, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension.
+
+```python
+from dpytools.http.upload import UploadServiceClient
+
+upload_client = UploadServiceClient("http://example.org/upload-new")
+
+florence_access_token = "<florence-access-token-here>"
+
+# `alias_name` and `title` arguments not provided, so these values will default to `file.csv` and `file` respectively.
+upload_client.upload_new_csv(
+    csv_path="path/to/file.csv",
+    florence_access_token=florence_access_token,
+)
+
+# `alias_name` and `title` arguments provided, so these values will be set explicitly.
+upload_client.upload_new_sdmx(
+    sdmx_path="path/to/file.sdmx",
+    florence_access_token=florence_access_token,
+    alias_name="my-awesome-file.sdmx",
+    title="My Awesome SDMX File"
+)
 ```

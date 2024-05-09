@@ -106,7 +106,7 @@ class DpLogger:
         Log at the critical level.
 
         event: the thing that's happened, a simple short english statement
-        error: a caught python Exceotion
+        error: a caught python Exception
         raw  : a raw string of any log messages captured for a third party library
         data : arbitrary key-value pairs that may be of use in providing context
         """

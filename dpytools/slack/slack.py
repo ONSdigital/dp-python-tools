@@ -1,6 +1,7 @@
-import logging
-
 from dpytools.http.base import BaseHttpClient
+from dpytools.logging.logger import DpLogger
+
+logger = DpLogger("dpytools")
 
 
 class SlackMessenger:
@@ -20,8 +21,8 @@ class SlackMessenger:
         try:
             response = self.http_client.post(self.webhook_url, json=msg_dict)
             response.raise_for_status()
-        except Exception as e:
-            logging.error(f"Failed to send notification: {e}")
+        except Exception as err:
+            logger.error(f"Failed to send notification: {err}", data={"error": err})
 
     def msg_str(self, msg: str):
         """
