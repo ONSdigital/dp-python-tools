@@ -1,3 +1,4 @@
+import sys
 import logging
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -8,12 +9,13 @@ from dpytools.logging.utility import create_error_dict, level_to_severity
 
 
 class DpLogger:
-    def __init__(self, namespace: str):
+    def __init__(self, namespace: str, flush_stdout_after_log_entry: bool = False):
         """
         Simple python logger to create structured logs in keeping
         with https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
 
         namespace: (required) the namespace for the app in question
+        flush_stdout_after_log_entry: (optional) whether to flush the stdout buffer after each log entry
         """
 
         logging.getLogger().addHandler(logging.StreamHandler())
@@ -28,6 +30,7 @@ class DpLogger:
 
         self._logger = structlog.get_logger()
         self.namespace = namespace
+        self.flush_stdout_after_log_entry = flush_stdout_after_log_entry
 
     def _log(
         self,
@@ -53,6 +56,9 @@ class DpLogger:
         }
 
         self._logger.log(**log_event)
+        
+        if self.flush_stdout_after_log_entry:
+            sys.stdout.flush()
 
     def debug(self, event: str, raw: str = None, data: Dict = None):
         """
