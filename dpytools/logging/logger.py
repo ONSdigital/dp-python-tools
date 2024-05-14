@@ -1,5 +1,5 @@
-import sys
 import logging
+import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
@@ -56,7 +56,7 @@ class DpLogger:
         }
 
         self._logger.log(**log_event)
-        
+
         if self.flush_stdout_after_log_entry:
             sys.stdout.flush()
 
