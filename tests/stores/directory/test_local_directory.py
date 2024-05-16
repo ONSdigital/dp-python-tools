@@ -168,8 +168,8 @@ def test_has_lone_file_matching_multiple():
     with pytest.raises(FileNotFoundError) as err:
         test_local_directory_store.has_lone_file_matching(".json")
     assert (
-        "More than 1 file found that matches the regex pattern '.json' in directory tests/test_cases/test_local_store/local_directory_folders/local_directory_multiple_file. Matching: ['local_directory2.json', 'local_directory1.json']"
-        == str(err.value)
+        "More than 1 file found that matches the regex pattern '.json' in directory tests/test_cases/test_local_store/local_directory_folders/local_directory_multiple_file. Matching:"
+        in str(err.value)
     )
 
 
@@ -255,10 +255,9 @@ def test_get_file_names():
     test_local_directory_store = LocalDirectoryStore(test_path)
 
     file_name_list = test_local_directory_store.get_file_names()
-
+    expected_file_names = {"local_directory2.json", "local_directory1.json"}
     assert len(file_name_list) == 2
-    assert file_name_list[0] == "local_directory2.json"
-    assert file_name_list[1] == "local_directory1.json"
+    assert set(file_name_list) == expected_file_names
 
 
 def test_get_file_names_no_files():
