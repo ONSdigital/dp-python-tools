@@ -193,7 +193,7 @@ class UploadServiceClient(BaseHttpClient):
                 # Submit `POST` request to `self.upload_url`
                 self.post(
                     self.upload_url,
-                    headers={"X-Florence-Token": florence_access_token},
+                    headers={"Authorization": f"Bearer {florence_access_token}"},
                     params=upload_params,
                     files=file,
                     verify=True,
