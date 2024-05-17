@@ -72,7 +72,7 @@ If the `POST` request fails for a network-related reason, this will raise an `HT
 
 ### UploadServiceClient
 
-The `UploadServiceClient` class facilitates the process of uploading a file to an AWS S3 bucket by splitting the file into chunks and transmitting these chunks individually. It implements methods for uploading CSV and SDMX files to the DP Upload Service. Which method you use will depend on whether you are accessing the `/upload` or `upload-new` endpoint. Details on using each method are provided below.
+The `UploadServiceClient` class facilitates the process of uploading a file to the [dp-upload-service](https://github.com/ONSdigital/dp-upload-service). It implements methods for uploading CSV and SDMX files to the DP Upload Service. Which method you use will depend on whether you are accessing the `/upload` or `upload-new` endpoint. Details on using each method are provided below.
 
 A new `UploadServiceClient` object can be created by passing an `upload_url`:
 
@@ -82,38 +82,34 @@ from dpytools.http.upload import UploadServiceClient
 upload_client = UploadServiceClient(upload_url="http://example.org/upload")
 ```
 
-To access the DP Upload Service, a Florence access control token must be provided. This should be generated via the DP Identity API.
+There are two potential mechanisms for auth. 
+
+1. **Service account auth** - set the env var `SERVICE_TOKEN_FOR_UPLOAD` with the token.
+
+2. **User auth** - set the env vars `FLORENCE_USER`, `FLORENCE_PASSWORD` and `IDENTITY_API_URL`.
+
+The distinction is to allow authorised users to run the upload client from their local machines where required. 
 
 #### upload_csv() and upload_sdmx()
 
-To upload files to the `/upload` endpoint, use the `upload_csv()` and `upload_sdmx()` methods. Both of these methods accept a file to be uploaded, an S3 Bucket identifier, a Florence access token, and an optional chunk size with a default value of 5242880 bytes (5MB).
-
-Calling these methods will create the temporary file chunks, upload these to the `UploadServiceClient.upload_url`, and finally delete the temporary files.
+To upload files to the `/upload` endpoint use the `upload_csv()` and `upload_sdmx()` methods. These methods accept the path to the file and an optional chunk size with a default value of 5242880 bytes (5MB).
 
 ```python
 from dpytools.http.upload import UploadServiceClient
 
 upload_client = UploadServiceClient("http://example.org/upload")
 
-s3_bucket = "<s3-bucket-name-here>"
-florence_access_token = "<florence-access-token-here>"
 
-upload_client.upload_csv(
-    csv_path="path/to/file.csv",
-    s3_bucket=s3_bucket,
-    florence_access_token=florence_access_token
-)
+upload_client.upload_csv("path/to/file.csv")
 
-upload_client.upload_sdmx(
-    sdmx_path="path/to/file.sdmx",
-    s3_bucket=s3_bucket,
-    florence_access_token=florence_access_token
-)
+upload_client.upload_sdmx("path/to/file.sdmx")
+
+upload_client.upload_sdmx("path/to/file.sdmx", chunk_size=1000)
 ```
 
 #### upload_new_csv() and upload_new_sdmx()
 
-To upload files to the `/upload-new` endpoint, use the `upload_new_csv()` and `upload_new_sdmx()` methods. Both of these methods accept a file to be uploaded, a Florence access token, and an optional chunk size with a default value of 5242880 bytes (5MB).
+To upload files to the `/upload-new` endpoint, use the `upload_new_csv()` and `upload_new_sdmx()` methods. These methods accept the path to the file and an optional chunk size with a default value of 5242880 bytes (5MB).
 
 The `/upload-new` endpoint also requires an `alias_name` and `title` to be provided in the HTTP request parameters. If these are not explicitly stated in the method call, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension.
 
@@ -122,18 +118,13 @@ from dpytools.http.upload import UploadServiceClient
 
 upload_client = UploadServiceClient("http://example.org/upload-new")
 
-florence_access_token = "<florence-access-token-here>"
-
 # `alias_name` and `title` arguments not provided, so these values will default to `file.csv` and `file` respectively.
 upload_client.upload_new_csv(
-    csv_path="path/to/file.csv",
-    florence_access_token=florence_access_token,
-)
+    "path/to/file.csv",)
 
 # `alias_name` and `title` arguments provided, so these values will be set explicitly.
 upload_client.upload_new_sdmx(
-    sdmx_path="path/to/file.sdmx",
-    florence_access_token=florence_access_token,
+    "path/to/file.sdmx",
     alias_name="my-awesome-file.sdmx",
     title="My Awesome SDMX File"
 )

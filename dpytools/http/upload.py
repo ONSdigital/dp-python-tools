@@ -11,9 +11,20 @@ from dpytools.logging.logger import DpLogger
 logger = DpLogger("dpytools")
 base_http_client = BaseHttpClient()
 
+# Dev note:
+
+# At time of writing (17/5/2024) there's two endpoints supported
+# by the uplaod service.
+
+# 1. /upload
+# 2. /upload-new
+
+# Putting aside the wisdom of "new" we do need to support both of
+# these options so have ny neceessity adopted this nomanclature.
+
+
 class UploadServiceClient(BaseHttpClient):
     def __init__(self, upload_url: str, backoff_max=30):
-        # Inherit backoff_max value from BaseHTTPClient.__init__
         super().__init__(backoff_max=backoff_max)
         self.upload_url = upload_url\
         
@@ -25,7 +36,7 @@ class UploadServiceClient(BaseHttpClient):
         # token before a 15 minute timeout happens
         # (service account auth doesn't time out)
 
-        self.service_token = os.environ.get("SERVICE_TOKEN_FOR UPLOAD")
+        self.service_token = os.environ.get("SERVICE_TOKEN_FOR_UPLOAD")
         if self.service_token is None:
             self.set_user_tokens()
 
@@ -34,7 +45,7 @@ class UploadServiceClient(BaseHttpClient):
         When using user auth we need to use florence username and password
         to create a florence token.
 
-        We also need to get teh refresh token so we can extend the token
+        We also need to get the refresh token so we can extend the token
         lifespan beyond the 15 minute timeout where necessary.
         """
 
@@ -52,8 +63,10 @@ class UploadServiceClient(BaseHttpClient):
             "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var IDENTITY_API_URL must be provided"
         )
 
-        response = base_http_client.post(
-                self.identity_api_url,
+        # https://github.com/ONSdigital/dp-identity-api/blob/develop/swagger.yaml
+        token_url = f"{self.identity_api_url}/tokens"
+        response = self.post(
+                token_url,
                 json={"login": self.florence_user, "password": self.florence_password}
             )
         if response.status_code == 201:
@@ -71,10 +84,12 @@ class UploadServiceClient(BaseHttpClient):
                 err,
                 data = {
                     "identity_api_url": self.identity_api_url,
+                    "token_url": token_url,
                     "response_staus_code": response.status_code,
                     "response_content": response.content
                 }
             )
+            raise err
     
     def get_auth_header(self) -> Dict[str, str]:
         """
@@ -87,17 +102,19 @@ class UploadServiceClient(BaseHttpClient):
             return {"Authorization": f"Bearer {self.service_token}"}
         
         # Using user account
-
         # If the token is more than 10 minutes old refresh it
+        # https://github.com/ONSdigital/dp-identity-api/blob/develop/swagger.yaml
         if (datetime.now() - self.token_creation_time) > timedelta(minutes=10):
-            response = base_http_client.post(
-                f"{self.identity_api_url}/self",
-                refresh_token=True
+            token_refresh_url = f"{self.identity_api_url}/tokens/self"
+            response = self.put(
+                token_refresh_url,
+                json={
+                    "Refresh": self.refresh_token,
+                    "ID": self.id_token
+                }
             )
 
         if response.status_code == 201:
-            refresh_url = "self.token_url}/self"
-            response = base_http_client.put(refresh_url, refresh_token=True)
             self.auth_token = response.headers["Authorization"]
             self.id_token = response.headers["ID"]
         else:
@@ -106,7 +123,7 @@ class UploadServiceClient(BaseHttpClient):
                 "Could not refresh user auth token",
                 err,
                 data={
-                    "refresh_url": refresh_url,
+                    "token_refresh_url": token_refresh_url,
                     "response_status_code": response.status_code,
                     "response_content": response.content
                 })
@@ -118,51 +135,41 @@ class UploadServiceClient(BaseHttpClient):
     def upload_csv(
         self,
         csv_path: Union[Path, str],
-        s3_bucket: str,
-        florence_access_token: str,
         chunk_size: int = 5242880,
     ) -> None:
         """
-        Upload csv files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
-
-        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+        Upload csv files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
         """
-        self._upload(csv_path, s3_bucket, florence_access_token, "text/csv", chunk_size)
+        self._upload(csv_path, "text/csv", chunk_size)
 
     def upload_sdmx(
         self,
         sdmx_path: Union[Path, str],
-        s3_bucket: str,
-        florence_access_token: str,
         chunk_size: int = 5242880,
     ) -> None:
         """
-        Upload sdmx files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        Upload sdmx files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
         The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
         """
         self._upload(
-            sdmx_path, s3_bucket, florence_access_token, "application/xml", chunk_size
+            sdmx_path, "application/xml", chunk_size
         )
 
     def upload_new_csv(
         self,
         csv_path: Union[Path, str],
-        florence_access_token: str,
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> None:
         """
-        Upload csv files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
-
-        `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+        Upload csv files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
         `alias_name` and `title` are optional arguments. If these are not explicitly provided, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension - e.g. if the filename is "data.csv", `alias_name` defaults to "data.csv" and `title` defaults to "data".
         """
         self._upload_new(
             csv_path,
-            florence_access_token,
             "text/csv",
             alias_name,
             title,
@@ -172,21 +179,17 @@ class UploadServiceClient(BaseHttpClient):
     def upload_new_sdmx(
         self,
         sdmx_path: Union[Path, str],
-        florence_access_token: str,
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> None:
         """
-        Upload sdmx files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
-
-        `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+        Upload sdmx files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
 
         `alias_name` and `title` are optional arguments. If these are not explicitly provided, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension - e.g. if the filename is "data.csv", `alias_name` defaults to "data.csv" and `title` defaults to "data".
         """
         self._upload_new(
             sdmx_path,
-            florence_access_token,
             "application/xml",
             alias_name,
             title,
@@ -196,15 +199,11 @@ class UploadServiceClient(BaseHttpClient):
     def _upload(
         self,
         file_path: Union[Path, str],
-        s3_bucket: str,
-        florence_access_token: str,
         mimetype: str,
         chunk_size: int = 5242880,
     ) -> None:
         """
-        Upload files to the DP Upload Service `upload` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype` (e.g. "text/csv" for a CSV file).
-
-        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
+        Upload files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype` (e.g. "text/csv" for a CSV file).
         """
         # Convert file_path string to Path
         if isinstance(file_path, str):
@@ -219,7 +218,7 @@ class UploadServiceClient(BaseHttpClient):
             "Upload parameters generated", data={"upload_params": upload_params}
         )
         # Upload file chunks to S3
-        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
+        self._upload_file_chunks(file_chunks, upload_params)
 
         # Delete temporary files
         _delete_temp_chunks(file_chunks)
@@ -227,7 +226,6 @@ class UploadServiceClient(BaseHttpClient):
             "Upload to s3 complete",
             data={
                 "s3_key": upload_params["resumableIdentifier"],
-                "s3_bucket": s3_bucket,
             },
         )
 
