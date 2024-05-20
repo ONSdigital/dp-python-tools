@@ -147,8 +147,6 @@ class UploadServiceClient(BaseHttpClient):
     ) -> None:
         """
         Upload sdmx files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
-
-        The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
         """
         self._upload(sdmx_path, "application/xml", chunk_size)
 
@@ -228,7 +226,6 @@ class UploadServiceClient(BaseHttpClient):
     def _upload_new(
         self,
         file_path: Union[Path, str],
-        florence_access_token: str,
         mimetype: str,
         alias_name: Optional[str],
         title: Optional[str],
@@ -236,8 +233,6 @@ class UploadServiceClient(BaseHttpClient):
     ) -> None:
         """
         Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype` (e.g. "text/csv" for a CSV file).
-
-        `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
         """
         # Convert file_path string to Path
         if isinstance(file_path, str):
@@ -256,7 +251,8 @@ class UploadServiceClient(BaseHttpClient):
         )
 
         # Upload file chunks to S3
-        self._upload_file_chunks(file_chunks, upload_params, florence_access_token)
+        self._upload_file_chunks(file_chunks, upload_params
+                                 )
 
         # Delete temporary files
         _delete_temp_chunks(file_chunks)
