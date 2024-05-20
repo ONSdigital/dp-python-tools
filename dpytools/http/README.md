@@ -17,7 +17,7 @@ from dpytools.http.base import BaseHTTPClient
 
 http_client = BaseHTTPClient()
 
-response = http_client.get(url="http://example.org")
+response = http_client.get("http://example.org")
 ```
 
 `response` is a `requests.Response` object, with all of the properties and methods you would expect such an object to have. For example, to view the status code of the response:
@@ -48,7 +48,7 @@ from dpytools.http.base import BaseHTTPClient
 
 http_client = BaseHTTPClient()
 
-response = http_client.post(url="http://example.org", *args, **kwargs)
+response = http_client.post("http://example.org", *args, **kwargs)
 ```
 
 As with the `get()` method, `response` is a `requests.Response` object. Since this is a `POST` request, it is likely that you would want to pass additional information to the server, which you can do using keyword arguments. For example, to pass a dictionary as JSON to the processing server:
@@ -69,6 +69,10 @@ response = http_client.post(
 ```
 
 If the `POST` request fails for a network-related reason, this will raise an `HTTPError`.
+
+#### `put()`
+
+The `put()` method follows the same patterns as `post()` and again returns a `requests.Response` object and again propogates additional `*args` and `**kwargs` through to requests.
 
 ### UploadServiceClient
 
