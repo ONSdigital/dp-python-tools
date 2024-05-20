@@ -56,17 +56,17 @@ class UploadServiceClient(BaseHttpClient):
             self.florence_user is not None
         ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_USER must be provided"
         assert (
-            self.florence_user is not None
+            self.florence_password is not None
         ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_PASSOWRD must be provided"
         assert (
-            self.florence_user is not None
+            self.identity_api_url is not None
         ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var IDENTITY_API_URL must be provided"
 
         # https://github.com/ONSdigital/dp-identity-api/blob/develop/swagger.yaml
         token_url = f"{self.identity_api_url}/tokens"
         response = self.post(
             token_url,
-            json={"login": self.florence_user, "password": self.florence_password},
+            json={"email": self.florence_user, "password": self.florence_password},
         )
         if response.status_code == 201:
             response_headers = response.headers
