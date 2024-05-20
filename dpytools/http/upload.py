@@ -251,8 +251,7 @@ class UploadServiceClient(BaseHttpClient):
         )
 
         # Upload file chunks to S3
-        self._upload_file_chunks(file_chunks, upload_params
-                                 )
+        self._upload_file_chunks(file_chunks, upload_params)
 
         # Delete temporary files
         _delete_temp_chunks(file_chunks)
