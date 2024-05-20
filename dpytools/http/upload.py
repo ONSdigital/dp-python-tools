@@ -26,8 +26,7 @@ base_http_client = BaseHttpClient()
 class UploadServiceClient(BaseHttpClient):
     def __init__(self, upload_url: str, backoff_max=30):
         super().__init__(backoff_max=backoff_max)
-        self.upload_url = upload_url\
-        
+        self.upload_url = upload_url
         # RE auth, there'd two modes
         # 1. Service account mode
         # 2. User account mode
@@ -53,28 +52,28 @@ class UploadServiceClient(BaseHttpClient):
         self.florence_password = os.environ.get("FLORENCE_PASSWORD", None)
         self.identity_api_url = os.environ.get("IDENTITY_API_URL", None)
 
-        assert self.florence_user is not None, (
-            "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_USER must be provided"
-        )
-        assert self.florence_user is not None, (
-            "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_PASSOWRD must be provided"
-        )
-        assert self.florence_user is not None, (
-            "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var IDENTITY_API_URL must be provided"
-        )
+        assert (
+            self.florence_user is not None
+        ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_USER must be provided"
+        assert (
+            self.florence_user is not None
+        ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_PASSOWRD must be provided"
+        assert (
+            self.florence_user is not None
+        ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var IDENTITY_API_URL must be provided"
 
         # https://github.com/ONSdigital/dp-identity-api/blob/develop/swagger.yaml
         token_url = f"{self.identity_api_url}/tokens"
         response = self.post(
-                token_url,
-                json={"login": self.florence_user, "password": self.florence_password}
-            )
+            token_url,
+            json={"login": self.florence_user, "password": self.florence_password},
+        )
         if response.status_code == 201:
             response_headers = response.headers
-        
-            self.refresh_token = response_headers["Refresh"] 
+
+            self.refresh_token = response_headers["Refresh"]
             self.token_creation_time = datetime.now()
-            
+
             self.auth_token = response_headers["Authorization"]
             self.id_token = response_headers["ID"]
         else:
@@ -82,15 +81,15 @@ class UploadServiceClient(BaseHttpClient):
             logger.error(
                 "Failed to create user tokens",
                 err,
-                data = {
+                data={
                     "identity_api_url": self.identity_api_url,
                     "token_url": token_url,
                     "response_staus_code": response.status_code,
-                    "response_content": response.content
-                }
+                    "response_content": response.content,
+                },
             )
             raise err
-    
+
     def get_auth_header(self) -> Dict[str, str]:
         """
         Given a dictionary of params, set the auth header based on the
@@ -100,7 +99,7 @@ class UploadServiceClient(BaseHttpClient):
         # Using service account
         if self.service_token:
             return {"Authorization": f"Bearer {self.service_token}"}
-        
+
         # Using user account
         # If the token is more than 10 minutes old refresh it
         # https://github.com/ONSdigital/dp-identity-api/blob/develop/swagger.yaml
@@ -108,30 +107,29 @@ class UploadServiceClient(BaseHttpClient):
             token_refresh_url = f"{self.identity_api_url}/tokens/self"
             response = self.put(
                 token_refresh_url,
-                json={
-                    "Refresh": self.refresh_token,
-                    "ID": self.id_token
-                }
+                json={"Refresh": self.refresh_token, "ID": self.id_token},
             )
 
         if response.status_code == 201:
             self.auth_token = response.headers["Authorization"]
             self.id_token = response.headers["ID"]
         else:
-            err = Exception(f"Refreshing token failed, returned a {response.status_code} error")
+            err = Exception(
+                f"Refreshing token failed, returned a {response.status_code} error"
+            )
             logger.error(
                 "Could not refresh user auth token",
                 err,
                 data={
                     "token_refresh_url": token_refresh_url,
                     "response_status_code": response.status_code,
-                    "response_content": response.content
-                })
+                    "response_content": response.content,
+                },
+            )
             raise err
-   
+
         return {"X-Florence-Token": self.auth_token, "ID": self.id_token}
-        
-    
+
     def upload_csv(
         self,
         csv_path: Union[Path, str],
@@ -152,9 +150,7 @@ class UploadServiceClient(BaseHttpClient):
 
         The `s3_bucket` argument should be set as an environment variable and accessed via os.getenv() or similar. `florence_access_token` should be generated via the DP Identity API and passed as a string argument.
         """
-        self._upload(
-            sdmx_path, "application/xml", chunk_size
-        )
+        self._upload(sdmx_path, "application/xml", chunk_size)
 
     def upload_new_csv(
         self,
@@ -316,7 +312,7 @@ def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> 
     filename = str(file_path).split("/")[-1]
 
     # Get timestamp to create `resumableIdentifier` value in `POST` params
-    timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
+    timestamp = datetime.now().strftime("%d%m%y%H%M%S")
 
     # Generate upload request params
     upload_params = {
@@ -352,7 +348,7 @@ def _generate_upload_new_params(
     filename = str(file_path).split("/")[-1]
 
     # Get timestamp to create `resumableIdentifier` value in `upload_params`
-    timestamp = datetime.datetime.now().strftime("%d%m%y%H%M%S")
+    timestamp = datetime.now().strftime("%d%m%y%H%M%S")
 
     # Create identifier from timestamp and filename
     identifier = f"{timestamp}-{filename.replace('.', '-')}"

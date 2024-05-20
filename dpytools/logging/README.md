@@ -63,3 +63,7 @@ except Exception as err:
     logger.critical("Something went boom", err, data={"some": "variable"})
     raise err
 ```
+
+## Flushing stream logging
+
+When logging to stdout some services (such as aws glue) will concatentate log entries by failing to flush stout between logs. Set the environment variable `FLUSH_STOUT_AFTER_LOG_ENTRY` to `True` or `true` to flush stdout after each log entry.

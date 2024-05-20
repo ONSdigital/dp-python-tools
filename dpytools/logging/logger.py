@@ -1,3 +1,4 @@
+import os
 import logging
 import sys
 from datetime import datetime, timezone
@@ -9,13 +10,12 @@ from dpytools.logging.utility import create_error_dict, level_to_severity
 
 
 class DpLogger:
-    def __init__(self, namespace: str, flush_stdout_after_log_entry: bool = False):
+    def __init__(self, namespace: str):
         """
         Simple python logger to create structured logs in keeping
         with https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
 
         namespace: (required) the namespace for the app in question
-        flush_stdout_after_log_entry: (optional) whether to flush the stdout buffer after each log entry
         """
 
         logging.getLogger().addHandler(logging.StreamHandler())
@@ -30,7 +30,14 @@ class DpLogger:
 
         self._logger = structlog.get_logger()
         self.namespace = namespace
-        self.flush_stdout_after_log_entry = flush_stdout_after_log_entry
+        self.flush_stdout_after_log_entry = os.environ.get("FLUSH_STOUT_AFTER_LOG_ENTRY", None)
+        
+        # Polics the env var being passed in for flush_stdout_after_log_entry
+        if self.flush_stdout_after_log_entry is not None:
+            assert self.flush_stdout_after_log_entry in ["True", "true", "False", "false"], (
+                "When using env var FLUSH_STOUT_AFTER_LOG_ENTRY it must be set to one"
+                f" of True, true, False false. Got '{self.flush_stdout_after_log_entry}'"
+            )
 
     def _log(
         self,
@@ -43,6 +50,8 @@ class DpLogger:
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
 
+        # match dp logging structue
+        # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
         log_event = {
             "severity": level_to_severity(level),
             "event": event,
@@ -52,7 +61,7 @@ class DpLogger:
             "span_id": "not-implemented",
             "data": data_dict,
             "raw": raw,
-            "error": create_error_dict(error) if error is not None else None,
+            "errors": create_error_dict(error) if error is not None else None,
         }
 
         self._logger.log(**log_event)
