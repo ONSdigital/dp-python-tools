@@ -38,6 +38,9 @@ class DpLogger:
                 "When using env var FLUSH_STOUT_AFTER_LOG_ENTRY it must be set to one"
                 f" of True, true, False false. Got '{self.flush_stdout_after_log_entry}'"
             )
+            self.flush_stdout_after_log_entry = (
+                True if self.flush_stdout_after_log_entry in ["True", "true"] else False
+            )
 
     def _log(
         self,
