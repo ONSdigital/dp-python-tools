@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -30,11 +30,18 @@ class DpLogger:
 
         self._logger = structlog.get_logger()
         self.namespace = namespace
-        self.flush_stdout_after_log_entry = os.environ.get("FLUSH_STOUT_AFTER_LOG_ENTRY", None)
-        
+        self.flush_stdout_after_log_entry = os.environ.get(
+            "FLUSH_STOUT_AFTER_LOG_ENTRY", None
+        )
+
         # Polics the env var being passed in for flush_stdout_after_log_entry
         if self.flush_stdout_after_log_entry is not None:
-            assert self.flush_stdout_after_log_entry in ["True", "true", "False", "false"], (
+            assert self.flush_stdout_after_log_entry in [
+                "True",
+                "true",
+                "False",
+                "false",
+            ], (
                 "When using env var FLUSH_STOUT_AFTER_LOG_ENTRY it must be set to one"
                 f" of True, true, False false. Got '{self.flush_stdout_after_log_entry}'"
             )
