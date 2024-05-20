@@ -125,13 +125,13 @@ def test_error_log_complex(logger: DpLogger, capfd):
         assert log["raw"] == raw, _view_log(log)
         assert log["data"]["level"] == "ERROR", _view_log(log)
         assert log["data"]["ghostbusters"] == data["ghostbusters"], _view_log(log)
-        assert log["error"][0]["message"] == err_message, _view_log(log)
-        assert log["error"][0]["stack_trace"]["file"].endswith(
+        assert log["errors"][0]["message"] == err_message, _view_log(log)
+        assert log["errors"][0]["stack_trace"]["file"].endswith(
             "test_logger.py"
         ), _view_log(log)
-        assert log["error"][0]["stack_trace"]["line"] == 117, _view_log(log)
+        assert log["errors"][0]["stack_trace"]["line"] == 117, _view_log(log)
         assert (
-            log["error"][0]["stack_trace"]["function"] == "test_error_log_complex"
+            log["errors"][0]["stack_trace"]["function"] == "test_error_log_complex"
         ), _view_log(log)
 
 
@@ -156,11 +156,11 @@ def test_critical_log_complex(logger: DpLogger, capfd):
         assert log["raw"] == raw, _view_log(log)
         assert log["data"]["level"] == "CRITICAL", _view_log(log)
         assert log["data"]["ghostbusters"] == data["ghostbusters"], _view_log(log)
-        assert log["error"][0]["message"] == err_message, _view_log(log)
-        assert log["error"][0]["stack_trace"]["file"].endswith(
+        assert log["errors"][0]["message"] == err_message, _view_log(log)
+        assert log["errors"][0]["stack_trace"]["file"].endswith(
             "test_logger.py"
         ), _view_log(log)
-        assert log["error"][0]["stack_trace"]["line"] == 148, _view_log(log)
+        assert log["errors"][0]["stack_trace"]["line"] == 148, _view_log(log)
         assert (
-            log["error"][0]["stack_trace"]["function"] == "test_critical_log_complex"
+            log["errors"][0]["stack_trace"]["function"] == "test_critical_log_complex"
         ), _view_log(log)
