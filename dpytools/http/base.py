@@ -133,7 +133,7 @@ class BaseHttpClient:
         """
         return self._handle_request("PUT", url, *args, **kwargs)
 
-    # Method to handle requests for GET and POST
+    # Method to handle requests
     def _handle_request(self, method, url, *args, **kwargs):
         logger.info(
             f"Sending {method} request to {url}", data={"method": method, "url": url}

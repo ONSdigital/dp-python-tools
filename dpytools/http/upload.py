@@ -20,7 +20,7 @@ base_http_client = BaseHttpClient()
 # 2. /upload-new
 
 # Putting aside the wisdom of "new" we do need to support both of
-# these options so have ny neceessity adopted this nomanclature.
+# these options so have by neceessity adopted this nomanclature.
 
 
 class UploadServiceClient(BaseHttpClient):
