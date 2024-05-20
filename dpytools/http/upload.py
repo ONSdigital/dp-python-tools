@@ -35,7 +35,7 @@ class UploadServiceClient(BaseHttpClient):
         # token before a 15 minute timeout happens
         # (service account auth doesn't time out)
 
-        self.service_token = os.environ.get("SERVICE_TOKEN_FOR_UPLOAD")
+        self.service_token = os.environ.get("SERVICE_TOKEN_FOR_UPLOAD", None)
         if self.service_token is None:
             self.set_user_tokens()
 
