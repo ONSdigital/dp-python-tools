@@ -110,23 +110,23 @@ class UploadServiceClient(BaseHttpClient):
                 json={"Refresh": self.refresh_token, "ID": self.id_token},
             )
 
-        if response.status_code == 201:
-            self.auth_token = response.headers["Authorization"]
-            self.id_token = response.headers["ID"]
-        else:
-            err = Exception(
-                f"Refreshing token failed, returned a {response.status_code} error"
-            )
-            logger.error(
-                "Could not refresh user auth token",
-                err,
-                data={
-                    "token_refresh_url": token_refresh_url,
-                    "response_status_code": response.status_code,
-                    "response_content": response.content,
-                },
-            )
-            raise err
+            if response.status_code == 201:
+                self.auth_token = response.headers["Authorization"]
+                self.id_token = response.headers["ID"]
+            else:
+                err = Exception(
+                    f"Refreshing token failed, returned a {response.status_code} error"
+                )
+                logger.error(
+                    "Could not refresh user auth token",
+                    err,
+                    data={
+                        "token_refresh_url": token_refresh_url,
+                        "response_status_code": response.status_code,
+                        "response_content": response.content,
+                    },
+                )
+                raise err
 
         return {"X-Florence-Token": self.auth_token, "ID": self.id_token}
 
