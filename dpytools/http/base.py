@@ -116,14 +116,14 @@ class BaseHttpClient:
         Sends a PUT request to the specified URL with optional extra arguments.
 
         This method is a thin wrapper around `requests.post()`. Any additional arguments
-        are passed directly to `requests.post()`. For more information on the available
-        arguments, refer to the `requests.post()` documentation:
+        are passed directly to `requests.put()`. For more information on the available
+        arguments, refer to the `requests.put()` documentation:
         https://docs.python-requests.org/en/latest/api/#requests.post
 
         Args:
-            url (str): The URL to send the POST request to.
-            *args: Optional positional arguments passed to `requests.post()`.
-            **kwargs: Optional keyword arguments passed to `requests.post()`.
+            url (str): The URL to send the PUT request to.
+            *args: Optional positional arguments passed to `requests.put()`.
+            **kwargs: Optional keyword arguments passed to `requests.put()`.
 
         Returns:
             Response: The Response object from `requests.put()`.
