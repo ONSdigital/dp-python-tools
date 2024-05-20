@@ -69,7 +69,7 @@ class DpLogger:
 
         self._logger.log(**log_event)
 
-        if self.flush_stdout_after_log_entry:
+        if self.flush_stdout_after_log_entry is True:
             sys.stdout.flush()
 
     def debug(self, event: str, raw: str = None, data: Dict = None):
