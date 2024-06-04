@@ -2,6 +2,10 @@ import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from email_validator import EmailNotValidError, validate_email
 
+from dpytools.logging.logger import DpLogger
+
+logger = DpLogger("dpytools")
+
 
 class SesClient:
     """
@@ -87,6 +91,9 @@ class SesClient:
                     },
                 },
             )
+
+            logger.info(f"Sent email to {recipient} on subject: {subject}")
+            
         except (BotoCoreError, ClientError) as error:
             print(f"Error sending email: {error}")
             raise
