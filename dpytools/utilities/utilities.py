@@ -20,5 +20,3 @@ def str_to_bool(should_be_bool: str) -> bool:
         raise ValueError(
             f"A str value representing a boolean should be one of 'True', 'true', 'False', 'false'. Got '{should_be_bool}'"
         )
-
-
