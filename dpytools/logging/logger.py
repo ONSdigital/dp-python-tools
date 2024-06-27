@@ -16,7 +16,7 @@ from dpytools.logging.utility import (
     get_port,
     get_scheme,
     get_start_date,
-    level_to_severity
+    level_to_severity,
 )
 
 class DpLogger:
