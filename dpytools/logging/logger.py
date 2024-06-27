@@ -10,13 +10,14 @@ import structlog
 
 from dpytools.logging.utility import (
     calculate_duration_in_nanoseconds,
-     create_error_dict,
+    create_error_dict,
     get_domain,
     get_end_date,
     get_port,
     get_scheme,
     get_start_date,
-    level_to_severity)
+    level_to_severity
+)
 
 class DpLogger:
     def __init__(self, namespace: str):
