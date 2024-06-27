@@ -7,7 +7,6 @@ from typing import Dict, List, Optional
 import requests
 import structlog
 
-
 from dpytools.logging.utility import (
     calculate_duration_in_nanoseconds,
     create_error_dict,
@@ -18,6 +17,7 @@ from dpytools.logging.utility import (
     get_start_date,
     level_to_severity,
 )
+
 
 class DpLogger:
     def __init__(self, namespace: str):
