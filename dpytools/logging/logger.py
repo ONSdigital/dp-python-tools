@@ -1,22 +1,22 @@
 import logging
 import os
 import sys
-import requests
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 import structlog
+import requests
+
 
 from dpytools.logging.utility import (
-    create_error_dict,
-    level_to_severity,
+    calculate_duration_in_nanoseconds,
+     create_error_dict,
     get_domain,
-    get_scheme,
-    get_domain,
-    get_port,
-    get_start_date,
     get_end_date,
-    calculate_duration_in_nanoseconds)
+    get_port,
+    get_scheme,
+    get_start_date,
+    level_to_severity)
 
 class DpLogger:
     def __init__(self, namespace: str):
