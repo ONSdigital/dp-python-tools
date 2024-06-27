@@ -2,8 +2,8 @@ import sys
 import traceback
 from datetime import datetime, timedelta
 from typing import Dict, List
-
 from urllib.parse import urlparse
+
 from requests import Response
 
 

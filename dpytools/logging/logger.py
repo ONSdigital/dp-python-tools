@@ -4,8 +4,8 @@ import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-import structlog
 import requests
+import structlog
 
 
 from dpytools.logging.utility import (
