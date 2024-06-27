@@ -1,10 +1,10 @@
 import sys
 import traceback
-from requests import Response
 from datetime import datetime, timedelta
 from typing import Dict, List
 
 from urllib.parse import urlparse
+from requests import Response
 
 
 def level_to_severity(level: int) -> int:
