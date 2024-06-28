@@ -60,6 +60,15 @@ class TokenAuth(BaseHttpClient):
 
             self.auth_token = response_headers["Authorization"]
             self.id_token = response_headers["ID"]
+
+            logger.info(
+                "User tokens created",
+                data={
+                    "identity_api_url": self.identity_api_url,
+                    "token_url": token_url,
+                    "response_headers": response_headers,
+                },
+            )
         else:
             err = Exception("Failed to create user tokens")
             logger.error(
@@ -107,6 +116,14 @@ class TokenAuth(BaseHttpClient):
         if response.status_code == 201:
             self.auth_token = response.headers["Authorization"]
             self.id_token = response.headers["ID"]
+
+            logger.info(
+                "User tokens refreshed",
+                data={
+                    "token_refresh_url": token_refresh_url,
+                    "response_headers": response.headers,
+                },
+            )
         else:
             err = Exception(
                 f"Refreshing token failed, returned a {response.status_code} error"
