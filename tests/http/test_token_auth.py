@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -97,3 +98,31 @@ def test_refresh_user_token():
         assert token_auth.auth_token == "new_auth_token"
         assert token_auth.id_token == "new_id_token"
         assert mock_put.call_count == 1
+
+
+def test_refresh_user_token_failure():
+    """
+    Ensures that refresh_user_token() raises an exception when the put request is unsuccessful.
+    """
+    os.environ["FLORENCE_USER"] = "test_user"
+    os.environ["FLORENCE_PASSWORD"] = "test_password"
+    os.environ["IDENTITY_API_URL"] = "http://test_url"
+    mock_response = MagicMock()
+    mock_response.status_code = 400
+    with patch.object(
+        TokenAuth, "put", return_value=mock_response
+    ) as mock_put, patch.object(
+        TokenAuth, "post", return_value=mock_response
+    ), patch.object(
+        TokenAuth, "set_user_tokens"
+    ):
+        token_auth = TokenAuth()
+        # Manually set the necessary attributes
+        token_auth.refresh_token = "test_refresh_token"
+        token_auth.id_token = "test_id_token"
+        token_auth.identity_api_url = os.environ["IDENTITY_API_URL"]
+        # Mock token_creation_time to be more than 10 minutes in the past
+        token_auth.token_creation_time = datetime.now() - timedelta(minutes=11)
+        with pytest.raises(Exception) as e_info:
+            token_auth.refresh_user_token()
+        assert str(e_info.value) == "Refreshing token failed, returned a 400 error"
