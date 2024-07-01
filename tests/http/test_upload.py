@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from dpytools.http.upload import (
+from dpytools.http.upload.base_upload import (
     _create_temp_chunks,
     _delete_temp_chunks,
     _generate_upload_new_params,

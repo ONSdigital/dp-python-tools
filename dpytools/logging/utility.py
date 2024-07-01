@@ -29,6 +29,9 @@ def create_error_dict(error: Exception) -> List[Dict]:
 
     tb = traceback.extract_tb(error.__traceback__)
 
+    if not tb:
+        return [{"error_message": str(error), "error_trace": ""}]
+
     # Get the last exception where exceptions are chained.
     last_call = tb[-1]
 

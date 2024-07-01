@@ -39,7 +39,6 @@ def test_str_to_bool_raises_for_not_string_argument():
     """
 
     for invalid_type in [1, True, 897.23]:
-
         with pytest.raises(AssertionError) as err:
             str_to_bool(invalid_type)
 
