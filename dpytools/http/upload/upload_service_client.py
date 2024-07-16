@@ -82,3 +82,15 @@ class UploadServiceClient(BaseUploadClient):
             title,
             chunk_size,
         )
+
+    def upload_json(
+        self,
+        json_path: Union[Path, str],
+        alias_name: Optional[str] = None,
+        title: Optional[str] = None,
+        chunk_size: int = 5242880,
+    ) -> None:
+        """
+        Upload json files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `json_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        """
+        self._upload(json_path, "application/json", alias_name, title, chunk_size)
