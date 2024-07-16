@@ -71,7 +71,7 @@ class DpLogger:
             "span_id": "not-implemented",
             "data": data_dict,
             "raw": raw,
-            "commitID": get_commit_ID(),
+            "commit_ID": get_commit_ID(),
             "errors": create_error_dict(error) if error is not None else None,
         }
 
