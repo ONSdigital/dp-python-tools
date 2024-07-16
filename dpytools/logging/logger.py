@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 import structlog
 
-from dpytools.logging.utility import create_error_dict, level_to_severity
+from dpytools.logging.utility import create_error_dict, level_to_severity, get_commit_ID
 
 
 class DpLogger:
@@ -71,6 +71,7 @@ class DpLogger:
             "span_id": "not-implemented",
             "data": data_dict,
             "raw": raw,
+            "commitID": get_commit_ID(),
             "errors": create_error_dict(error) if error is not None else None,
         }
 
