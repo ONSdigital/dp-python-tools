@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 import structlog
 
-from dpytools.logging.utility import create_error_dict, level_to_severity, get_commit_ID
+from dpytools.logging.utility import create_error_dict, get_commit_ID, level_to_severity
 
 
 class DpLogger:
