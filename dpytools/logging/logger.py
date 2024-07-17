@@ -59,6 +59,7 @@ class DpLogger:
     ):
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
+        data_dict["commit_ID"] = get_commit_ID()
 
         # match dp logging structue
         # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
@@ -71,7 +72,6 @@ class DpLogger:
             "span_id": "not-implemented",
             "data": data_dict,
             "raw": raw,
-            "commit_ID": get_commit_ID(),
             "errors": create_error_dict(error) if error is not None else None,
         }
 
