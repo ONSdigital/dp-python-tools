@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 import structlog
 
-from dpytools.logging.utility import create_error_dict, level_to_severity
+from dpytools.logging.utility import create_error_dict, get_commit_ID, level_to_severity
 
 
 class DpLogger:
@@ -59,6 +59,7 @@ class DpLogger:
     ):
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
+        data_dict["commit_ID"] = get_commit_ID()
 
         # match dp logging structue
         # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
