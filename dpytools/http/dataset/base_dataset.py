@@ -37,35 +37,3 @@ class BaseDatasetClient(BaseHttpClient):
             logger.error("Failed to send POST request", exc_info=e)
         raise
 
-    def _assign(self, upload_dict: Dict) -> None:
-        """
-        Assign the upload dictionary to the instance variable.
-
-        :param upload_dict: Dictionary containing upload data.
-        """
-        if not hasattr(self, "upload_dict"):
-            self.upload_dict = upload_dict
-        else:
-            logger.warning("upload_dict is already assigned.")
-
-    def _get_recipe_id(self, dataset_id: str) -> None:
-        """
-        Get the recipe ID for the given dataset ID if not already set.
-
-        :param dataset_id: The ID of the dataset to get the recipe for.
-        """
-        if not self.upload_dict[dataset_id].get("recipe_id"):
-            response = self.get(f"{self.dataset_url}/recipes?limit=1000")
-
-            if response.status_code == 200:
-                all_recipes = response.json()
-            else:
-                raise Exception(f"Recipe API returned a {response.status_code} error")
-
-            for item in all_recipes["items"]:
-                if dataset_id == item["output_instances"][0]["dataset_id"]:
-                    self.upload_dict[dataset_id]["dataset_recipe"] = item
-                    self.upload_dict[dataset_id]["recipe_id"] = item["id"]
-                    return
-
-            raise Exception(f"Unable to find recipe for dataset id {dataset_id}")
