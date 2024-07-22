@@ -10,6 +10,12 @@ from dpytools.stores.directory.base import BaseWritableSingleDirectoryStore
 
 
 class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
+    """
+    A class representing a directory store that is available locally.
+    Provides access to several functions related to retrieving, saving, 
+    getting information and performing regex pattern matching on files
+    in a given directory that has a path.
+    """
     def __init__(self, local_dir: Union[str, Path]):
         # Takes a path or a string representing a path as input
 
@@ -51,7 +57,10 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         return local_file_path
 
     def has_lone_file_matching(self, pattern: str) -> bool:
-        # Grab a list of files matching the regex pattern to determine how many exist.
+        """
+        Grab a list of files matching the regex pattern to determine how many exist.
+        Then ensures only one matching file exists.
+        """
 
         matching_files = self._files_that_match_pattern(pattern)
 
@@ -105,6 +114,11 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         return save_path
 
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
+        """
+        Asserts the directory has one file matching the pattern, 
+        then loads its contents into a json object and returns it 
+        as a dictionary.
+        """
         # Assert 1 file matches
         if self.has_lone_file_matching(pattern):
             file_path = Path(
@@ -127,14 +141,16 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             return file_names
 
     def _files_that_match_pattern(self, pattern) -> List[str]:
-        # given a pattern, return a list of all files that match it.
-        # use self.get_files_names() in here as well.
+        """
+        Private utility function that retrieves all matching files in the directory.
+        Used in other functions to avoid repetition.
+        """
         matching_files = [f for f in self.get_file_names() if re.search(pattern, f)]
 
         return matching_files
 
     def get_current_source_pathlike(self) -> str:
         """
-        Returns the local path as a string
+        Returns the local path of the directory store as a string.
         """
         return str(self.local_path.absolute())
