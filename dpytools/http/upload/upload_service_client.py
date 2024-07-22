@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from dpytools.http.upload.base_upload import BaseUploadClient
 
-from .token_auth import TokenAuth
+from ..token_auth import TokenAuth
 
 # Dev note:
 
@@ -19,8 +19,7 @@ from .token_auth import TokenAuth
 
 class UploadServiceClient(BaseUploadClient):
     def __init__(self, upload_url: str, backoff_max=30):
-        super().__init__(backoff_max=backoff_max)
-        self.upload_url = upload_url
+        super().__init__(upload_url=upload_url, backoff_max=backoff_max)
         self.token_auth = TokenAuth(backoff_max=backoff_max)
 
     def upload_csv(
@@ -42,6 +41,16 @@ class UploadServiceClient(BaseUploadClient):
         Upload sdmx files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
         """
         self._upload(sdmx_path, "application/xml", chunk_size)
+
+    def upload_json(
+        self,
+        json_path: Union[Path, str],
+        chunk_size: int = 5242880,
+    ) -> None:
+        """
+        Upload json files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `json_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        """
+        self._upload(json_path, "application/json", chunk_size)
 
     def upload_new_csv(
         self,
@@ -83,7 +92,7 @@ class UploadServiceClient(BaseUploadClient):
             chunk_size,
         )
 
-    def upload_json(
+    def upload_new_json(
         self,
         json_path: Union[Path, str],
         alias_name: Optional[str] = None,
@@ -91,6 +100,8 @@ class UploadServiceClient(BaseUploadClient):
         chunk_size: int = 5242880,
     ) -> None:
         """
-        Upload json files to the DP Upload Service `/upload` endpoint. The file to be uploaded (located at `json_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+        Upload json files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `json_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
+
+        `alias_name` and `title` are optional arguments. If these are not explicitly provided, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension - e.g. if the filename is "data.json", `alias_name` defaults to "data.json" and `title` defaults to "data".
         """
-        self._upload(json_path, "application/json", alias_name, title, chunk_size)
+        self._upload_new(json_path, "application/json", alias_name, title, chunk_size)

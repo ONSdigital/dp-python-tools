@@ -5,7 +5,7 @@ from typing import Optional, Union
 from dpytools.http.base import BaseHttpClient
 from dpytools.logging.logger import DpLogger
 
-from .token_auth import TokenAuth
+from ..token_auth import TokenAuth
 from .utils import (
     _create_temp_chunks,
     _delete_temp_chunks,
@@ -17,9 +17,10 @@ logger = DpLogger("dpytools")
 
 
 class BaseUploadClient(BaseHttpClient):
-    def __init__(self, backoff_max=30):
+    def __init__(self, upload_url: str, backoff_max=30):
         super().__init__(backoff_max=backoff_max)
         self.token_auth = TokenAuth(backoff_max=backoff_max)
+        self.upload_url = upload_url
 
     def _upload(
         self,
@@ -110,7 +111,7 @@ class BaseUploadClient(BaseHttpClient):
                 # Submit `POST` request to `self.upload_url`
                 self.post(
                     self.upload_url,
-                    headers=self.get_auth_header(),
+                    headers=self.token_auth.get_auth_headers(),
                     params=upload_params,
                     files=file,
                     verify=True,

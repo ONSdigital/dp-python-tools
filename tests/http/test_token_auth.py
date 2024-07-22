@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from dpytools.http.upload.token_auth import TokenAuth
+from dpytools.http.token_auth import TokenAuth
 
 
 def test_set_user_tokens():
