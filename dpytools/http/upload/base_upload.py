@@ -111,7 +111,7 @@ class BaseUploadClient(BaseHttpClient):
                 # Submit `POST` request to `self.upload_url`
                 self.post(
                     self.upload_url,
-                    headers=self.token_auth.get_auth_headers(),
+                    headers=self.token_auth.get_auth_header(),
                     params=upload_params,
                     files=file,
                     verify=True,
