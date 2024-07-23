@@ -54,6 +54,7 @@ def test_post_json_success(mock_request):
         verify=True,
     )
 
+
 @patch("requests.request")
 def test_post_json_failure(mock_request):
     """
@@ -70,6 +71,7 @@ def test_post_json_failure(mock_request):
     mock_client = BaseAPIClient("test_url", "test_path")
     with pytest.raises(Exception):
         mock_client.post_json()
+
 
 @patch("requests.request")
 def test_post_new_job_success(mock_request):
@@ -104,6 +106,7 @@ def test_post_new_job_failure(mock_request):
     mock_client = DatasetAPIClient("test_url", "test_path")
     with pytest.raises(Exception):
         mock_client.post_new_job()
+
 
 @patch("builtins.open", new_callable=mock_open, read_data='{"key": "value"}')
 @patch("requests.request")
