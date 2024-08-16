@@ -12,10 +12,11 @@ from dpytools.stores.directory.base import BaseWritableSingleDirectoryStore
 class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
     """
     A class representing a directory store that is available locally.
-    Provides access to several functions related to retrieving, saving, 
+    Provides access to several functions related to retrieving, saving,
     getting information and performing regex pattern matching on files
     in a given directory that has a path.
     """
+
     def __init__(self, local_dir: Union[str, Path]):
         # Takes a path or a string representing a path as input
 
@@ -115,8 +116,8 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
     def get_lone_matching_json_as_dict(self, pattern: str) -> dict:
         """
-        Asserts the directory has one file matching the pattern, 
-        then loads its contents into a json object and returns it 
+        Asserts the directory has one file matching the pattern,
+        then loads its contents into a json object and returns it
         as a dictionary.
         """
         # Assert 1 file matches

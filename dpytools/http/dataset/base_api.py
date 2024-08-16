@@ -41,5 +41,5 @@ class BaseAPIClient(BaseHttpClient):
             )
             return response
         except RequestException as e:
-            logger.error("Failed to send POST request", exc_info=e)
+            logger.error("Failed to send POST request", error=e)
             raise

@@ -21,7 +21,7 @@ def test_set_user_tokens():
         "Authorization": "test_auth_token",
         "ID": "test_id_token",
     }
-    with patch.object(TokenAuth, "post", return_value=mock_response) as mock_post:
+    with patch.object(TokenAuth, "post", return_value=mock_response):
         token_auth = TokenAuth()
         token_auth.set_user_tokens()
         assert token_auth.auth_token == "test_auth_token"
@@ -69,7 +69,7 @@ def test_get_auth_header_with_user_token():
         "Authorization": "test_auth_token",
         "ID": "test_id_token",
     }
-    with patch.object(TokenAuth, "post", return_value=mock_response) as mock_post:
+    with patch.object(TokenAuth, "post", return_value=mock_response):
         token_auth = TokenAuth()
         token_auth.set_user_tokens()
         header = token_auth.get_auth_header()
@@ -109,13 +109,9 @@ def test_refresh_user_token_failure():
     os.environ["IDENTITY_API_URL"] = "http://test_url"
     mock_response = MagicMock()
     mock_response.status_code = 400
-    with patch.object(
-        TokenAuth, "put", return_value=mock_response
-    ) as mock_put, patch.object(
+    with patch.object(TokenAuth, "put", return_value=mock_response), patch.object(
         TokenAuth, "post", return_value=mock_response
-    ), patch.object(
-        TokenAuth, "set_user_tokens"
-    ):
+    ), patch.object(TokenAuth, "set_user_tokens"):
         token_auth = TokenAuth()
         # Manually set the necessary attributes
         token_auth.refresh_token = "test_refresh_token"

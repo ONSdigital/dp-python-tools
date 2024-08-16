@@ -3,7 +3,7 @@ from datetime import datetime
 from math import ceil
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Optional, Union
+from typing import Optional
 
 
 def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> dict:

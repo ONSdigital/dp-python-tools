@@ -1,4 +1,3 @@
-import subprocess
 import sys
 import traceback
 from typing import Dict, List
@@ -51,10 +50,3 @@ def create_error_dict(error: Exception) -> List[Dict]:
 
     # Listify in keeping with expected DP logging structures
     return [error_dict]
-
-def get_commit_ID():
-    try:
-        commit_id=subprocess.check_output(["git", "log", "-1", "--format=%H"]).strip().decode("utf-8")
-        return commit_id
-    except subprocess.CalledProcessError as err:
-        raise err

@@ -29,7 +29,7 @@ class DatasetAPIClient(BaseAPIClient):
                 json_data = json.load(file)
             self.post_json(json_data)
         except RequestException as e:
-            logger.error(f"Failed to upload JSON data: {e}")
+            logger.error(f"Failed to upload JSON data: {e}", e)
             raise
 
     def post_new_job(self, payload=None) -> None:

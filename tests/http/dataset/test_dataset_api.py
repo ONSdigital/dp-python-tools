@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from requests import HTTPError, RequestException, Response
+from requests import Response
 
 from dpytools.http.dataset.base_api import BaseAPIClient
 from dpytools.http.dataset.dataset_api_client import DatasetAPIClient
