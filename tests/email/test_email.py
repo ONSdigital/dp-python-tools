@@ -36,10 +36,7 @@ def test_ses_client_initialisation_invalid_sender_email():
     with pytest.raises(ValueError) as e:
         SesClient("invalid_email", "us-west-2")
 
-    assert (
-        "Invalid sender email: The email address is not valid. It must have exactly one @-sign."
-        in str(e.value)
-    )
+    assert "Invalid sender email: An email address must have an @-sign." in str(e.value)
 
 
 @mock_aws
@@ -63,9 +60,8 @@ def test_ses_client_send_invalid_recipient(mock_ses_client):
     with pytest.raises(ValueError) as e:
         mock_ses_client.send("invalid_email", "subject", "body")
 
-    assert (
-        "Invalid recipient email: The email address is not valid. It must have exactly one @-sign."
-        in str(e.value)
+    assert "Invalid recipient email: An email address must have an @-sign." in str(
+        e.value
     )
 
 
