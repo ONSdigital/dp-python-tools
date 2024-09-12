@@ -96,8 +96,6 @@ class DpLogger:
                 }
         else:
             r_dict = None
-        
-        #reponse_dict = r_dict if response is not None else {}
 
         log_event = {
             "severity": level_to_severity(level),
