@@ -28,12 +28,19 @@ class DpLogger:
         namespace: (required) the namespace for the app in question
         """
 
-        logging.getLogger().addHandler(logging.StreamHandler())
+        class FlushStreamHandler(logging.StreamHandler):
+            def emit(self, record):
+                super().emit(record)
+                self.flush()
 
-        processors = [structlog.processors.JSONRenderer()]
+        handler = FlushStreamHandler()
+        logging.getLogger().addHandler(handler)
 
         structlog.configure(
-            processors=processors,
+            processors=[
+                structlog.processors.TimeStamper(fmt="iso"), 
+                structlog.processors.JSONRenderer()
+            ],
             wrapper_class=structlog.BoundLogger,
             cache_logger_on_first_use=True,
         )

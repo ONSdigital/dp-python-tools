@@ -93,7 +93,7 @@ class SesClient:
             )
 
             logger.info(f"Sent email to {recipient} on subject: {subject}")
-            
+
         except (BotoCoreError, ClientError) as error:
             print(f"Error sending email: {error}")
             raise
