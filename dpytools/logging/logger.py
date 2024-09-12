@@ -81,20 +81,23 @@ class DpLogger:
         # match dp logging structue
         # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
 
-        r_dict = {
-            "method": response.request.method,
-            "scheme": get_scheme(response.url),
-            "host": get_domain(response.url),
-            "port": get_port(response.url),
-            "path": response.request.path_url,
-            "status_code" : response.status_code,
-            "started_at":get_start_date(response.headers["Date"]),
-            "ended_at":get_end_date(response.elapsed, response.headers["Date"]),
-            "duration": calculate_duration_in_nanoseconds(response.elapsed, response.headers["Date"]),
-            "response_content_length":len(response.content)
-            }
-
-        reponse_dict = r_dict if response is not None else {}
+        if response is not None:
+            r_dict = {
+                "method": response.request.method,
+                "scheme": get_scheme(response.url),
+                "host": get_domain(response.url),
+                "port": get_port(response.url),
+                "path": response.request.path_url,
+                "status_code" : response.status_code,
+                "started_at":get_start_date(response.headers["Date"]),
+                "ended_at":get_end_date(response.elapsed, response.headers["Date"]),
+                "duration": calculate_duration_in_nanoseconds(response.elapsed, response.headers["Date"]),
+                "response_content_length":len(response.content)
+                }
+        else:
+            r_dict = None
+        
+        #reponse_dict = r_dict if response is not None else {}
 
         log_event = {
             "severity": level_to_severity(level),
@@ -104,7 +107,7 @@ class DpLogger:
             "trace_id": "not-implemented",
             "span_id": "not-implemented",
             "data": data_dict,
-            "response_dict" : reponse_dict,
+            "response_dict" : r_dict,
             "raw": raw,
             "errors": create_error_dict(error) if error is not None else None,
         }
