@@ -73,24 +73,13 @@ class DpLogger:
         error: Optional[List] = None,
         data: Optional[Dict] = None,
         raw: str = None,
-        response = Optional[requests.Response],
+        response : Optional[requests.Response] = None,
     ):
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
 
         # match dp logging structue
         # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
-        log_event = {
-            "severity": level_to_severity(level),
-            "event": event,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "namespace": self.namespace,
-            "trace_id": "not-implemented",
-            "span_id": "not-implemented",
-            "data": data_dict,
-            "raw": raw,
-            "errors": create_error_dict(error) if error is not None else None,
-        }
 
         r_dict = {
             "method": response.request.method,
@@ -106,6 +95,19 @@ class DpLogger:
             }
 
         reponse_dict = r_dict if response is not None else {}
+
+        log_event = {
+            "severity": level_to_severity(level),
+            "event": event,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "namespace": self.namespace,
+            "trace_id": "not-implemented",
+            "span_id": "not-implemented",
+            "data": data_dict,
+            "response_dict" : reponse_dict,
+            "raw": raw,
+            "errors": create_error_dict(error) if error is not None else None,
+        }
 
         self._logger.log(**log_event)
 
