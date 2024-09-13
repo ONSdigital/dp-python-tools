@@ -4,9 +4,19 @@ import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+import requests
 import structlog
 
-from dpytools.logging.utility import create_error_dict, level_to_severity
+from dpytools.logging.utility import (
+    calculate_duration_in_nanoseconds,
+    create_error_dict,
+    get_domain,
+    get_end_date,
+    get_port,
+    get_scheme,
+    get_start_date,
+    level_to_severity,
+)
 
 
 class DpLogger:
@@ -63,12 +73,30 @@ class DpLogger:
         error: Optional[List] = None,
         data: Optional[Dict] = None,
         raw: str = None,
+        response : Optional[requests.Response] = None,
     ):
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
 
         # match dp logging structue
         # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
+
+        if response is not None:
+            r_dict = {
+                "method": response.request.method,
+                "scheme": get_scheme(response.url),
+                "host": get_domain(response.url),
+                "port": get_port(response.url),
+                "path": response.request.path_url,
+                "status_code" : response.status_code,
+                "started_at":get_start_date(response.headers["Date"]),
+                "ended_at":get_end_date(response.elapsed, response.headers["Date"]),
+                "duration": calculate_duration_in_nanoseconds(response.elapsed, response.headers["Date"]),
+                "response_content_length":len(response.content)
+                }
+        else:
+            r_dict = None
+
         log_event = {
             "severity": level_to_severity(level),
             "event": event,
@@ -77,6 +105,7 @@ class DpLogger:
             "trace_id": "not-implemented",
             "span_id": "not-implemented",
             "data": data_dict,
+            "response_dict" : r_dict,
             "raw": raw,
             "errors": create_error_dict(error) if error is not None else None,
         }
@@ -86,7 +115,7 @@ class DpLogger:
         if self.flush_stdout_after_log_entry is True:
             sys.stdout.flush()
 
-    def debug(self, event: str, raw: str = None, data: Dict = None):
+    def debug(self, event: str, raw: str = None, data: Dict = None, response: requests.Response = None):
         """
         Log at the debug level.
 
@@ -94,9 +123,9 @@ class DpLogger:
         raw  : a raw string of any log messages captured for a third party library
         data : arbitrary key-value pairs that may be of use in providing context
         """
-        self._log(event, 10, raw=raw, data=data)
+        self._log(event, 10, raw=raw, data=data, response=response)
 
-    def info(self, event: str, raw: str = None, data: Dict = None):
+    def info(self, event: str, raw: str = None, data: Dict = None, response: requests.Response = None):
         """
         Log at the info level.
 
@@ -106,7 +135,7 @@ class DpLogger:
         """
         self._log(event, 20, raw=raw, data=data)
 
-    def warning(self, event: str, raw: str = None, data: Dict = None):
+    def warning(self, event: str, raw: str = None, data: Dict = None, response: requests.Response = None):
         """
         Log at the warning level.
 
@@ -114,9 +143,9 @@ class DpLogger:
         raw  : a raw string of any log messages captured for a third party library
         data : arbitrary key-value pairs that may be of use in providing context
         """
-        self._log(event, 30, raw=raw, data=data)
+        self._log(event, 30, raw=raw, data=data, response=response)
 
-    def error(self, event: str, error: Exception, raw: str = None, data: Dict = None):
+    def error(self, event: str, error: Exception, raw: str = None, data: Dict = None, response: requests.Response = None):
         """
         Log at the error level.
 
@@ -125,10 +154,10 @@ class DpLogger:
         raw  : a raw string of any log messages captured for a third party library
         data : arbitrary key-value pairs that may be of use in providing context
         """
-        self._log(event, 40, error=error, raw=raw, data=data)
+        self._log(event, 40, error=error, raw=raw, data=data, response=response)
 
     def critical(
-        self, event: str, error: Exception, raw: str = None, data: Dict = None
+        self, event: str, error: Exception, raw: str = None, data: Dict = None, response: requests.Response = None
     ):
         """
         IMPORTANT: You should only be logging at the critical level during
@@ -142,4 +171,4 @@ class DpLogger:
         raw  : a raw string of any log messages captured for a third party library
         data : arbitrary key-value pairs that may be of use in providing context
         """
-        self._log(event, 50, error=error, raw=raw, data=data)
+        self._log(event, 50, error=error, raw=raw, data=data, response=response)
