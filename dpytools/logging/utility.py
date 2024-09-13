@@ -63,7 +63,7 @@ def get_scheme(url: str) -> str:
     return scheme
 
 def get_domain(url: str) -> str:
-    """This funciton will return the domain name from the provided url."""
+    """This function will return the domain name from the provided url."""
     #Parsing url to extract the domain name
     parsed_url = urlparse(url)
 
@@ -72,11 +72,11 @@ def get_domain(url: str) -> str:
     return domain
 
 def get_port(url: str) ->int:
-    """This funciton will return the port number form the provided url."""
+    """This function will return the port number form the provided url."""
     #Parsing url
     parsed_url = urlparse(url)
 
-    #checking if the port was give if not scheking scheme for port number
+    #checking if the port was give if not checking scheme for port number
     if parsed_url.port is None:
         if parsed_url.scheme == "http":
             return 80
@@ -92,7 +92,7 @@ def get_start_date(date: str) ->str:
     return strp_time.isoformat() + "Z"
 
 def get_end_date(time_delta: timedelta, date: str) ->str:
-    """This function will calculate the end_date by addint the duration to the start date."""
+    """This function will calculate the end_date by adding the duration to the start date."""
 
     strp_time = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
     td = timedelta(microseconds=time_delta.microseconds)
@@ -102,7 +102,7 @@ def get_end_date(time_delta: timedelta, date: str) ->str:
     return end_date.isoformat() + "Z"
 
 def calculate_duration_in_nanoseconds(time_delta: timedelta, date: str)->int:
-    """This funciton will convert the duration from Miliseconds to Nanoseconds."""
+    """This function will convert the duration from Miliseconds to Nanoseconds."""
 
     strp_time = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
     td = timedelta(microseconds=time_delta.microseconds)
@@ -115,7 +115,7 @@ def calculate_duration_in_nanoseconds(time_delta: timedelta, date: str)->int:
 
 def get_content_length(res: Response)->int:
     """
-    This funciton will try to get the 'Content-Lenght'
+    This function will try to get the 'Content-Lenght'
     if there is noone it will return a default 0.
     """
     try:
