@@ -173,6 +173,22 @@ def test_has_lone_file_matching_multiple():
     )
 
 
+def test_get_pathlike_of_file_matching():
+    """
+    Checks that a LocalDirectoryStore can retrieve a lone matching file
+    from a given pattern, then return the full path of the retrieved matching file.
+    """
+
+    test_path = Path(
+        "tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file"
+    )
+    test_local_directory_store = LocalDirectoryStore(test_path)
+
+    test_matching_file_path_result = test_local_directory_store.get_pathlike_of_file_matching(".json")
+
+    assert test_matching_file_path_result == "tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file/local_directory_test.json"
+
+
 def test_save_lone_file_destination():
     """
     Checks that a LocalDirectoryStore can retrieve a lone matching file
