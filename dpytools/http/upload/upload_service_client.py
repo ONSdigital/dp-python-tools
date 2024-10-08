@@ -57,6 +57,8 @@ class UploadServiceClient(BaseUploadClient):
         csv_path: Union[Path, str],
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
+        license: Optional[str] = None,
+        license_url: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> None:
         """
@@ -69,6 +71,8 @@ class UploadServiceClient(BaseUploadClient):
             "text/csv",
             alias_name,
             title,
+            license,
+            license_url,
             chunk_size,
         )
 
@@ -77,6 +81,8 @@ class UploadServiceClient(BaseUploadClient):
         sdmx_path: Union[Path, str],
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
+        license: Optional[str] = None,
+        license_url: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> None:
         """
@@ -89,6 +95,8 @@ class UploadServiceClient(BaseUploadClient):
             "application/xml",
             alias_name,
             title,
+            license,
+            license_url,
             chunk_size,
         )
 
@@ -97,6 +105,8 @@ class UploadServiceClient(BaseUploadClient):
         json_path: Union[Path, str],
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
+        license: Optional[str] = None,
+        license_url: Optional[str] = None,
         chunk_size: int = 5242880,
     ) -> None:
         """
@@ -104,4 +114,12 @@ class UploadServiceClient(BaseUploadClient):
 
         `alias_name` and `title` are optional arguments. If these are not explicitly provided, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension - e.g. if the filename is "data.json", `alias_name` defaults to "data.json" and `title` defaults to "data".
         """
-        self._upload_new(json_path, "application/json", alias_name, title, chunk_size)
+        self._upload_new(
+            json_path, 
+            "application/json", 
+            alias_name, 
+            title,
+            license,
+            license_url, 
+            chunk_size,
+        )

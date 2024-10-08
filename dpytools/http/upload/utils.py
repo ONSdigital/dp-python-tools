@@ -65,6 +65,13 @@ def _generate_upload_new_params(
 
     if title is None:
         title = filename.split(".")[0]
+    
+    if licence is None:
+        licence = "Open Government Licence v3.0"
+    
+    if licence_url is None:
+        licence_url = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+
 
     # Generate upload request params
     upload_params = {

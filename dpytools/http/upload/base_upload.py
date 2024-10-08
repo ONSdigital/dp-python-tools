@@ -61,6 +61,8 @@ class BaseUploadClient(BaseHttpClient):
         mimetype: str,
         alias_name: Optional[str],
         title: Optional[str],
+        license: Optional[str],
+        license_url: Optional[str],
         chunk_size: int = 5242880,
     ) -> None:
         """
@@ -76,7 +78,7 @@ class BaseUploadClient(BaseHttpClient):
 
         # Generate upload request params
         upload_params = _generate_upload_new_params(
-            file_path, chunk_size, mimetype, alias_name, title
+            file_path, chunk_size, mimetype, alias_name, title, license, license_url
         )
         logger.info(
             "Upload parameters generated", data={"upload_params": upload_params}
