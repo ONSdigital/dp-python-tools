@@ -60,7 +60,7 @@ class BaseReadableSingleDirectoryStore(ABC):
         ...
     
     @abstractmethod
-    def get_pathlike_of_file_matching(self, pattern: str) -> str:
+    def get_pathlike_of_file_matching(self, pattern: str) -> Path:
         """
         Get the path of the file matching the given pattern, if it exists.
         """
