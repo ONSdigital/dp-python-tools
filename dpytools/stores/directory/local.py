@@ -74,7 +74,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
                 f"More than 1 file found that matches the regex pattern '{pattern}' in directory {self.local_path}. Matching: {matching_files}"
             )
 
-    def get_pathlike_of_file_matching(self, pattern: str):
+    def get_pathlike_of_file_matching(self, pattern: str) -> Path:
         """
         Get the path of the file matching the given pattern, if it exists.
         """
@@ -89,7 +89,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         # Assemble the full path
         matching_file_full_path = os.path.join(self.local_path, matching_file_name)
 
-        return matching_file_full_path
+        return Path(matching_file_full_path)
 
     def save_lone_file_matching(
         self, pattern: str, destination: Optional[Union[Path, str]] = None

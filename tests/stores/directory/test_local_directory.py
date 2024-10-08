@@ -186,7 +186,7 @@ def test_get_pathlike_of_file_matching():
 
     test_matching_file_path_result = test_local_directory_store.get_pathlike_of_file_matching(".json")
 
-    assert test_matching_file_path_result == "tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file/local_directory_test.json"
+    assert test_matching_file_path_result == Path("tests/test_cases/test_local_store/local_directory_folders/local_directory_lone_file/local_directory_test.json")
 
 
 def test_save_lone_file_destination():
