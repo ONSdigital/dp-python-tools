@@ -58,6 +58,13 @@ class BaseReadableSingleDirectoryStore(ABC):
         Get the source in terms of the current path like location as a string representing the directory/bucket-like the files are in.
         """
         ...
+    
+    @abstractmethod
+    def get_pathlike_of_file_matching(self, pattern: str) -> Path:
+        """
+        Get the path of the file matching the given pattern, if it exists.
+        """
+        ...
 
 
 class BaseWritableSingleDirectoryStore(BaseReadableSingleDirectoryStore):
