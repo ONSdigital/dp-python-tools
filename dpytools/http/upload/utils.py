@@ -35,13 +35,13 @@ def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> 
 
 def _generate_upload_new_params(
     file_path: Path,
-    chunk_size: int,
     mimetype: str,
+    chunk_size: Optional[int],
     alias_name: Optional[str],
     title: Optional[str],
-    is_publishable: bool = False,
-    licence: str = "Open Government Licence v3.0",
-    licence_url: str = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    is_publishable: Optional[bool],
+    licence: Optional[str],
+    licence_url: Optional[str],
 ) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
@@ -52,7 +52,7 @@ def _generate_upload_new_params(
     total_size = os.path.getsize(file_path)
 
     # Get filename from csv filepath
-    filename = str(file_path).split("/")[-1]
+    filename = file_path.name
 
     # Get timestamp to create `resumableIdentifier` value in `upload_params`
     timestamp = datetime.now().strftime("%d%m%y%H%M%S")
@@ -60,18 +60,21 @@ def _generate_upload_new_params(
     # Create identifier from timestamp and filename
     identifier = f"{timestamp}-{filename.replace('.', '-')}"
 
+    # If alias name not provided, default to filename (with extension)
     if alias_name is None:
         alias_name = filename
 
+    # If title not provided, default to filename (without extension)
     if title is None:
-        title = filename.split(".")[0]
-    
+        title = file_path.stem
+
     if licence is None:
         licence = "Open Government Licence v3.0"
-    
-    if licence_url is None:
-        licence_url = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
 
+    if licence_url is None:
+        licence_url = (
+            "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+        )
 
     # Generate upload request params
     upload_params = {
@@ -83,15 +86,10 @@ def _generate_upload_new_params(
         "resumableFilename": filename,
         "resumableRelativePath": str(file_path),
         "aliasName": alias_name,
-        # TODO Currently the POST request in `_upload_file_chunks` is failing due to an potential issue with the Go code (HTTP 500 error: `bad request: unknown error: : duplicate file path`)
-        # Once the Go issue is resolved, check that the Path is in the correct format
-        # See https://github.com/ONSdigital/dp-api-clients-go/blob/a26491512a8336ad9c31b694c045d8e3a3ed0578/files/client.go#L160
         "Path": f"datasets/{identifier}",
         "isPublishable": is_publishable,
         "Title": title,
-        # `SizeInBytes` may be populated from `resumableTotalSize` - check once `Path` issue has been resolved
         "SizeInBytes": total_size,
-        # `Type` may be populated from `resumableType` - check once `Path` issue has been resolved
         "Type": mimetype,
         "Licence": licence,
         "LicenceUrl": licence_url,

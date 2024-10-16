@@ -43,11 +43,14 @@ def test_generate_upload_new_params_for_csv():
     Ensures that _generate_upload_new_params() populates the upload_params dict with the correct values
     """
     upload_params = _generate_upload_new_params(
-        file_path="tests/test_cases/countries.csv",
+        file_path=Path("tests/test_cases/countries.csv"),
+        mimetype="text/csv",
         chunk_size=5242880,
         title="title",
         alias_name="alias-name",
-        mimetype="text/csv",
+        is_publishable=False,
+        licence="My licence",
+        licence_url="www.example.org/licence",
     )
     assert upload_params["resumableTotalChunks"] == 2
     assert upload_params["resumableTotalSize"] == 6198846
@@ -57,15 +60,20 @@ def test_generate_upload_new_params_for_csv():
     assert upload_params["resumableRelativePath"] == "tests/test_cases/countries.csv"
     assert upload_params["aliasName"] == "alias-name"
     assert upload_params["Title"] == "title"
+    assert upload_params["Licence"] == "My licence"
+    assert upload_params["LicenceUrl"] == "www.example.org/licence"
 
 
 def test_generate_new_upload_params_for_sdmx():
     upload_params = _generate_upload_new_params(
-        file_path="tests/test_cases/test.xml",
-        chunk_size=5242880,
+        file_path=Path("tests/test_cases/test.xml"),
         mimetype="application/xml",
+        chunk_size=5242880,
         alias_name="alias-name",
         title="title",
+        is_publishable=False,
+        licence="My licence",
+        licence_url="www.example.org/licence",
     )
     assert upload_params["resumableTotalChunks"] == 1
     assert upload_params["resumableTotalSize"] == 3895
@@ -75,3 +83,5 @@ def test_generate_new_upload_params_for_sdmx():
     assert upload_params["resumableRelativePath"] == "tests/test_cases/test.xml"
     assert upload_params["aliasName"] == "alias-name"
     assert upload_params["Title"] == "title"
+    assert upload_params["Licence"] == "My licence"
+    assert upload_params["LicenceUrl"] == "www.example.org/licence"

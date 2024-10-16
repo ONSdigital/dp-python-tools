@@ -55,11 +55,12 @@ class UploadServiceClient(BaseUploadClient):
     def upload_new_csv(
         self,
         csv_path: Union[Path, str],
+        chunk_size: Optional[int] = 5242880,
+        is_publishable: Optional[bool] = False,
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
         license: Optional[str] = None,
         license_url: Optional[str] = None,
-        chunk_size: int = 5242880,
     ) -> None:
         """
         Upload csv files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
@@ -69,21 +70,23 @@ class UploadServiceClient(BaseUploadClient):
         self._upload_new(
             csv_path,
             "text/csv",
+            chunk_size,
             alias_name,
             title,
+            is_publishable,
             license,
             license_url,
-            chunk_size,
         )
 
     def upload_new_sdmx(
         self,
         sdmx_path: Union[Path, str],
+        chunk_size: Optional[int] = 5242880,
+        is_publishable: Optional[bool] = False,
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
         license: Optional[str] = None,
         license_url: Optional[str] = None,
-        chunk_size: int = 5242880,
     ) -> None:
         """
         Upload sdmx files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
@@ -93,21 +96,23 @@ class UploadServiceClient(BaseUploadClient):
         self._upload_new(
             sdmx_path,
             "application/xml",
+            chunk_size,
             alias_name,
             title,
+            is_publishable,
             license,
             license_url,
-            chunk_size,
         )
 
     def upload_new_json(
         self,
         json_path: Union[Path, str],
+        chunk_size: Optional[int] = 5242880,
+        is_publishable: Optional[bool] = False,
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
         license: Optional[str] = None,
         license_url: Optional[str] = None,
-        chunk_size: int = 5242880,
     ) -> None:
         """
         Upload json files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `json_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
@@ -115,11 +120,12 @@ class UploadServiceClient(BaseUploadClient):
         `alias_name` and `title` are optional arguments. If these are not explicitly provided, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension - e.g. if the filename is "data.json", `alias_name` defaults to "data.json" and `title` defaults to "data".
         """
         self._upload_new(
-            json_path, 
-            "application/json", 
-            alias_name, 
-            title,
-            license,
-            license_url, 
+            json_path,
+            "application/json",
             chunk_size,
+            alias_name,
+            title,
+            is_publishable,
+            license,
+            license_url,
         )

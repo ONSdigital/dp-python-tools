@@ -30,7 +30,8 @@ class SesClient:
         # check sender is actually a valid email
         try:
             validated_email = validate_email(sender)
-            sender = validated_email["email"]
+            sender = validated_email.normalized
+            print(sender)
         except EmailNotValidError as err:
             raise ValueError(f"Invalid sender email: {err}")
 
@@ -67,7 +68,7 @@ class SesClient:
         # check recipient is actually a valid email
         try:
             validated_email = validate_email(recipient)
-            recipient = validated_email["email"]
+            recipient = validated_email.normalized
         except EmailNotValidError as err:
             raise ValueError(f"Invalid recipient email: {err}")
 
