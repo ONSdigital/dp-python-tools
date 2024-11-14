@@ -1,6 +1,7 @@
 import pytest
 
 from dpytools.config.config import Config
+from dpytools.config.properties.base import BaseProperty
 from dpytools.config.properties.intproperty import IntegerProperty
 from dpytools.config.properties.string import StringProperty
 
@@ -56,54 +57,80 @@ def test_config_loader(monkeypatch):
 
 
 def test_config_loader_no_values_error():
-    """
-    Tests that an exception will be raised when a config object
-    is created using the from_env() method but the environment
-    variable values have not been assigned (values are None).
-    """
-
-    # No environment variable values assigned in this test
-
     config_dictionary = {
-        "SOME_STRING_ENV_VAR": {
+        "MISSING_ENV_VAR": {
             "class": StringProperty,
             "property": "name1",
             "kwargs": {"min_len": 10},
         }
     }
-
-    with pytest.raises(Exception) as e:
-        Config.from_env(config_dictionary)
-
-    assert (
-        'Required environment value "SOME_STRING_ENV_VAR" could not be found.'
-        in str(e.value)
-    )
-
+    with pytest.raises(AssertionError) as e:
+        config = Config.from_env(config_dictionary)
+    assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(e.value)
 
 def test_config_loader_incorrect_type_error(monkeypatch):
-    """
-    Tests that a TypeError will be raised when a config object
-    is created using the from_env() method but the type of an
-    attribute being created is not either a StringProperty or IntegerProperty.
-    """
-
     monkeypatch.setenv("SOME_STRING_ENV_VAR", "Some string value")
-
     config_dictionary = {
         "SOME_STRING_ENV_VAR": {
             "class": int,
             "property": "name1",
-            "kwargs": {
-                "min_val": 10,
-            },
+            "kwargs": {"min_val": 10},
         }
     }
-
     with pytest.raises(TypeError) as e:
-        Config.from_env(config_dictionary)
+        config = Config.from_env(config_dictionary)
+    assert "Unsupported property type specified via 'property' field, got <class 'int'>. Should be of type StringProperty or IntegerProperty" in str(e.value)
 
-    assert (
-        "Unsupported property type specified via 'property' field, got <class 'int'>. Should be of type StringProperty or IntegerProperty"
-        in str(e.value)
-    )
+def test_config_loader_missing_env_var():
+    config_dictionary = {
+        "MISSING_ENV_VAR": {
+            "class": StringProperty,
+            "property": "missing_property",
+            "kwargs": {"min_len": 5},
+        }
+    }
+    with pytest.raises(AssertionError) as e:
+        config = Config.from_env(config_dictionary)
+    assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(e.value)
+
+def test_config_loader_with_empty_kwargs(monkeypatch):
+    monkeypatch.setenv("SOME_STRING_ENV_VAR", "Some string value")
+    config_dictionary = {
+        "SOME_STRING_ENV_VAR": {
+            "class": StringProperty,
+            "property": "name1",
+            "kwargs": {},  
+        }
+    }
+    config = Config.from_env(config_dictionary)
+    config.assert_valid_config()
+    assert config.name1.regex is None
+    assert config.name1.min_len is None
+    assert config.name1.max_len is None
+
+def test_config_loader_unsupported_property_type(monkeypatch):
+    monkeypatch.setenv("SOME_ENV_VAR", "Some value")
+    config_dictionary = {
+        "SOME_ENV_VAR": {
+            "class": dict,  
+            "property": "invalid_property",
+            "kwargs": {},
+        }
+    }
+    with pytest.raises(TypeError) as e:
+        config = Config.from_env(config_dictionary)
+    assert "Unsupported property type specified via 'property' field, got <class 'dict'>. Should be of type StringProperty or IntegerProperty" in str(e.value)
+
+def test_config_loader_with_kwargs_none(monkeypatch):
+    monkeypatch.setenv("SOME_INT_ENV_VAR", "42")
+    config_dictionary = {
+        "SOME_INT_ENV_VAR": {
+            "class": IntegerProperty,
+            "property": "name2",
+            "kwargs": None,
+        }
+    }
+    config = Config.from_env(config_dictionary)
+    config.assert_valid_config()
+    assert config.name2.min_val is None
+    assert config.name2.max_val is None

@@ -19,8 +19,8 @@ class StringProperty(BaseProperty):
         try:
             str(self._value)
         except Exception as err:
-            raise Exception(
-                f"Cannot cast {self.name} value {self._value} to string."
+            raise ValueError(
+                f"Cannot cast {self.name} value to string."
             ) from err
 
     def secondary_validation(self):

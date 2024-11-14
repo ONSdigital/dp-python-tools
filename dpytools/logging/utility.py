@@ -95,23 +95,16 @@ def get_end_date(time_delta: timedelta, date: str) ->str:
     """This function will calculate the end_date by adding the duration to the start date."""
 
     strp_time = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
-    td = timedelta(microseconds=time_delta.microseconds)
+    end_date = strp_time + time_delta
     
-    end_date = strp_time + td
-
     return end_date.isoformat() + "Z"
 
 def calculate_duration_in_nanoseconds(time_delta: timedelta, date: str)->int:
-    """This function will convert the duration from Miliseconds to Nanoseconds."""
-
+    """This function will calculate the duration in nanoseconds."""
     strp_time = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
-    td = timedelta(microseconds=time_delta.microseconds)
-    
-    end_date = strp_time + td
-
+    end_date = strp_time + time_delta
     duration = end_date - strp_time
-    
-    return duration.microseconds * 1000 
+    return duration.total_seconds() * 1_000_000_000
 
 def get_content_length(res: Response)->int:
     """
@@ -122,4 +115,4 @@ def get_content_length(res: Response)->int:
         content_length = res.headers["Content-Length"]
         return int(content_length)
     except KeyError:
-        return 0
+        return len(res.content)

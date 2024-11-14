@@ -111,3 +111,69 @@ def test_string_property_regex_no_match():
     assert (
         "Str value for Test String Property does not match the given regex."
     ) in str(e.value)
+
+def test_string_property_regex_no_match():
+    """
+    Tests if a string property instance with a non-matching regex/value
+    raises the expected error from secondary validation.
+    """
+
+    test_property = StringProperty(
+        _name="Test String Property",
+        _value="Test string value",
+        regex="Non-matching regex",
+        min_len=1,
+        max_len=50,
+    )
+
+    with pytest.raises(ValueError) as e:
+        test_property.secondary_validation()
+
+    assert (
+        "Str value for Test String Property does not match the given regex."
+    ) in str(e.value)
+
+def test_string_property_secondary_validation():
+    """
+    Tests that a ValueError is raised when the string value
+    does not match the provided regex pattern.
+    """
+    test_property = StringProperty(
+        _name="Test String Property",
+        _value="Test string value",
+        regex="Non-matching regex",
+        min_len=1,
+        max_len=50,
+    )
+
+    with pytest.raises(ValueError) as e:
+        test_property.secondary_validation()
+
+    assert (
+        "Str value for Test String Property does not match the given regex."
+    ) in str(e.value)
+
+
+def test_string_property_type_invalid():
+    """
+    Test that a ValueError is raised when the value cannot be cast to a string.
+    """
+    class NonStringableObject:
+        def __str__(self):
+            raise Exception("Cannot convert to string")
+
+    invalid_value = NonStringableObject()
+
+    property_instance = StringProperty(
+        _name="Test String Property",
+        _value=invalid_value,
+        regex=None,
+        min_len=None,
+        max_len=None,
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        property_instance.type_is_valid()
+
+    expected_message = f"Cannot cast {property_instance.name} value to string."
+    assert expected_message in str(exc_info.value)
