@@ -44,4 +44,4 @@ class BaseProperty(metaclass=ABCMeta):
         Non type based validation you might want to
         run against a configuration value.
         """
-        pass  
+        pass

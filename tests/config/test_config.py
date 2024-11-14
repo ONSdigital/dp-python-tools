@@ -66,7 +66,10 @@ def test_config_loader_no_values_error():
     }
     with pytest.raises(AssertionError) as e:
         config = Config.from_env(config_dictionary)
-    assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(e.value)
+    assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(
+        e.value
+    )
+
 
 def test_config_loader_incorrect_type_error(monkeypatch):
     monkeypatch.setenv("SOME_STRING_ENV_VAR", "Some string value")
@@ -79,7 +82,11 @@ def test_config_loader_incorrect_type_error(monkeypatch):
     }
     with pytest.raises(TypeError) as e:
         config = Config.from_env(config_dictionary)
-    assert "Unsupported property type specified via 'property' field, got <class 'int'>. Should be of type StringProperty or IntegerProperty" in str(e.value)
+    assert (
+        "Unsupported property type specified via 'property' field, got <class 'int'>. Should be of type StringProperty or IntegerProperty"
+        in str(e.value)
+    )
+
 
 def test_config_loader_missing_env_var():
     config_dictionary = {
@@ -91,7 +98,10 @@ def test_config_loader_missing_env_var():
     }
     with pytest.raises(AssertionError) as e:
         config = Config.from_env(config_dictionary)
-    assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(e.value)
+    assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(
+        e.value
+    )
+
 
 def test_config_loader_with_empty_kwargs(monkeypatch):
     monkeypatch.setenv("SOME_STRING_ENV_VAR", "Some string value")
@@ -99,7 +109,7 @@ def test_config_loader_with_empty_kwargs(monkeypatch):
         "SOME_STRING_ENV_VAR": {
             "class": StringProperty,
             "property": "name1",
-            "kwargs": {},  
+            "kwargs": {},
         }
     }
     config = Config.from_env(config_dictionary)
@@ -108,18 +118,23 @@ def test_config_loader_with_empty_kwargs(monkeypatch):
     assert config.name1.min_len is None
     assert config.name1.max_len is None
 
+
 def test_config_loader_unsupported_property_type(monkeypatch):
     monkeypatch.setenv("SOME_ENV_VAR", "Some value")
     config_dictionary = {
         "SOME_ENV_VAR": {
-            "class": dict,  
+            "class": dict,
             "property": "invalid_property",
             "kwargs": {},
         }
     }
     with pytest.raises(TypeError) as e:
         config = Config.from_env(config_dictionary)
-    assert "Unsupported property type specified via 'property' field, got <class 'dict'>. Should be of type StringProperty or IntegerProperty" in str(e.value)
+    assert (
+        "Unsupported property type specified via 'property' field, got <class 'dict'>. Should be of type StringProperty or IntegerProperty"
+        in str(e.value)
+    )
+
 
 def test_config_loader_with_kwargs_none(monkeypatch):
     monkeypatch.setenv("SOME_INT_ENV_VAR", "42")

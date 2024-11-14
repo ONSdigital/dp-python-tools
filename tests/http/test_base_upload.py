@@ -38,7 +38,13 @@ def test_base_upload_client_init(mock_request):
 @patch("dpytools.http.upload.base_upload._generate_upload_params")
 @patch("dpytools.http.upload.base_upload.BaseUploadClient._upload_file_chunks")
 @patch("requests.request", side_effect=mock_successful_token_response)
-def test_upload(mock_request, mock_upload_file_chunks, mock_generate_upload_params, mock_delete_temp_chunks, mock_create_temp_chunks):
+def test_upload(
+    mock_request,
+    mock_upload_file_chunks,
+    mock_generate_upload_params,
+    mock_delete_temp_chunks,
+    mock_create_temp_chunks,
+):
     """
     Ensures that the _upload method works correctly.
     """
@@ -52,9 +58,15 @@ def test_upload(mock_request, mock_upload_file_chunks, mock_generate_upload_para
 
     client._upload(file_path="test_file.csv", mimetype="text/csv")
 
-    mock_create_temp_chunks.assert_called_once_with(Path("test_file.csv").absolute(), 5242880)
-    mock_generate_upload_params.assert_called_once_with(Path("test_file.csv").absolute(), "text/csv", 5242880)
-    mock_upload_file_chunks.assert_called_once_with(["chunk1", "chunk2"], {"resumableIdentifier": "test_id"})
+    mock_create_temp_chunks.assert_called_once_with(
+        Path("test_file.csv").absolute(), 5242880
+    )
+    mock_generate_upload_params.assert_called_once_with(
+        Path("test_file.csv").absolute(), "text/csv", 5242880
+    )
+    mock_upload_file_chunks.assert_called_once_with(
+        ["chunk1", "chunk2"], {"resumableIdentifier": "test_id"}
+    )
     mock_delete_temp_chunks.assert_called_once_with(["chunk1", "chunk2"])
 
 
@@ -63,7 +75,13 @@ def test_upload(mock_request, mock_upload_file_chunks, mock_generate_upload_para
 @patch("dpytools.http.upload.base_upload._generate_upload_new_params")
 @patch("dpytools.http.upload.base_upload.BaseUploadClient._upload_file_chunks")
 @patch("requests.request", side_effect=mock_successful_token_response)
-def test_upload_new(mock_request, mock_upload_file_chunks, mock_generate_upload_new_params, mock_delete_temp_chunks, mock_create_temp_chunks):
+def test_upload_new(
+    mock_request,
+    mock_upload_file_chunks,
+    mock_generate_upload_new_params,
+    mock_delete_temp_chunks,
+    mock_create_temp_chunks,
+):
     """
     Ensures that the _upload_new method works correctly.
     """
@@ -83,10 +101,12 @@ def test_upload_new(mock_request, mock_upload_file_chunks, mock_generate_upload_
         title="test_title",
         is_publishable=True,
         license="test_license",
-        license_url="http://test_license_url"
+        license_url="http://test_license_url",
     )
 
-    mock_create_temp_chunks.assert_called_once_with(Path("test_file.csv").absolute(), 5242880)
+    mock_create_temp_chunks.assert_called_once_with(
+        Path("test_file.csv").absolute(), 5242880
+    )
     mock_generate_upload_new_params.assert_called_once_with(
         Path("test_file.csv").absolute(),
         "text/csv",
@@ -95,8 +115,9 @@ def test_upload_new(mock_request, mock_upload_file_chunks, mock_generate_upload_
         "test_title",
         True,
         "test_license",
-        "http://test_license_url"
+        "http://test_license_url",
     )
-    mock_upload_file_chunks.assert_called_once_with(["chunk1", "chunk2"], {"Path": "test_path"})
+    mock_upload_file_chunks.assert_called_once_with(
+        ["chunk1", "chunk2"], {"Path": "test_path"}
+    )
     mock_delete_temp_chunks.assert_called_once_with(["chunk1", "chunk2"])
-

@@ -55,28 +55,31 @@ def create_error_dict(error: Exception) -> List[Dict]:
     # Listify in keeping with expected DP logging structures
     return [error_dict]
 
+
 def get_scheme(url: str) -> str:
     """This function will return the scheme from the provided url."""
 
-    index = url.find('/')
-    scheme = url[0:index-1]
+    index = url.find("/")
+    scheme = url[0 : index - 1]
     return scheme
+
 
 def get_domain(url: str) -> str:
     """This function will return the domain name from the provided url."""
-    #Parsing url to extract the domain name
+    # Parsing url to extract the domain name
     parsed_url = urlparse(url)
 
-    #Getting the domain name
-    domain = parsed_url.netloc.split(':')[0]
+    # Getting the domain name
+    domain = parsed_url.netloc.split(":")[0]
     return domain
 
-def get_port(url: str) ->int:
+
+def get_port(url: str) -> int:
     """This function will return the port number form the provided url."""
-    #Parsing url
+    # Parsing url
     parsed_url = urlparse(url)
 
-    #checking if the port was give if not checking scheme for port number
+    # checking if the port was give if not checking scheme for port number
     if parsed_url.port is None:
         if parsed_url.scheme == "http":
             return 80
@@ -85,28 +88,31 @@ def get_port(url: str) ->int:
     else:
         return parsed_url.port
 
-def get_start_date(date: str) ->str:
-    
-    strp_time = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
-    
+
+def get_start_date(date: str) -> str:
+    strp_time = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
+
     return strp_time.isoformat() + "Z"
 
-def get_end_date(time_delta: timedelta, date: str) ->str:
+
+def get_end_date(time_delta: timedelta, date: str) -> str:
     """This function will calculate the end_date by adding the duration to the start date."""
 
-    strp_time = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
+    strp_time = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
     end_date = strp_time + time_delta
-    
+
     return end_date.isoformat() + "Z"
 
-def calculate_duration_in_nanoseconds(time_delta: timedelta, date: str)->int:
+
+def calculate_duration_in_nanoseconds(time_delta: timedelta, date: str) -> int:
     """This function will calculate the duration in nanoseconds."""
-    strp_time = datetime.strptime(date, '%a, %d %b %Y %H:%M:%S GMT')
+    strp_time = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
     end_date = strp_time + time_delta
     duration = end_date - strp_time
     return duration.total_seconds() * 1_000_000_000
 
-def get_content_length(res: Response)->int:
+
+def get_content_length(res: Response) -> int:
     """
     This function will try to get the 'Content-Lenght'
     if there is noone it will return a default 0.

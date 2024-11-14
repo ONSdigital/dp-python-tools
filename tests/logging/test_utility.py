@@ -1,18 +1,18 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from unittest import mock
 
 from requests import Response
 
 from dpytools.logging.utility import (
-    level_to_severity,
-    create_error_dict,
-    get_scheme,
-    get_domain,
-    get_port,
-    get_start_date,
-    get_end_date,
     calculate_duration_in_nanoseconds,
+    create_error_dict,
     get_content_length,
+    get_domain,
+    get_end_date,
+    get_port,
+    get_scheme,
+    get_start_date,
+    level_to_severity,
 )
 
 
@@ -64,10 +64,12 @@ def test_get_end_date():
     time_delta = timedelta(hours=1)
     assert get_end_date(time_delta, date_str) == "2015-10-21T08:28:00Z"
 
+
 def test_calculate_duration_in_nanoseconds():
     time_delta = timedelta(seconds=1.5)
     date_str = "Wed, 21 Oct 2015 07:28:00 GMT"
     assert calculate_duration_in_nanoseconds(time_delta, date_str) == 1500000000
+
 
 def test_get_content_length():
     response_with_header = Response()
@@ -75,5 +77,7 @@ def test_get_content_length():
     assert get_content_length(response_with_header) == 12
 
     response_without_header = Response()
-    response_without_header._content = b'Test content'
-    assert get_content_length(response_without_header) == len(response_without_header.content)
+    response_without_header._content = b"Test content"
+    assert get_content_length(response_without_header) == len(
+        response_without_header.content
+    )
