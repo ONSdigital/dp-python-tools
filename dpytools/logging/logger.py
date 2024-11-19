@@ -38,8 +38,8 @@ class DpLogger:
 
         structlog.configure(
             processors=[
-                structlog.processors.TimeStamper(fmt="iso"), 
-                structlog.processors.JSONRenderer()
+                structlog.processors.TimeStamper(fmt="iso"),
+                structlog.processors.JSONRenderer(),
             ],
             wrapper_class=structlog.BoundLogger,
             cache_logger_on_first_use=True,
@@ -73,7 +73,7 @@ class DpLogger:
         error: Optional[List] = None,
         data: Optional[Dict] = None,
         raw: str = None,
-        response : Optional[requests.Response] = None,
+        response: Optional[requests.Response] = None,
     ):
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
@@ -88,12 +88,14 @@ class DpLogger:
                 "host": get_domain(response.url),
                 "port": get_port(response.url),
                 "path": response.request.path_url,
-                "status_code" : response.status_code,
-                "started_at":get_start_date(response.headers["Date"]),
-                "ended_at":get_end_date(response.elapsed, response.headers["Date"]),
-                "duration": calculate_duration_in_nanoseconds(response.elapsed, response.headers["Date"]),
-                "response_content_length":len(response.content)
-                }
+                "status_code": response.status_code,
+                "started_at": get_start_date(response.headers["Date"]),
+                "ended_at": get_end_date(response.elapsed, response.headers["Date"]),
+                "duration": calculate_duration_in_nanoseconds(
+                    response.elapsed, response.headers["Date"]
+                ),
+                "response_content_length": len(response.content),
+            }
         else:
             r_dict = None
 
@@ -105,7 +107,7 @@ class DpLogger:
             "trace_id": "not-implemented",
             "span_id": "not-implemented",
             "data": data_dict,
-            "response_dict" : r_dict,
+            "response_dict": r_dict,
             "raw": raw,
             "errors": create_error_dict(error) if error is not None else None,
         }
@@ -115,7 +117,13 @@ class DpLogger:
         if self.flush_stdout_after_log_entry is True:
             sys.stdout.flush()
 
-    def debug(self, event: str, raw: str = None, data: Dict = None, response: requests.Response = None):
+    def debug(
+        self,
+        event: str,
+        raw: str = None,
+        data: Dict = None,
+        response: requests.Response = None,
+    ):
         """
         Log at the debug level.
 
@@ -125,7 +133,13 @@ class DpLogger:
         """
         self._log(event, 10, raw=raw, data=data, response=response)
 
-    def info(self, event: str, raw: str = None, data: Dict = None, response: requests.Response = None):
+    def info(
+        self,
+        event: str,
+        raw: str = None,
+        data: Dict = None,
+        response: requests.Response = None,
+    ):
         """
         Log at the info level.
 
@@ -135,7 +149,13 @@ class DpLogger:
         """
         self._log(event, 20, raw=raw, data=data)
 
-    def warning(self, event: str, raw: str = None, data: Dict = None, response: requests.Response = None):
+    def warning(
+        self,
+        event: str,
+        raw: str = None,
+        data: Dict = None,
+        response: requests.Response = None,
+    ):
         """
         Log at the warning level.
 
@@ -145,7 +165,14 @@ class DpLogger:
         """
         self._log(event, 30, raw=raw, data=data, response=response)
 
-    def error(self, event: str, error: Exception, raw: str = None, data: Dict = None, response: requests.Response = None):
+    def error(
+        self,
+        event: str,
+        error: Exception,
+        raw: str = None,
+        data: Dict = None,
+        response: requests.Response = None,
+    ):
         """
         Log at the error level.
 
@@ -157,7 +184,12 @@ class DpLogger:
         self._log(event, 40, error=error, raw=raw, data=data, response=response)
 
     def critical(
-        self, event: str, error: Exception, raw: str = None, data: Dict = None, response: requests.Response = None
+        self,
+        event: str,
+        error: Exception,
+        raw: str = None,
+        data: Dict = None,
+        response: requests.Response = None,
     ):
         """
         IMPORTANT: You should only be logging at the critical level during

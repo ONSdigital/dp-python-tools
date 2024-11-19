@@ -34,7 +34,7 @@ class BaseProperty(metaclass=ABCMeta):
         Validate that the property looks like
         its of the correct type
         """
-        ...
+        raise NotImplementedError("Subclasses must implement type_is_valid method.")
 
     # Note: Won't apply to all types so its not
     # an abstract method, its just a normal method
@@ -44,4 +44,4 @@ class BaseProperty(metaclass=ABCMeta):
         Non type based validation you might want to
         run against a configuration value.
         """
-        ...
+        pass

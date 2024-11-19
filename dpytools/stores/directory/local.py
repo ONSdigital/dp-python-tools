@@ -83,7 +83,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             raise FileNotFoundError(
                 f"No matching files found for pattern {pattern} in directory {self.local_path}"
             )
-        
+
         matching_file_name = self._files_that_match_pattern(pattern)[0]
 
         # Assemble the full path
