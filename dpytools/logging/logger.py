@@ -25,7 +25,7 @@ class DpLogger:
         Simple python logger to create structured logs in keeping
         with https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
 
-        namespace: (required) the namespace for the app in question
+        :param namespace: (required) The namespace for the application.
         """
 
         class FlushStreamHandler(logging.StreamHandler):
@@ -48,10 +48,10 @@ class DpLogger:
         self._logger = structlog.get_logger()
         self.namespace = namespace
         self.flush_stdout_after_log_entry = os.environ.get(
-            "FLUSH_STOUT_AFTER_LOG_ENTRY", None
+            "FLUSH_STDOUT_AFTER_LOG_ENTRY", None
         )
 
-        # Polics the env var being passed in for flush_stdout_after_log_entry
+        # Validates the env var being passed in for flush_stdout_after_log_entry
         if self.flush_stdout_after_log_entry is not None:
             assert self.flush_stdout_after_log_entry in [
                 "True",
@@ -59,7 +59,7 @@ class DpLogger:
                 "False",
                 "false",
             ], (
-                "When using env var FLUSH_STOUT_AFTER_LOG_ENTRY it must be set to one"
+                "When using env var FLUSH_STDOUT_AFTER_LOG_ENTRY it must be set to one"
                 f" of True, true, False false. Got '{self.flush_stdout_after_log_entry}'"
             )
             self.flush_stdout_after_log_entry = (
@@ -70,7 +70,7 @@ class DpLogger:
         self,
         event,
         level,
-        error: Optional[List] = None,
+        error: Optional[Exception] = None,
         data: Optional[Dict] = None,
         raw: str = None,
         response: Optional[requests.Response] = None,
@@ -78,7 +78,7 @@ class DpLogger:
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
 
-        # match dp logging structue
+        # Match DP logging structure
         # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
 
         if response is not None:
@@ -111,10 +111,8 @@ class DpLogger:
             "raw": raw,
             "errors": create_error_dict(error) if error is not None else None,
         }
-
         self._logger.log(**log_event)
-
-        if self.flush_stdout_after_log_entry is True:
+        if self.flush_stdout_after_log_entry:
             sys.stdout.flush()
 
     def debug(
@@ -127,11 +125,12 @@ class DpLogger:
         """
         Log at the debug level.
 
-        event: the thing that's happened, a simple short english statement
-        raw  : a raw string of any log messages captured for a third party library
-        data : arbitrary key-value pairs that may be of use in providing context
+        :param event: The event description.
+        :param raw: Raw log data for a third party library.
+        :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
+        :param response: Optional HTTP response to include in the log.
         """
-        self._log(event, 10, raw=raw, data=data, response=response)
+        self._log(event, logging.DEBUG, raw=raw, data=data, response=response)
 
     def info(
         self,
@@ -143,11 +142,11 @@ class DpLogger:
         """
         Log at the info level.
 
-        event: the thing that's happened, a simple short english statement
-        raw  : a raw string of any log messages captured for a third party library
-        data : arbitrary key-value pairs that may be of use in providing context
+        :param event: The event description.
+        :param raw: Raw log data for a third party library.
+        :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
         """
-        self._log(event, 20, raw=raw, data=data)
+        self._log(event, logging.INFO, raw=raw, data=data)
 
     def warning(
         self,
@@ -159,11 +158,12 @@ class DpLogger:
         """
         Log at the warning level.
 
-        event: the thing that's happened, a simple short english statement
-        raw  : a raw string of any log messages captured for a third party library
-        data : arbitrary key-value pairs that may be of use in providing context
+        :param event: The event description.
+        :param raw: Raw log data for a third party library.
+        :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
+        :param response: Optional HTTP response to include in the log.
         """
-        self._log(event, 30, raw=raw, data=data, response=response)
+        self._log(event, logging.WARNING, raw=raw, data=data, response=response)
 
     def error(
         self,
@@ -176,12 +176,13 @@ class DpLogger:
         """
         Log at the error level.
 
-        event: the thing that's happened, a simple short english statement
-        error: a python Exception
-        raw  : a raw string of any log messages captured for a third party library
-        data : arbitrary key-value pairs that may be of use in providing context
+        :param event: The event description.
+        :param error: A python Exception.
+        :param raw: Raw log data for a third party library.
+        :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
+        :param response: Optional HTTP response to include in the log.
         """
-        self._log(event, 40, error=error, raw=raw, data=data, response=response)
+        self._log(event, logging.ERROR, error=error, raw=raw, data=data, response=response)
 
     def critical(
         self,
@@ -193,14 +194,15 @@ class DpLogger:
     ):
         """
         IMPORTANT: You should only be logging at the critical level during
-        application failure, i.e if you're app is not in the process of falling
-        over you should not be logging a critical.
+        application failure, i.e. if your app is in the process of failing
+        over you should log at critical level.
 
         Log at the critical level.
 
-        event: the thing that's happened, a simple short english statement
-        error: a caught python Exception
-        raw  : a raw string of any log messages captured for a third party library
-        data : arbitrary key-value pairs that may be of use in providing context
+        :param event: The event description.
+        :param error: A python Exception.
+        :param raw: Raw log data for a third party library.
+        :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
+        :param response: Optional HTTP response to include in the log.
         """
-        self._log(event, 50, error=error, raw=raw, data=data, response=response)
+        self._log(event, logging.CRITICAL, error=error, raw=raw, data=data, response=response)

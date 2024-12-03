@@ -35,7 +35,7 @@ class DatasetAPIClient(BaseAPIClient):
     def post_new_job(self, payload=None) -> None:
         """
         Create a new job using a provided payload or a default one.
-
+    
         :param payload: The payload for the new job.
         """
         if payload is None:
@@ -49,17 +49,13 @@ class DatasetAPIClient(BaseAPIClient):
                     }
                 ],
             }
-
+    
         try:
             response = self.post_json(payload)
             if response.status_code != 201:
-                logger.error(
-                    f"Job not created, returning status code: {response.status_code}"
-                )
-                raise Exception(
-                    f"Job not created, returning status code: {response.status_code}"
-                )
+                logger.error(f"Failed to create job, status code: {response.status_code}")
+                raise Exception(f"Failed to create job, status code: {response.status_code}")
             logger.info("Job created successfully")
         except RequestException as e:
-            logger.error(f"Failed to create a new job: {e}")
+            logger.error(f"Exception occurred while creating a new job: {e}")
             raise
