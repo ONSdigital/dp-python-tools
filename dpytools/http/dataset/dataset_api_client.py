@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict
 
-from requests.exceptions import RequestException
+from requests import RequestException, Response
 
 from dpytools.http.dataset.base_api import BaseAPIClient
 from dpytools.logging.logger import DpLogger
@@ -59,3 +59,33 @@ class DatasetAPIClient(BaseAPIClient):
         except RequestException as e:
             logger.error(f"Exception occurred while creating a new job: {e}")
             raise
+
+    def post_json(self, json_data: Dict) -> Response:
+        """
+        Send a POST request with JSON data to the specified URL.
+
+        :param json_data: The JSON data to include in the POST request.
+        :return: The response from the POST request.
+        """
+        response = self.post(
+            self.full_url,
+            headers=self.token_auth.get_auth_header(),
+            json=json_data,
+            verify=True,
+        )
+        return response
+
+    def put_json(self, json_data: Dict) -> Response:
+        """
+        Send a PUT request with JSON data to the specified URL.
+
+        :param json_data: The JSON data to include in the PUT request.
+        :return: The response from the PUT request.
+        """
+        response = self.put(
+            self.full_url,
+            headers=self.token_auth.get_auth_header(),
+            json=json_data,
+            verify=True,
+        )
+        return response
