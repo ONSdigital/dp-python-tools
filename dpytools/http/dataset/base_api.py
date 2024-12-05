@@ -1,11 +1,12 @@
+from abc import ABC, abstractmethod
 from typing import Dict
 
 from dpytools.http.base import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth
 from dpytools.logging.logger import DpLogger
-from abc import ABC, abstractmethod
 
 logger = DpLogger("dpytools")
+
 
 class BaseAPIClient(BaseHttpClient, ABC):
     def __init__(self, url_netloc: str, url_path: str, backoff_max: int = 30):

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Union, Dict
+from typing import Dict, Union
 
 from requests import RequestException, Response
 
@@ -35,7 +35,7 @@ class DatasetAPIClient(BaseAPIClient):
     def post_new_job(self, payload=None) -> None:
         """
         Create a new job using a provided payload or a default one.
-    
+
         :param payload: The payload for the new job.
         """
         if payload is None:
@@ -49,12 +49,16 @@ class DatasetAPIClient(BaseAPIClient):
                     }
                 ],
             }
-    
+
         try:
             response = self.post_json(payload)
             if response.status_code != 201:
-                logger.error(f"Failed to create job, status code: {response.status_code}")
-                raise Exception(f"Failed to create job, status code: {response.status_code}")
+                logger.error(
+                    f"Failed to create job, status code: {response.status_code}"
+                )
+                raise Exception(
+                    f"Failed to create job, status code: {response.status_code}"
+                )
             logger.info("Job created successfully")
         except RequestException as e:
             logger.error(f"Exception occurred while creating a new job: {e}")
@@ -74,7 +78,9 @@ class DatasetAPIClient(BaseAPIClient):
             verify=True,
         )
         if response.status_code != 201:
-            raise Exception(f"POST request failed with status code: {response.status_code}")
+            raise Exception(
+                f"POST request failed with status code: {response.status_code}"
+            )
         return response
 
     def put_json(self, json_data: Dict) -> Response:
@@ -91,5 +97,7 @@ class DatasetAPIClient(BaseAPIClient):
             verify=True,
         )
         if response.status_code != 200:
-            raise Exception(f"PUT request failed with status code: {response.status_code}")
+            raise Exception(
+                f"PUT request failed with status code: {response.status_code}"
+            )
         return response
