@@ -13,7 +13,7 @@ def mock_successful_token_response(*args, **kwargs):
     mock_response.status_code = 201
     mock_response.headers = {
         "Refresh": "test_refresh_token",
-        "Authorization": "test_auth_token",
+        "Authorization": "Bearer test_auth_token",
         "ID": "test_id_token",
     }
     return mock_response
