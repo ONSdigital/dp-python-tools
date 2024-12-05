@@ -20,7 +20,7 @@ def setup_mock_token_auth(mock_request):
     mock_token_response.status_code = 201
     mock_token_response.headers = {
         "Refresh": "test_refresh_token",
-        "Authorization": "test_auth_token",
+        "Authorization": "Bearer test_auth_token",
         "ID": "test_id_token",
     }
     mock_request.return_value = mock_token_response

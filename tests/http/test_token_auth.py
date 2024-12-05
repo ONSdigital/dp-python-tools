@@ -18,7 +18,7 @@ def test_set_user_tokens():
     mock_response.status_code = 201
     mock_response.headers = {
         "Refresh": "test_refresh_token",
-        "Authorization": "test_auth_token",
+        "Authorization": "Bearer test_auth_token",
         "ID": "test_id_token",
     }
     with patch.object(TokenAuth, "post", return_value=mock_response):
@@ -66,7 +66,7 @@ def test_get_auth_header_with_user_token():
     mock_response.status_code = 201
     mock_response.headers = {
         "Refresh": "test_refresh_token",
-        "Authorization": "test_auth_token",
+        "Authorization": "Bearer test_auth_token",
         "ID": "test_id_token",
     }
     with patch.object(TokenAuth, "post", return_value=mock_response):
@@ -86,7 +86,7 @@ def test_refresh_user_token():
     mock_response = MagicMock()
     mock_response.status_code = 201
     mock_response.headers = {
-        "Authorization": "new_auth_token",
+        "Authorization": "Bearer new_auth_token",
         "ID": "new_id_token",
         "Refresh": "test_refresh_token",
     }
@@ -95,7 +95,7 @@ def test_refresh_user_token():
     ) as mock_put, patch.object(TokenAuth, "post", return_value=mock_response):
         token_auth = TokenAuth()
         token_auth.refresh_user_token()
-        assert token_auth.auth_token == "new_auth_token"
+        assert token_auth.auth_token.split()[1] == "new_auth_token"
         assert token_auth.id_token == "new_id_token"
         assert mock_put.call_count == 1
 

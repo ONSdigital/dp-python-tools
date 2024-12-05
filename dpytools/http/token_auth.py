@@ -58,7 +58,7 @@ class TokenAuth(BaseHttpClient):
             self.refresh_token = response_headers["Refresh"]
             self.token_creation_time = datetime.now()
 
-            self.auth_token = response_headers["Authorization"]
+            self.auth_token = response_headers["Authorization"].split()[1]
             self.id_token = response_headers["ID"]
 
             logger.info(
