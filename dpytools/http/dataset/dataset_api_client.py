@@ -73,6 +73,8 @@ class DatasetAPIClient(BaseAPIClient):
             json=json_data,
             verify=True,
         )
+        if response.status_code != 201:
+            raise Exception(f"POST request failed with status code: {response.status_code}")
         return response
 
     def put_json(self, json_data: Dict) -> Response:
@@ -88,4 +90,6 @@ class DatasetAPIClient(BaseAPIClient):
             json=json_data,
             verify=True,
         )
+        if response.status_code != 200:
+            raise Exception(f"PUT request failed with status code: {response.status_code}")
         return response

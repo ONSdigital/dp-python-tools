@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 from requests import Response
 
-from dpytools.http.dataset.base_api import BaseAPIClient
 from dpytools.http.dataset.dataset_api_client import DatasetAPIClient
 
 
@@ -30,7 +29,7 @@ def setup_mock_token_auth(mock_request):
 @patch("requests.request")
 def test_post_json_success(mock_request):
     """
-    Test that the send_json method sends the correct payload to the correct URL
+    Test that the post_json method sends the correct payload to the correct URL
     """
     # Mock the token authentication response
     mock_token_response = setup_mock_token_auth(mock_request)
@@ -40,7 +39,7 @@ def test_post_json_success(mock_request):
     mock_response.content = b"Test response content"
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = BaseAPIClient("test_url", "test_path")
+    mock_client = DatasetAPIClient("http://test_url", "test_path")
     response = mock_client.post_json({"key": "value"})
 
     assert response.status_code == 201
@@ -68,9 +67,9 @@ def test_post_json_failure(mock_request):
     mock_response.status_code = 400
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = BaseAPIClient("test_url", "test_path")
+    mock_client = DatasetAPIClient("http://test_url", "test_path")
     with pytest.raises(Exception):
-        mock_client.post_json()
+        mock_client.post_json({"key": "value"})
 
 
 @patch("requests.request")
@@ -84,7 +83,7 @@ def test_post_new_job_success(mock_request):
     mock_response = MagicMock(spec=Response)
     mock_response.status_code = 201
     mock_request.side_effect = [mock_token_response, mock_response]
-    mock_client = DatasetAPIClient("test_url", "test_path")
+    mock_client = DatasetAPIClient("http://test_url", "test_path")
     mock_client.post_new_job()
 
     assert mock_request.call_count == 2
@@ -103,7 +102,7 @@ def test_post_new_job_failure(mock_request):
     mock_response.status_code = 400
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("test_url", "test_path")
+    mock_client = DatasetAPIClient("http://test_url", "test_path")
     with pytest.raises(Exception):
         mock_client.post_new_job()
 
@@ -123,7 +122,7 @@ def test_upload_json(mock_request, mock_open_file):
 
     mock_request.side_effect = [mock_token_response, mock_send_response]
 
-    mock_client = DatasetAPIClient("test_url", "test_path")
+    mock_client = DatasetAPIClient("http://test_url", "test_path")
     test_file_path = Path("example/file.json")
 
     mock_client.upload_json(test_file_path)
