@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from typing import Union
+from typing import Dict, Union
 
-from requests.exceptions import RequestException
+from requests import RequestException, Response
 
 from dpytools.http.dataset.base_api import BaseAPIClient
 from dpytools.logging.logger import DpLogger
@@ -35,7 +35,7 @@ class DatasetAPIClient(BaseAPIClient):
     def post_new_job(self, payload=None) -> None:
         """
         Create a new job using a provided payload or a default one.
-    
+
         :param payload: The payload for the new job.
         """
         if payload is None:
@@ -49,13 +49,55 @@ class DatasetAPIClient(BaseAPIClient):
                     }
                 ],
             }
-    
+
         try:
             response = self.post_json(payload)
             if response.status_code != 201:
-                logger.error(f"Failed to create job, status code: {response.status_code}")
-                raise Exception(f"Failed to create job, status code: {response.status_code}")
+                logger.error(
+                    f"Failed to create job, status code: {response.status_code}"
+                )
+                raise Exception(
+                    f"Failed to create job, status code: {response.status_code}"
+                )
             logger.info("Job created successfully")
         except RequestException as e:
             logger.error(f"Exception occurred while creating a new job: {e}")
             raise
+
+    def post_json(self, json_data: Dict) -> Response:
+        """
+        Send a POST request with JSON data to the specified URL.
+
+        :param json_data: The JSON data to include in the POST request.
+        :return: The response from the POST request.
+        """
+        response = self.post(
+            self.full_url,
+            headers=self.token_auth.get_auth_header(),
+            json=json_data,
+            verify=True,
+        )
+        if response.status_code != 201:
+            raise Exception(
+                f"POST request failed with status code: {response.status_code}"
+            )
+        return response
+
+    def put_json(self, json_data: Dict) -> Response:
+        """
+        Send a PUT request with JSON data to the specified URL.
+
+        :param json_data: The JSON data to include in the PUT request.
+        :return: The response from the PUT request.
+        """
+        response = self.put(
+            self.full_url,
+            headers=self.token_auth.get_auth_header(),
+            json=json_data,
+            verify=True,
+        )
+        if response.status_code != 200:
+            raise Exception(
+                f"PUT request failed with status code: {response.status_code}"
+            )
+        return response

@@ -182,7 +182,9 @@ class DpLogger:
         :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
         :param response: Optional HTTP response to include in the log.
         """
-        self._log(event, logging.ERROR, error=error, raw=raw, data=data, response=response)
+        self._log(
+            event, logging.ERROR, error=error, raw=raw, data=data, response=response
+        )
 
     def critical(
         self,
@@ -205,4 +207,6 @@ class DpLogger:
         :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
         :param response: Optional HTTP response to include in the log.
         """
-        self._log(event, logging.CRITICAL, error=error, raw=raw, data=data, response=response)
+        self._log(
+            event, logging.CRITICAL, error=error, raw=raw, data=data, response=response
+        )
