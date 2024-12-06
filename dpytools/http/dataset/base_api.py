@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from email import header
-from enum import verify
 from typing import Dict
 from urllib import response
 from urllib.request import Request
