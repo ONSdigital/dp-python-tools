@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from unittest import mock
+from datetime import timedelta
 
 from requests import Response
 

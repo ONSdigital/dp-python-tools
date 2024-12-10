@@ -65,6 +65,7 @@ class BaseUploadClient(BaseHttpClient):
         is_publishable: Optional[bool],
         license: Optional[str],
         license_url: Optional[str],
+        collection_id: Optional[str],
     ) -> None:
         """
         Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype` (e.g. "text/csv" for a CSV file).
@@ -87,6 +88,7 @@ class BaseUploadClient(BaseHttpClient):
             is_publishable,
             license,
             license_url,
+            collection_id,
         )
         logger.info(
             "Upload parameters generated", data={"upload_params": upload_params}

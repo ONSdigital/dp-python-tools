@@ -42,6 +42,7 @@ def _generate_upload_new_params(
     is_publishable: Optional[bool],
     licence: Optional[str],
     licence_url: Optional[str],
+    collection_id: Optional[str],
 ) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
@@ -76,24 +77,29 @@ def _generate_upload_new_params(
             "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
         )
 
+    if collection_id is None:
+        collection_id = "collection-id"
+
     # Generate upload request params
     upload_params = {
+        "resumableFilename": filename,
+        "resumableType": mimetype,
         "resumableTotalChunks": ceil(total_size / 5242880),
         "resumableChunkSize": chunk_size,
-        "resumableTotalSize": total_size,
-        "resumableType": mimetype,
-        "resumableIdentifier": identifier,
-        "resumableFilename": filename,
-        "resumableRelativePath": str(file_path),
         "aliasName": alias_name,
-        "Path": f"datasets/{identifier}",
+        "resumableTotalSize": total_size,
+        "resumableIdentifier": identifier,
+        "resumableRelativePath": str(file_path),
+        "LicenceUrl": licence_url,
         "isPublishable": is_publishable,
         "Title": title,
         "SizeInBytes": total_size,
         "Type": mimetype,
         "Licence": licence,
-        "LicenceUrl": licence_url,
-        # `CollectionID`, `State` and `Etag` fields omitted as not required
+        "Path": f"datasets/{identifier}",
+        # TODO: Add collectionId to upload_params from metadata?
+        "collectionId": collection_id,
+        # `State` and `Etag` fields omitted as not required
     }
     return upload_params
 

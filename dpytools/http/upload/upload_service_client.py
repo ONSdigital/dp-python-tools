@@ -61,6 +61,7 @@ class UploadServiceClient(BaseUploadClient):
         title: Optional[str] = None,
         license: Optional[str] = None,
         license_url: Optional[str] = None,
+        collection_id: Optional[str] = None,
     ) -> None:
         """
         Upload csv files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `csv_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
@@ -76,6 +77,7 @@ class UploadServiceClient(BaseUploadClient):
             is_publishable,
             license,
             license_url,
+            collection_id,
         )
 
     def upload_new_sdmx(
@@ -87,6 +89,7 @@ class UploadServiceClient(BaseUploadClient):
         title: Optional[str] = None,
         license: Optional[str] = None,
         license_url: Optional[str] = None,
+        collection_id: Optional[str] = None,
     ) -> None:
         """
         Upload sdmx files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `sdmx_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
@@ -102,6 +105,7 @@ class UploadServiceClient(BaseUploadClient):
             is_publishable,
             license,
             license_url,
+            collection_id,
         )
 
     def upload_new_json(
@@ -113,6 +117,7 @@ class UploadServiceClient(BaseUploadClient):
         title: Optional[str] = None,
         license: Optional[str] = None,
         license_url: Optional[str] = None,
+        collection_id: Optional[str] = None,
     ) -> None:
         """
         Upload json files to the DP Upload Service `/upload-new` endpoint. The file to be uploaded (located at `json_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
@@ -128,4 +133,5 @@ class UploadServiceClient(BaseUploadClient):
             is_publishable,
             license,
             license_url,
+            collection_id,
         )

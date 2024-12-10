@@ -1,7 +1,6 @@
 import pytest
 
 from dpytools.config.config import Config
-from dpytools.config.properties.base import BaseProperty
 from dpytools.config.properties.intproperty import IntegerProperty
 from dpytools.config.properties.string import StringProperty
 
@@ -65,7 +64,7 @@ def test_config_loader_no_values_error():
         }
     }
     with pytest.raises(AssertionError) as e:
-        config = Config.from_env(config_dictionary)
+        Config.from_env(config_dictionary)
     assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(
         e.value
     )
@@ -81,7 +80,7 @@ def test_config_loader_incorrect_type_error(monkeypatch):
         }
     }
     with pytest.raises(TypeError) as e:
-        config = Config.from_env(config_dictionary)
+        Config.from_env(config_dictionary)
     assert (
         "Unsupported property type specified via 'property' field, got <class 'int'>. Should be of type StringProperty or IntegerProperty"
         in str(e.value)
@@ -97,7 +96,7 @@ def test_config_loader_missing_env_var():
         }
     }
     with pytest.raises(AssertionError) as e:
-        config = Config.from_env(config_dictionary)
+        Config.from_env(config_dictionary)
     assert 'Required environment value "MISSING_ENV_VAR" could not be found.' in str(
         e.value
     )
@@ -129,7 +128,7 @@ def test_config_loader_unsupported_property_type(monkeypatch):
         }
     }
     with pytest.raises(TypeError) as e:
-        config = Config.from_env(config_dictionary)
+        Config.from_env(config_dictionary)
     assert (
         "Unsupported property type specified via 'property' field, got <class 'dict'>. Should be of type StringProperty or IntegerProperty"
         in str(e.value)

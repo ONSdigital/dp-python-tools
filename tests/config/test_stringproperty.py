@@ -100,28 +100,6 @@ def test_string_property_regex_no_match():
     test_property = StringProperty(
         _name="Test String Property",
         _value="Test string value",
-        regex="Test regex",
-        min_len=1,
-        max_len=50,
-    )
-
-    with pytest.raises(ValueError) as e:
-        test_property.secondary_validation()
-
-    assert (
-        "Str value for Test String Property does not match the given regex."
-    ) in str(e.value)
-
-
-def test_string_property_regex_no_match():
-    """
-    Tests if a string property instance with a non-matching regex/value
-    raises the expected error from secondary validation.
-    """
-
-    test_property = StringProperty(
-        _name="Test String Property",
-        _value="Test string value",
         regex="Non-matching regex",
         min_len=1,
         max_len=50,
