@@ -115,21 +115,22 @@ upload_client.upload_sdmx("path/to/file.sdmx", chunk_size=1000)
 
 To upload files to the `/upload-new` endpoint, use the `upload_new_csv()` and `upload_new_sdmx()` methods. These methods accept the path to the file and an optional chunk size with a default value of 5242880 bytes (5MB).
 
-The `/upload-new` endpoint also requires an `alias_name` and `title` to be provided in the HTTP request parameters. If these are not explicitly stated in the method call, `alias_name` will default to the filename with the extension, and `title` will default to the filename without the extension.
+The `/upload-new` endpoint also requires an `alias_name`, `title` and `collection_id` to be provided in the HTTP request parameters. If these are not explicitly stated in the method call, `alias_name` will default to the filename with the extension, `title` will default to the filename without the extension, and `collection_id` will default to `collection-id`.
 
 ```python
 from dpytools.http.upload import UploadServiceClient
 
 upload_client = UploadServiceClient("http://example.org/upload-new")
 
-# `alias_name` and `title` arguments not provided, so these values will default to `file.csv` and `file` respectively.
+# `alias_name`, `title` and `collection_id` arguments not provided, so these values will default to `file.csv`, `file` and `collection-id` respectively.
 upload_client.upload_new_csv(
     "path/to/file.csv",)
 
-# `alias_name` and `title` arguments provided, so these values will be set explicitly.
+# `alias_name`, `title` and `collection_id` arguments provided, so these values will be set explicitly.
 upload_client.upload_new_sdmx(
     "path/to/file.sdmx",
     alias_name="my-awesome-file.sdmx",
-    title="My Awesome SDMX File"
+    title="My Awesome SDMX File",
+    collection_id="my-collection-id"
 )
 ```
