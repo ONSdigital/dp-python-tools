@@ -51,6 +51,7 @@ def test_generate_upload_new_params_for_csv():
         is_publishable=False,
         licence="My licence",
         licence_url="www.example.org/licence",
+        collection_id="my-collection-id",
     )
     assert upload_params["resumableTotalChunks"] == 2
     assert upload_params["resumableTotalSize"] == 6198846
@@ -62,6 +63,7 @@ def test_generate_upload_new_params_for_csv():
     assert upload_params["Title"] == "title"
     assert upload_params["Licence"] == "My licence"
     assert upload_params["LicenceUrl"] == "www.example.org/licence"
+    assert upload_params["collectionId"] == "my-collection-id"
 
 
 def test_generate_new_upload_params_for_sdmx():
