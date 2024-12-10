@@ -102,6 +102,7 @@ def test_upload_new(
         is_publishable=True,
         license="test_license",
         license_url="http://test_license_url",
+        collection_id="test_collection_id",
     )
 
     mock_create_temp_chunks.assert_called_once_with(
@@ -116,6 +117,7 @@ def test_upload_new(
         True,
         "test_license",
         "http://test_license_url",
+        "test_collection_id",
     )
     mock_upload_file_chunks.assert_called_once_with(
         ["chunk1", "chunk2"], {"Path": "test_path"}

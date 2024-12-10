@@ -76,6 +76,7 @@ def test_generate_new_upload_params_for_sdmx():
         is_publishable=False,
         licence="My licence",
         licence_url="www.example.org/licence",
+        collection_id="my-collection-id",
     )
     assert upload_params["resumableTotalChunks"] == 1
     assert upload_params["resumableTotalSize"] == 3895
@@ -87,3 +88,4 @@ def test_generate_new_upload_params_for_sdmx():
     assert upload_params["Title"] == "title"
     assert upload_params["Licence"] == "My licence"
     assert upload_params["LicenceUrl"] == "www.example.org/licence"
+    assert upload_params["collectionId"] == "my-collection-id"
