@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
+from email import header
 from typing import Dict
+from urllib import response
+from urllib.request import Request
 
 from dpytools.http.base import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth
@@ -18,10 +21,20 @@ class BaseAPIClient(BaseHttpClient, ABC):
 
     @abstractmethod
     def post_json(self, json_data: Dict):
-        """Send a POST request with JSON data."""
+        """
+        Send a POST request with JSON data to the specified URL.
+
+        :param json_data: The JSON data to include in the POST request.
+        :return: The response from the POST request.
+        """
         pass
 
     @abstractmethod
     def put_json(self, json_data: Dict):
-        """Send a PUT request with JSON data."""
+        """
+        Send a PUT request with JSON data to the specified URL.
+
+        :param json_data: The JSON data to include in the PUT request.
+        :return: The response from the PUT request.
+        """
         pass
