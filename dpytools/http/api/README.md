@@ -2,7 +2,7 @@
 
 ## Usage
 
-The API clients provide a set of tools for interacting with API endpoints, including uploading and managing dataset metadata.
+These API clients provide a set of tools for interacting with API endpoints, including uploading and managing dataset metadata.
 
 ### BaseAPIClient
 
