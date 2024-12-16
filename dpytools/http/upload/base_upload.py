@@ -4,7 +4,7 @@ from typing import Union
 
 from requests import Response
 
-from dpytools.http.base import BaseHttpClient
+from dpytools.http.base_http import BaseHttpClient
 from dpytools.logging.logger import DpLogger
 
 from ..token_auth import TokenAuth

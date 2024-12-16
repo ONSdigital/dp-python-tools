@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from requests import HTTPError, Response
 
-from dpytools.http.base import BaseHttpClient
+from dpytools.http.base_http import BaseHttpClient
 
 
 # Mock the requests.request method

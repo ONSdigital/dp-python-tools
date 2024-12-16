@@ -1,4 +1,4 @@
-from dpytools.http.base import BaseHttpClient
+from dpytools.http.base_http import BaseHttpClient
 from dpytools.logging.logger import DpLogger
 
 logger = DpLogger("dpytools")

@@ -2,7 +2,7 @@ from typing import Dict
 
 from requests import Response
 
-from dpytools.http.dataset.base_api import BaseAPIClient
+from dpytools.http.api.base_api import BaseAPIClient
 from dpytools.logging.logger import DpLogger
 
 logger = DpLogger("dpytools")

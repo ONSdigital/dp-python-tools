@@ -73,7 +73,7 @@ class UploadServiceClient(BaseUploadClient):
         collection_id: Optional[str] = None,
     ) -> Response:
         """
-        Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype` (e.g. "text/csv" for a CSV file).
+        Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype` (e.g. "text/csv" for a CSV file). The remainder of the optional arguments are required for the request to the `/upload-new` endpoint to succeed. If these are not specified, defaults are set in the `_generate_upload_new_params` function call.
         """
         # Convert file_path string to Path
         if isinstance(file_path, str):
@@ -142,4 +142,5 @@ class UploadServiceClient(BaseUploadClient):
                     },
                 )
                 chunk_number += 1
+        # The HTTP response code is 200 for each chunk until the final one, which is 201. Only return the final code here.
         return response

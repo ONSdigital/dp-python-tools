@@ -1,0 +1,79 @@
+# dpytools: APIs
+
+## Usage
+
+The API clients provide a set of tools for interacting with API endpoints, including uploading and managing dataset metadata.
+
+### BaseAPIClient
+
+The `BaseAPIClient` class extends the `BaseHTTPClient` class by adding `url_netloc`, `url_path` and `TokenAuth` properties to the base class. It has two abstract methods, `put_json()` and `post_json()`, which any child class must implement.
+
+### DatasetAPIClient
+
+The `DatasetAPIClient` class facilitates the process of interacting with the [dp-dataset-api](https://github.com/ONSdigital/dp-dataset-api). It implements `PUT` and `POST` methods for submitting metadata to the Dataset API `/datasets/{dataset-id}` endpoints.
+
+A new `DatasetAPIClient` object can be created by passing `url_netloc`and `url_path` arguments:
+
+```python
+from dpytools.http.api.dataset_api_client import DatasetAPIClient
+
+dataset_client = DatasetAPIClient(
+    url_netloc="http://example.org/datasets"
+    url_path="dataset-id"
+)
+```
+
+#### `put_json()`
+
+To update the metadata for an **existing** dataset, use the `put_json()` method. This will return an HTTP status code of 200 if it is successful.
+
+```python
+put_body = {
+    "_id": "dataset-id",
+    "state": "associated",
+    "type": "cantabular_flexible_table",
+    "contacts": [
+        {"name": "sarah"}
+    ],
+    "description": "description text here",
+    "keywords": [],
+    "methodologies": [],
+    "national_statistic": False,
+    "publications": [],
+    "qmi": {
+        "description": "QMI description", 
+        "href": "QMI link", 
+        "title": "QMI title"
+    },
+    "related_datasets": [],
+    "title": "this is a dataset",
+}
+with open("post.json", "rb") as f:
+    put_body_json = json.load(f)
+
+put_response = dataset_api_client.put_json(put_body_json)
+```
+
+#### `post_json()`
+
+To submit the metadata for an **new** dataset, use the `post_json()` method. This will return an HTTP status code of 201 if it is successful.
+
+```python
+post_body = {
+    "_id": "dataset-id",
+    "next": {
+        "_id": "dataset-id",
+        "links": {
+            "editions": {"href": "http://example.org/datasets/dataset-id/editions"},
+            "self": {"href": "http://example.org/datasets/dataset-id"},
+        },
+        "state": "created",
+        "type": "cantabular_flexible_table",
+    },
+}
+with open("post.json", "rb") as f:
+    post_body_json = json.load(f)
+
+post_response = dataset_api_client.post_json(post_body_json)
+```
+
