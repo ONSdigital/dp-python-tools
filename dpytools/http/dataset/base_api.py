@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-from email import header
 from typing import Dict
-from urllib import response
-from urllib.request import Request
 
 from dpytools.http.base import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth

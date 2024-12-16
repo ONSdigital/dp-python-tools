@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from dpytools.http.upload.base_upload import (
+from dpytools.http.upload.utils import (
     _create_temp_chunks,
     _delete_temp_chunks,
     _generate_upload_new_params,
@@ -14,7 +14,7 @@ def test_create_and_delete_temp_chunks():
     Ensures that _create_temp_chunks() creates the correct number of file chunks and that _delete_temp_chunks() deletes the temporary files.
     """
     temp_file_paths_list = _create_temp_chunks(
-        csv_path="tests/test_cases/countries.csv"
+        file_path="tests/test_cases/countries.csv"
     )
     assert len(temp_file_paths_list) == 2
     assert "temp-file-part-1" in temp_file_paths_list[0]

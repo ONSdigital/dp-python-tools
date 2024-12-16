@@ -1,8 +1,6 @@
-import json
-from pathlib import Path
-from typing import Dict, Union
+from typing import Dict
 
-from requests import RequestException, Response
+from requests import Response
 
 from dpytools.http.dataset.base_api import BaseAPIClient
 from dpytools.logging.logger import DpLogger

@@ -36,7 +36,7 @@ def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> 
 def _generate_upload_new_params(
     file_path: Path,
     mimetype: str,
-    chunk_size: Optional[int],
+    chunk_size: int,
     alias_name: Optional[str],
     title: Optional[str],
     is_publishable: Optional[bool],
@@ -69,6 +69,9 @@ def _generate_upload_new_params(
     if title is None:
         title = file_path.stem
 
+    if is_publishable is None:
+        is_publishable = False
+
     if licence is None:
         licence = "Open Government Licence v3.0"
 
@@ -84,7 +87,7 @@ def _generate_upload_new_params(
     upload_params = {
         "resumableFilename": filename,
         "resumableType": mimetype,
-        "resumableTotalChunks": ceil(total_size / 5242880),
+        "resumableTotalChunks": ceil(total_size / chunk_size),
         "resumableChunkSize": chunk_size,
         "aliasName": alias_name,
         "resumableTotalSize": total_size,
@@ -97,15 +100,14 @@ def _generate_upload_new_params(
         "Type": mimetype,
         "Licence": licence,
         "Path": f"datasets/{identifier}",
-        # TODO: Add collectionId to upload_params from metadata?
+        # TODO: Get collectionId from metadata?
         "collectionId": collection_id,
-        # `State` and `Etag` fields omitted as not required
     }
     return upload_params
 
 
 def _create_temp_chunks(
-    csv_path: Path,
+    file_path: Path,
     chunk_size: int = 5242880,
 ) -> list[str]:
     """
@@ -116,7 +118,7 @@ def _create_temp_chunks(
 
     # Create TemporaryDirectory to store temporary file chunks
     with TemporaryDirectory() as output_path:
-        with open(csv_path, "rb") as f:
+        with open(file_path, "rb") as f:
             # Read chunk according to specified chunk size
             chunk = f.read(chunk_size)
             while chunk:
