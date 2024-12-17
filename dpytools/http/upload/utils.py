@@ -37,12 +37,12 @@ def _generate_upload_new_params(
     file_path: Path,
     mimetype: str,
     chunk_size: int,
-    alias_name: Optional[str],
-    title: Optional[str],
-    is_publishable: Optional[bool],
-    licence: Optional[str],
-    licence_url: Optional[str],
-    collection_id: Optional[str],
+    alias_name: str,
+    title: str,
+    is_publishable: bool,
+    licence: str,
+    licence_url: str,
+    collection_id: str,
 ) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
@@ -52,40 +52,15 @@ def _generate_upload_new_params(
     # Get total size of file to be uploaded
     total_size = os.path.getsize(file_path)
 
-    # Get filename from csv filepath
-    filename = file_path.name
-
     # Get timestamp to create `resumableIdentifier` value in `upload_params`
     timestamp = datetime.now().strftime("%d%m%y%H%M%S")
 
     # Create identifier from timestamp and filename
-    identifier = f"{timestamp}-{filename.replace('.', '-')}"
-
-    # If alias name not provided, default to filename (with extension)
-    if alias_name is None:
-        alias_name = filename
-
-    # If title not provided, default to filename (without extension)
-    if title is None:
-        title = file_path.stem
-
-    if is_publishable is None:
-        is_publishable = False
-
-    if licence is None:
-        licence = "Open Government Licence v3.0"
-
-    if licence_url is None:
-        licence_url = (
-            "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-        )
-
-    if collection_id is None:
-        collection_id = "collection-id"
+    identifier = f"{timestamp}-{file_path.name.replace('.', '-')}"
 
     # Generate upload request params
     upload_params = {
-        "resumableFilename": filename,
+        "resumableFilename": file_path.name,
         "resumableType": mimetype,
         "resumableTotalChunks": ceil(total_size / chunk_size),
         "resumableChunkSize": chunk_size,

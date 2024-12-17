@@ -90,8 +90,8 @@ def test_upload_new(
         alias_name="test_alias",
         title="test_title",
         is_publishable=True,
-        license="test_license",
-        license_url="http://test_license_url",
+        licence="test_licence",
+        licence_url="http://test_licence_url",
         collection_id="test_collection_id",
     )
 
@@ -105,8 +105,8 @@ def test_upload_new(
         "test_alias",
         "test_title",
         True,
-        "test_license",
-        "http://test_license_url",
+        "test_licence",
+        "http://test_licence_url",
         "test_collection_id",
     )
     mock_upload_file_chunks.assert_called_once_with(
