@@ -2,7 +2,7 @@
 
 _Simple_ reusable python classes and functions for digital publishing.
 
-The key word is _simple_. If the desired functionality is more than a script or two (or existing functionality sprawls beyond that) please consider separating it into its own repository.
+The                  key word is _simple_. If the desired functionality is more than a script or two (or existing functionality sprawls beyond that) please consider separating it into its own repository.
 
 Given this pattern, each distinct tool should be clearly separated out within `./dpytools`, with each tool having its own README with example usage.
 
