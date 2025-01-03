@@ -11,6 +11,13 @@ logger = DpLogger("dpytools")
 def log_retry(details):
     logger.warning(f"Request failed, retrying... Attempt #{details['tries']}")
 
+# We don't want to retry on 404 as we are re trying a non existent resource.
+# To test whether a dataset exists we query a specific url and it will return a 404 if it does not exist. 
+def giveup_on_404(e: HTTPError) -> bool:
+    '''
+        Returns Boolean based on whether status code is 404 or not
+    '''
+    return e.response.status_code == 404
 
 class BaseHttpClient:
     # Initialize HttpClient with a backoff_max value
@@ -18,7 +25,7 @@ class BaseHttpClient:
         self.backoff_max = backoff_max
 
     # GET request method with exponential backoff
-    @backoff.on_exception(backoff.expo, HTTPError, max_time=30, on_backoff=log_retry)
+    @backoff.on_exception(backoff.expo, HTTPError, max_time=30, on_backoff=log_retry,   giveup= giveup_on_404)
     def get(self, url, *args, **kwargs):
         """
         Sends a GET request to the specified URL with optional extra arguments.
@@ -45,7 +52,7 @@ class BaseHttpClient:
         backoff.expo,
         HTTPError,
         max_time=30,
-        on_backoff=log_retry,
+        on_backoff=log_retry
     )
     def post(self, url, *args, **kwargs):
         """
