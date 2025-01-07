@@ -1,37 +1,30 @@
 from typing import Dict, Union
-from dpytools.http.token_auth import TokenAuth
-import backoff
 
+import backoff
 from requests import Response
 from requests.exceptions import HTTPError
 
 from dpytools.http.base import BaseHttpClient
+from dpytools.http.token_auth import TokenAuth
 from dpytools.logging.logger import DpLogger
 
 logger = DpLogger("dpytools")
 
 
 class DatasetAPIClient(BaseHttpClient):
-
     def __init__(self, url_netloc: str, url_path: str, backoff_max: int = 30):
         super().__init__(backoff_max=backoff_max)
         self.token_auth = TokenAuth(backoff_max=backoff_max)
         self.url_netloc = url_netloc
         self.url_path = url_path
         self.full_url = f"{url_netloc.rstrip('/')}/{url_path.lstrip('/')}"
-    
+
     # When writing to the metadata api we want to first determine whether our dataset id already exists. If it does not we will receive a 404 error.
     # In which case we do NOT want to retry the API request
-    @backoff.on_exception(
-            backoff.expo, 
-            HTTPError, 
-            max_time=30, 
-            giveup= lambda e: True
-        )
-
+    @backoff.on_exception(backoff.expo, HTTPError, max_time=30, giveup=lambda e: True)
     def get_path(self, params: Union[Dict, None] = None) -> Response:
         """
-        Send a GET request to the specified URL. 
+        Send a GET request to the specified URL.
 
         :param  params: The params to include in the GET request.
         :return: The response from the GET request.
@@ -45,8 +38,6 @@ class DatasetAPIClient(BaseHttpClient):
         )
 
         return response
-
-        
 
     def post_json(self, json_data: Dict) -> Response:
         """
