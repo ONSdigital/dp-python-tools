@@ -36,13 +36,13 @@ def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> 
 def _generate_upload_new_params(
     file_path: Path,
     mimetype: str,
-    chunk_size: Optional[int],
-    alias_name: Optional[str],
-    title: Optional[str],
-    is_publishable: Optional[bool],
-    licence: Optional[str],
-    licence_url: Optional[str],
-    collection_id: Optional[str],
+    chunk_size: int,
+    alias_name: str,
+    title: str,
+    is_publishable: bool,
+    licence: str,
+    licence_url: str,
+    collection_id: str,
 ) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
@@ -52,39 +52,17 @@ def _generate_upload_new_params(
     # Get total size of file to be uploaded
     total_size = os.path.getsize(file_path)
 
-    # Get filename from csv filepath
-    filename = file_path.name
-
     # Get timestamp to create `resumableIdentifier` value in `upload_params`
     timestamp = datetime.now().strftime("%d%m%y%H%M%S")
 
     # Create identifier from timestamp and filename
-    identifier = f"{timestamp}-{filename.replace('.', '-')}"
-
-    # If alias name not provided, default to filename (with extension)
-    if alias_name is None:
-        alias_name = filename
-
-    # If title not provided, default to filename (without extension)
-    if title is None:
-        title = file_path.stem
-
-    if licence is None:
-        licence = "Open Government Licence v3.0"
-
-    if licence_url is None:
-        licence_url = (
-            "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-        )
-
-    if collection_id is None:
-        collection_id = "collection-id"
+    identifier = f"{timestamp}-{file_path.name.replace('.', '-')}"
 
     # Generate upload request params
     upload_params = {
-        "resumableFilename": filename,
+        "resumableFilename": file_path.name,
         "resumableType": mimetype,
-        "resumableTotalChunks": ceil(total_size / 5242880),
+        "resumableTotalChunks": ceil(total_size / chunk_size),
         "resumableChunkSize": chunk_size,
         "aliasName": alias_name,
         "resumableTotalSize": total_size,
@@ -97,15 +75,14 @@ def _generate_upload_new_params(
         "Type": mimetype,
         "Licence": licence,
         "Path": f"datasets/{identifier}",
-        # TODO: Add collectionId to upload_params from metadata?
+        # TODO: Get collectionId from metadata?
         "collectionId": collection_id,
-        # `State` and `Etag` fields omitted as not required
     }
     return upload_params
 
 
 def _create_temp_chunks(
-    csv_path: Path,
+    file_path: Path,
     chunk_size: int = 5242880,
 ) -> list[str]:
     """
@@ -116,7 +93,7 @@ def _create_temp_chunks(
 
     # Create TemporaryDirectory to store temporary file chunks
     with TemporaryDirectory() as output_path:
-        with open(csv_path, "rb") as f:
+        with open(file_path, "rb") as f:
             # Read chunk according to specified chunk size
             chunk = f.read(chunk_size)
             while chunk:

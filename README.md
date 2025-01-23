@@ -27,9 +27,7 @@ All commits that make it to PR should have had `black` and `ruff` already run ag
 Given this is a lower level resource to be relied on by other things, all classes and functions should have good unit test coverage. You can run the unit tests via `make test`.
 
 ## To Run Locally
-
 Make sure you have the correct version of python installed. Check poetry.lock for the versions allowed (python-versions = ">=3.9, <3.12"). Create a virtual env  with correct python version with the command. (Note make sure your venv is called .venv as in the .gitignore)
-
 ```
 python3.11 -m venv .venv
 source .venv/bin/activate
