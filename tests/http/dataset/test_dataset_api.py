@@ -116,3 +116,41 @@ def test_put_json_failure(mock_request):
     mock_client = DatasetAPIClient("http://test_url", "test_path")
     with pytest.raises(Exception):
         mock_client.put_json({"key": "value"})
+
+
+@patch("requests.request")
+def test_get_path_success(mock_request):
+    mock_token_response = setup_mock_token_auth(mock_request)
+
+    mock_response = MagicMock(Response)
+    mock_response.status_code = 200
+    mock_response.content = b"Test response content"
+    mock_request.side_effect = [mock_token_response, mock_response]
+
+    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    response = mock_client.get_path(params={"key": "value"})
+    assert response.status_code == 200
+    # Verify response content
+    assert response.content.decode() == "Test response content"
+    mock_request.assert_called_with(
+        "GET",
+        "http://test_url/test_path",
+        headers=mock_client.token_auth.get_auth_header(),
+        params={"key": "value"},
+        verify=True,
+    )
+
+
+@patch("requests.request")
+def test_get_path_failure(mock_request):
+    # Mock the token authentication response
+    mock_token_response = setup_mock_token_auth(mock_request)
+
+    # Setup mock responses to simulate failure
+    mock_response = MagicMock(Response)
+    mock_response.status_code = 404
+    mock_request.side_effect = [mock_token_response, mock_response]
+
+    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    with pytest.raises(Exception):
+        mock_client.get_path(params={"key": "value"})

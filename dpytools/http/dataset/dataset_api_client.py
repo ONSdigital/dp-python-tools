@@ -37,6 +37,10 @@ class DatasetAPIClient(BaseHttpClient):
             verify=True,
         )
 
+        if response.status_code != 200:
+            raise Exception(
+                f"GET request failed with status code: {response.status_code}"
+            )
         return response
 
     def post_json(self, json_data: Dict) -> Response:
