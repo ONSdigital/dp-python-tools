@@ -63,9 +63,9 @@ def test_backoff_on_exception(mock_request):
     # Raise HTTPError on the first call, then return the mock_response
     mock_request.side_effect = [HTTPError("HTTP Error"), mock_response]
 
-    # Create an instance of BaseHttpClient and make a GET request
+    # Create an instance of BaseHttpClient and make a POST request
     client = BaseHttpClient()
-    response = client.get("http://example.com")
+    response = client.post("http://example.com")
 
     # Assertions to check the response status and the number of request calls
     assert response.status_code == 200

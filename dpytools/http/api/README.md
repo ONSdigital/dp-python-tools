@@ -4,10 +4,6 @@
 
 These API clients provide a set of tools for interacting with API endpoints, including uploading and managing dataset metadata.
 
-### BaseAPIClient
-
-The `BaseAPIClient` class extends the `BaseHTTPClient` class by adding `url_netloc`, `url_path` and `TokenAuth` properties to the base class. It has two abstract methods, `put_json()` and `post_json()`, which any child class must implement.
-
 ### DatasetAPIClient
 
 The `DatasetAPIClient` class facilitates the process of interacting with the [dp-dataset-api](https://github.com/ONSdigital/dp-dataset-api). It implements `PUT` and `POST` methods for submitting metadata to the Dataset API `/datasets/{dataset-id}` endpoints.
@@ -15,7 +11,7 @@ The `DatasetAPIClient` class facilitates the process of interacting with the [dp
 A new `DatasetAPIClient` object can be created by passing `url_netloc`and `url_path` arguments:
 
 ```python
-from dpytools.http.api.dataset_api_client import DatasetAPIClient
+from dpytools.http.dataset.dataset_api_client import DatasetAPIClient
 
 dataset_client = DatasetAPIClient(
     url_netloc="http://example.org/datasets"

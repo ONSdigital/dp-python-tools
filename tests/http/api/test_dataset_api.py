@@ -126,7 +126,7 @@ def test_get_path_success(mock_request):
     mock_response.content = b"Test response content"
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    mock_client = DatasetAPIClient("http://test_url/", "test_path")
     response = mock_client.get_path(params={"key": "value"})
     assert response.status_code == 200
     # Verify response content
@@ -150,6 +150,6 @@ def test_get_path_failure(mock_request):
     mock_response.status_code = 404
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    mock_client = DatasetAPIClient("http://test_url/", "test_path")
     with pytest.raises(Exception):
         mock_client.get_path(params={"key": "value"})
