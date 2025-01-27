@@ -21,6 +21,7 @@ class DatasetAPIClient(BaseHttpClient):
 
     # When writing to the metadata api we want to first determine whether our dataset id already exists. If it does not we will receive a 404 error.
     # In which case we do NOT want to retry the API request
+    # 2423 TODO Change max_time to self.backoff_max?
     @backoff.on_exception(backoff.expo, HTTPError, max_time=30, giveup=lambda e: True)
     def get_path(self, params: Union[Dict, None] = None) -> Response:
         """
