@@ -19,6 +19,16 @@ dataset_client = DatasetAPIClient(
 )
 ```
 
+#### `get_path()`
+
+To check whether an endpoint exists within the Dataset API for a given dataset ID, use the `get_path()` method. This will return a response with an HTTP status code of 200 if the endpoint exists.
+
+```python
+response = dataset_client.get_path()
+
+# reponse.status_code will be 200 if "http://example.org/datasets/dataset-id" exists. Otherwise, response.status_code will be 404
+```
+
 #### `put_json()`
 
 To update the metadata for an **existing** dataset, use the `put_json()` method. This will return an HTTP status code of 200 if it is successful.
