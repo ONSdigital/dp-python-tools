@@ -23,8 +23,8 @@ def giveup_on_404(e: HTTPError) -> bool:
 
 class BaseHttpClient:
     # Initialize HttpClient with a backoff_max value
-    def __init__(self, backoff_max=30):
-        self.backoff_max = backoff_max
+    # def __init__(self, backoff_max=30):
+    #     self.backoff_max = backoff_max
 
     # GET request method with exponential backoff
     @backoff.on_exception(

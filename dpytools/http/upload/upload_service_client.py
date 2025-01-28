@@ -28,9 +28,8 @@ logger = DpLogger("dpytools")
 
 
 class UploadServiceClient(BaseHttpClient):
-    def __init__(self, upload_url: str, backoff_max=30):
-        super().__init__(backoff_max=backoff_max)
-        self.token_auth = TokenAuth(backoff_max=backoff_max)
+    def __init__(self, upload_url: str):
+        self.token_auth = TokenAuth()
         self.upload_url = upload_url
 
     def upload(

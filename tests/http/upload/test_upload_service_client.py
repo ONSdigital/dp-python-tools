@@ -40,7 +40,7 @@ def test_upload(
     os.environ["FLORENCE_PASSWORD"] = "test_password"
     os.environ["IDENTITY_API_URL"] = "http://test_url"
 
-    client = UploadServiceClient(upload_url="http://example.com/upload", backoff_max=30)
+    client = UploadServiceClient(upload_url="http://example.com/upload")
     mock_create_temp_chunks.return_value = ["chunk1", "chunk2"]
     mock_generate_upload_params.return_value = {"resumableIdentifier": "test_id"}
 
@@ -79,7 +79,7 @@ def test_upload_new(
     os.environ["FLORENCE_PASSWORD"] = "test_password"
     os.environ["IDENTITY_API_URL"] = "http://test_url"
 
-    client = UploadServiceClient(upload_url="http://example.com/upload", backoff_max=30)
+    client = UploadServiceClient(upload_url="http://example.com/upload")
     mock_create_temp_chunks.return_value = ["chunk1", "chunk2"]
     mock_generate_upload_new_params.return_value = {"Path": "test_path"}
 
