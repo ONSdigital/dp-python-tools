@@ -1,16 +1,41 @@
-from typing import Dict
+from typing import Dict, Union
 
 from requests import Response
 
-from dpytools.http.api.base_api import BaseAPIClient
+from dpytools.http.base_http import BaseHttpClient
+from dpytools.http.token_auth import TokenAuth
 from dpytools.logging.logger import DpLogger
 
 logger = DpLogger("dpytools")
 
 
-class DatasetAPIClient(BaseAPIClient):
-    def __init__(self, url_netloc: str, url_path: str, backoff_max=30):
-        super().__init__(url_netloc, url_path, backoff_max)
+class DatasetAPIClient(BaseHttpClient):
+    def __init__(self, url_netloc: str, url_path: str):
+        self.token_auth = TokenAuth()
+        self.url_netloc = url_netloc
+        self.url_path = url_path
+        self.full_url = f"{url_netloc.rstrip('/')}/{url_path.lstrip('/')}"
+
+    # When writing to the metadata api we want to first determine whether our dataset id already exists. If it does not we will receive a 404 error.
+    # In which case we do NOT want to retry the API request
+    def get_path(self, params: Union[Dict, None] = None) -> Response:
+        """
+        Send a GET request to the specified URL.
+        :param  params: The params to include in the GET request.
+        :return: The response from the GET request.
+        """
+
+        response = self.get(
+            self.full_url,
+            params=params,
+            headers=self.token_auth.get_auth_header(),
+            verify=True,
+        )
+        if response.status_code != 200:
+            raise Exception(
+                f"GET request failed with status code: {response.status_code}"
+            )
+        return response
 
     def post_json(self, json_data: Dict) -> Response:
         """

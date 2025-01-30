@@ -4,10 +4,6 @@
 
 These API clients provide a set of tools for interacting with API endpoints, including uploading and managing dataset metadata.
 
-### BaseAPIClient
-
-The `BaseAPIClient` class extends the `BaseHTTPClient` class by adding `url_netloc`, `url_path` and `TokenAuth` properties to the base class. It has two abstract methods, `put_json()` and `post_json()`, which any child class must implement.
-
 ### DatasetAPIClient
 
 The `DatasetAPIClient` class facilitates the process of interacting with the [dp-dataset-api](https://github.com/ONSdigital/dp-dataset-api). It implements `PUT` and `POST` methods for submitting metadata to the Dataset API `/datasets/{dataset-id}` endpoints.
@@ -21,6 +17,16 @@ dataset_client = DatasetAPIClient(
     url_netloc="http://example.org/datasets"
     url_path="dataset-id"
 )
+```
+
+#### `get_path()`
+
+To check whether an endpoint exists within the Dataset API for a given dataset ID, use the `get_path()` method. This will return a response with an HTTP status code of 200 if the endpoint exists.
+
+```python
+response = dataset_client.get_path()
+
+# response.status_code will be 200 if "http://example.org/datasets/dataset-id" exists. Otherwise, response.status_code will be 404
 ```
 
 #### `put_json()`

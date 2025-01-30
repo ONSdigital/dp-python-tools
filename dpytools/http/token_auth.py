@@ -9,8 +9,7 @@ logger = DpLogger("dpytools")
 
 
 class TokenAuth(BaseHttpClient):
-    def __init__(self, backoff_max=30):
-        super().__init__(backoff_max=backoff_max)
+    def __init__(self):
         # RE auth, there'd two modes
         # 1. Service account mode
         # 2. User account mode
