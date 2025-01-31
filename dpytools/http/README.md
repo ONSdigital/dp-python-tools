@@ -37,8 +37,6 @@ print(response.json())
 # Prints the response content as JSON
 ```
 
-If the `GET` request fails for a network-related reason, this will raise an `HTTPError`.
-
 #### `post()`
 
 Sends a `POST` request to the specified URL with optional extra arguments.
@@ -67,8 +65,6 @@ response = http_client.post(
     json=dictionary_to_pass
 )
 ```
-
-If the `POST` request fails for a network-related reason, this will raise an `HTTPError`.
 
 #### `put()`
 
