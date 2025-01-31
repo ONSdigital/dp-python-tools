@@ -53,7 +53,7 @@ def test_post(mock_request):
 @patch("requests.request")
 def test_backoff_on_exception(mock_request):
     """
-    Test that the get method retries on HTTPError
+    Test that the post method retries on HTTPError
     """
 
     # Create a mock response object

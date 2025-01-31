@@ -106,36 +106,9 @@ class BaseHttpClient:
         return self._handle_request("PUT", url, *args, **kwargs)
 
     # Method to handle requests
-    def _handle_request(self, method, url, *args, **kwargs):
+    def _handle_request(self, method, url, *args, **kwargs) -> requests.Response:
         logger.info(
             f"Sending {method} request to {url}", data={"method": method, "url": url}
         )
-        try:
-            response = requests.request(method, url, *args, **kwargs)
-            response.raise_for_status()
-            return response
-
-        except HTTPError as http_err:
-            logger.error(
-                f"HTTP error occurred: {http_err} when sending a {method} request to {url} with headers {kwargs.get('headers')}",
-                http_err,
-                data={
-                    "http_error": http_err,
-                    "method": method,
-                    "url": url,
-                    "headers": kwargs.get("headers"),
-                },
-            )
-            raise http_err
-        except Exception as err:
-            logger.error(
-                f"Other error occurred: {err} when sending a {method} to {url} with headers {kwargs.get('headers')}",
-                err,
-                data={
-                    "error": err,
-                    "method": method,
-                    "url": url,
-                    "headers": kwargs.get("headers"),
-                },
-            )
-            raise err
+        response = requests.request(method, url, *args, **kwargs)
+        return response

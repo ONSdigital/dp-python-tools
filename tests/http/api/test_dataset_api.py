@@ -138,18 +138,3 @@ def test_get_path_success(mock_request):
         params={"key": "value"},
         verify=True,
     )
-
-
-@patch("requests.request")
-def test_get_path_failure(mock_request):
-    # Mock the token authentication response
-    mock_token_response = setup_mock_token_auth(mock_request)
-
-    # Setup mock responses to simulate failure
-    mock_response = MagicMock(Response)
-    mock_response.status_code = 404
-    mock_request.side_effect = [mock_token_response, mock_response]
-
-    mock_client = DatasetAPIClient("http://test_url/", "test_path")
-    with pytest.raises(Exception):
-        mock_client.get_path(params={"key": "value"})
