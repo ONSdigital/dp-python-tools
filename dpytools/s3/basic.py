@@ -83,12 +83,6 @@ def decompress_s3_tar(
     Given a url to an s3 object that is a tar file, decompress it
     to the provided directory path.
     """
-
-    if not object_name.endswith(".tar"):
-        raise NotImplementedError(
-            f"This function currently only handles archives using the tar extension. Got {object_name}"
-        )
-
     if isinstance(directory, str):
         directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -100,7 +94,3 @@ def decompress_s3_tar(
     with open(tmp_file.name, "wb") as f:
         client = _get_s3_client(profile_name)
         client.download_fileobj(bucket_name, object_key, f)
-
-    # Decompress all the files to the directory specified.
-    with tarfile.open(tmp_file.name, mode="r:*") as tar:
-        tar.extractall(directory.absolute())
