@@ -6,7 +6,7 @@ import pytest
 from moto import mock_aws
 
 from dpytools.s3.basic import (
-    decompress_s3_tar,
+    s3_folder_recieved,
     download_s3_file_content_to_local,
     get_s3_object,
     read_s3_file_content,
@@ -159,18 +159,18 @@ def test_decompress_s3_tar_with_given_dir_path(
     mock_s3_client.create_bucket(
         Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
     )
-    tar_file = tmp_path / "s3.tar"
+    tar_file = tmp_path
 
     with tarfile.open(tar_file, "a") as tar:
         tar.add(path_to_mostly_empty_csv, arcname=path_to_mostly_empty_csv.name)
         tar.add(path_to_mostly_empty_json, arcname=path_to_mostly_empty_json.name)
 
-    upload_local_file_to_s3(tar_file, "mybucket/s3.tar")
+    upload_local_file_to_s3(tar_file, "mybucket/")
 
     # Just download to a child directory of our existing tmp path to enable
     # automatic test cleanup
     output_dir = Path(tmp_path / "output")
-    decompress_s3_tar("mybucket/s3.tar", output_dir)
+    s3_folder_recieved("mybucket/", output_dir)
 
     assert Path(output_dir).exists()
     assert Path(output_dir / path_to_mostly_empty_json.name).exists()
@@ -191,7 +191,7 @@ def test_decompress_s3_tar_raises_error_when_file_is_not_tar(mock_s3_client):
     upload_local_file_to_s3(local_file, "mybucket/mykey")
 
     with pytest.raises(NotImplementedError) as e:
-        decompress_s3_tar("mybucket/mykey", "outputs")
+        s3_folder_recieved("mybucket/mykey", "outputs")
 
     assert (
         "This function currently only handles archives using the tar extension"
