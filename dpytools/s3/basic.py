@@ -80,8 +80,8 @@ def s3_folder_recieved(
     object_name: str, directory: Union[str, Path], profile_name: Optional[str] = None
 ):
     """
-    Given a url to an s3 object that is a tar file, decompress it
-    to the provided directory path.
+    Given a url to an s3 object a folder contaning files, 
+    download content to provided directory path.
     """
     if isinstance(directory, str):
         directory = Path(directory)
