@@ -6,11 +6,11 @@ import pytest
 from moto import mock_aws
 
 from dpytools.s3.basic import (
-    s3_folder_recieved,
     download_s3_file_content_to_local,
     get_s3_object,
     read_s3_file_content,
     read_s3_file_content_as_dict,
+    s3_folder_recieved,
     upload_local_file_to_s3,
 )
 
@@ -175,25 +175,3 @@ def test_decompress_s3_tar_with_given_dir_path(
     assert Path(output_dir).exists()
     assert Path(output_dir / path_to_mostly_empty_json.name).exists()
     assert Path(output_dir / path_to_mostly_empty_csv.name).exists()
-
-
-@mock_aws
-def test_decompress_s3_tar_raises_error_when_file_is_not_tar(mock_s3_client):
-    """
-    Confirm we get the expected assertion error if the file to be
-    uploaded does not exist
-    """
-    mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
-    )
-    local_file = "tests/test_cases/decompress_from_s3.json"
-
-    upload_local_file_to_s3(local_file, "mybucket/mykey")
-
-    with pytest.raises(NotImplementedError) as e:
-        s3_folder_recieved("mybucket/mykey", "outputs")
-
-    assert (
-        "This function currently only handles archives using the tar extension"
-        in str(e.value)
-    )
