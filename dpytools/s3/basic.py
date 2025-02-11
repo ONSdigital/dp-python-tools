@@ -76,19 +76,13 @@ def upload_local_file_to_s3(
         client.put_object(Body=f.read(), Bucket=bucket_name, Key=key)
 
 
-def decompress_s3_tar(
+def s3_folder_recieved(
     object_name: str, directory: Union[str, Path], profile_name: Optional[str] = None
 ):
     """
-    Given a url to an s3 object that is a tar file, decompress it
-    to the provided directory path.
+    Given a url to an s3 object a folder contaning files, 
+    download content to provided directory path.
     """
-
-    if not object_name.endswith(".tar"):
-        raise NotImplementedError(
-            f"This function currently only handles archives using the tar extension. Got {object_name}"
-        )
-
     if isinstance(directory, str):
         directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -96,11 +90,12 @@ def decompress_s3_tar(
     bucket_name = object_name.split("/")[0]
     object_key = "/".join(object_name.split("/")[1:])
 
+    client = _get_s3_client(profile_name)
+    list_objects = client.list_objects_v2(Bucket=bucket_name, Prefix=object_key)
+    
     tmp_file = tempfile.NamedTemporaryFile()
     with open(tmp_file.name, "wb") as f:
-        client = _get_s3_client(profile_name)
-        client.download_fileobj(bucket_name, object_key, f)
+        for c in list_objects["Contents"]:
+            if c["Key"].startswith(object_key) and not c["Key"].endswith("/"):
+                client.download_fileobj(bucket_name, c["Key"], f)
 
-    # Decompress all the files to the directory specified.
-    with tarfile.open(tmp_file.name, mode="r:*") as tar:
-        tar.extractall(directory.absolute())

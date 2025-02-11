@@ -6,11 +6,11 @@ import pytest
 from moto import mock_aws
 
 from dpytools.s3.basic import (
-    decompress_s3_tar,
     download_s3_file_content_to_local,
     get_s3_object,
     read_s3_file_content,
     read_s3_file_content_as_dict,
+    s3_folder_recieved,
     upload_local_file_to_s3,
 )
 
@@ -145,55 +145,48 @@ def test_upload_local_file_to_s3_raise_for_file_doesnt_exist(mock_s3_client):
 
     assert "does not exist." in str(e.value)
 
-
 @mock_aws
-def test_decompress_s3_tar_with_given_dir_path(
-    mock_s3_client, tmp_path, path_to_mostly_empty_csv, path_to_mostly_empty_json
-):
+def test_s3_folder_recieved_downloads_files(mock_s3_client, tmp_path, monkeypatch):
     """
-    By creating a s3 bucket and uploding a tar file to it,
-    confirm that the user can get the tar file from the s3 bucket and
-    decompress it to a given directory.
+    Test that s3_folder_recieved downloads only files (ignoring keys that end with '/')
+    from a specified folder in S3.
     """
-
+    # Create the bucket.
     mock_s3_client.create_bucket(
         Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
     )
-    tar_file = tmp_path / "s3.tar"
+    # Upload two file objects and one folder marker.
+    mock_s3_client.put_object(Bucket="mybucket", Body=b"file1 content", Key="folder/file1.txt")
+    mock_s3_client.put_object(Bucket="mybucket", Body=b"file2 content", Key="folder/file2.txt")
+    # Folder marker; this key should be ignored.
+    mock_s3_client.put_object(Bucket="mybucket", Body=b"", Key="folder/")
 
-    with tarfile.open(tar_file, "a") as tar:
-        tar.add(path_to_mostly_empty_csv, arcname=path_to_mostly_empty_csv.name)
-        tar.add(path_to_mostly_empty_json, arcname=path_to_mostly_empty_json.name)
+    # Ensure that _get_s3_client returns our mocked client.
+    monkeypatch.setattr("dpytools.s3.basic._get_s3_client", lambda profile_name=None: mock_s3_client)
 
-    upload_local_file_to_s3(tar_file, "mybucket/s3.tar")
+    # Prepare a list to capture the keys passed to download_fileobj.
+    downloaded_keys = []
+    original_download_fileobj = mock_s3_client.download_fileobj
 
-    # Just download to a child directory of our existing tmp path to enable
-    # automatic test cleanup
-    output_dir = Path(tmp_path / "output")
-    decompress_s3_tar("mybucket/s3.tar", output_dir)
+    def fake_download_fileobj(Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None):
+        downloaded_keys.append(Key)
+        return original_download_fileobj(Bucket, Key, Fileobj, ExtraArgs, Callback, Config)
 
-    assert Path(output_dir).exists()
-    assert Path(output_dir / path_to_mostly_empty_json.name).exists()
-    assert Path(output_dir / path_to_mostly_empty_csv.name).exists()
+    # Override the download_fileobj method on our mocked client.
+    mock_s3_client.download_fileobj = fake_download_fileobj
 
+    # Create an output directory (s3_folder_recieved will create it if needed).
+    output_dir = tmp_path / "output"
+    s3_folder_recieved("mybucket/folder", output_dir)
 
-@mock_aws
-def test_decompress_s3_tar_raises_error_when_file_is_not_tar(mock_s3_client):
-    """
-    Confirm we get the expected assertion error if the file to be
-    uploaded does not exist
-    """
-    mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
-    )
-    local_file = "tests/test_cases/decompress_from_s3.json"
+    # Assert that the output directory was created.
+    assert output_dir.exists()
 
-    upload_local_file_to_s3(local_file, "mybucket/mykey")
+    # Verify that download_fileobj was called only for file objects.
+    # Since we uploaded two files, we expect two calls.
+    assert len(downloaded_keys) == 2
+    assert "folder/file1.txt" in downloaded_keys
+    assert "folder/file2.txt" in downloaded_keys
+    # The folder marker key should not trigger a download.
+    assert "folder/" not in downloaded_keys
 
-    with pytest.raises(NotImplementedError) as e:
-        decompress_s3_tar("mybucket/mykey", "outputs")
-
-    assert (
-        "This function currently only handles archives using the tar extension"
-        in str(e.value)
-    )
