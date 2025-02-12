@@ -99,3 +99,8 @@ def s3_folder_recieved(
             if c["Key"].startswith(object_key) and not c["Key"].endswith("/"):
                 client.download_fileobj(bucket_name, c["Key"], f)
 
+    for c in list_objects["Contents"]:
+        if c["Key"].startswith(object_key) and not c["Key"].endswith("/"):
+            filename = c["Key"].split("/")[1]
+            client.download_file(bucket_name, c["Key"], Filename=str(directory) + "/" + filename)
+
