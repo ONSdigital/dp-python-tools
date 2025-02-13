@@ -10,11 +10,14 @@ logger = DpLogger("dpytools")
 
 
 class DatasetAPIClient(BaseHttpClient):
-    def __init__(self, url_netloc: str, url_path: str):
+    def __init__(self, dataset_api_url: str, dataset_path: str, edition_path: str):
         self.token_auth = TokenAuth()
-        self.url_netloc = url_netloc
-        self.url_path = url_path
-        self.full_url = f"{url_netloc.rstrip('/')}/{url_path.lstrip('/')}"
+        self.dataset_api_url = dataset_api_url.strip("/")
+        self.dataset_path = dataset_path.strip("/")
+        self.edition_path = edition_path.strip("/")
+        self.full_url = (
+            f"{dataset_api_url}/{dataset_path}/editions/{edition_path}/versions"
+        )
 
     # When writing to the metadata api we want to first determine whether our dataset id already exists. If it does not we will receive a 404 error.
     # In which case we do NOT want to retry the API request

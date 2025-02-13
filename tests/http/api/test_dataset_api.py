@@ -38,7 +38,9 @@ def test_post_json_success(mock_request):
     mock_response.content = b"Test response content"
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    mock_client = DatasetAPIClient(
+        "http://test_url", "test_dataset_path", "test_edition_path"
+    )
     response = mock_client.post_json({"key": "value"})
 
     assert response.status_code == 201
@@ -46,7 +48,7 @@ def test_post_json_success(mock_request):
     assert response.content.decode() == "Test response content"
     mock_request.assert_called_with(
         "POST",
-        "http://test_url/test_path",
+        "http://test_url/test_dataset_path/editions/test_edition_path/versions",
         headers=mock_client.token_auth.get_auth_header(),
         json={"key": "value"},
         verify=True,
@@ -66,7 +68,9 @@ def test_post_json_failure(mock_request):
     mock_response.status_code = 400
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    mock_client = DatasetAPIClient(
+        "http://test_url", "test_dataset_path", "test_edition_path"
+    )
     with pytest.raises(Exception):
         mock_client.post_json({"key": "value"})
 
@@ -84,7 +88,9 @@ def test_put_json_success(mock_request):
     mock_response.content = b"Test response content"
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    mock_client = DatasetAPIClient(
+        "http://test_url", "test_dataset_path", "test_edition_path"
+    )
     response = mock_client.put_json({"key": "value"})
 
     assert response.status_code == 200
@@ -92,7 +98,7 @@ def test_put_json_success(mock_request):
     assert response.content.decode() == "Test response content"
     mock_request.assert_called_with(
         "PUT",
-        "http://test_url/test_path",
+        "http://test_url/test_dataset_path/editions/test_edition_path/versions",
         headers=mock_client.token_auth.get_auth_header(),
         json={"key": "value"},
         verify=True,
@@ -112,7 +118,9 @@ def test_put_json_failure(mock_request):
     mock_response.status_code = 400
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("http://test_url", "test_path")
+    mock_client = DatasetAPIClient(
+        "http://test_url", "test_dataset_path", "test_edition_path"
+    )
     with pytest.raises(Exception):
         mock_client.put_json({"key": "value"})
 
@@ -126,14 +134,16 @@ def test_get_path_success(mock_request):
     mock_response.content = b"Test response content"
     mock_request.side_effect = [mock_token_response, mock_response]
 
-    mock_client = DatasetAPIClient("http://test_url/", "test_path")
+    mock_client = DatasetAPIClient(
+        "http://test_url", "test_dataset_path", "test_edition_path"
+    )
     response = mock_client.get_path(params={"key": "value"})
     assert response.status_code == 200
     # Verify response content
     assert response.content.decode() == "Test response content"
     mock_request.assert_called_with(
         "GET",
-        "http://test_url/test_path",
+        "http://test_url/test_dataset_path/editions/test_edition_path/versions",
         headers=mock_client.token_auth.get_auth_header(),
         params={"key": "value"},
         verify=True,

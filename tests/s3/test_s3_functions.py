@@ -1,4 +1,3 @@
-import tarfile
 from pathlib import Path
 
 import boto3
@@ -145,6 +144,7 @@ def test_upload_local_file_to_s3_raise_for_file_doesnt_exist(mock_s3_client):
 
     assert "does not exist." in str(e.value)
 
+
 @mock_aws
 def test_s3_folder_recieved_downloads_files(mock_s3_client, tmp_path, monkeypatch):
     """
@@ -156,21 +156,31 @@ def test_s3_folder_recieved_downloads_files(mock_s3_client, tmp_path, monkeypatc
         Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
     )
     # Upload two file objects and one folder marker.
-    mock_s3_client.put_object(Bucket="mybucket", Body=b"file1 content", Key="folder/file1.txt")
-    mock_s3_client.put_object(Bucket="mybucket", Body=b"file2 content", Key="folder/file2.txt")
+    mock_s3_client.put_object(
+        Bucket="mybucket", Body=b"file1 content", Key="folder/file1.txt"
+    )
+    mock_s3_client.put_object(
+        Bucket="mybucket", Body=b"file2 content", Key="folder/file2.txt"
+    )
     # Folder marker; this key should be ignored.
     mock_s3_client.put_object(Bucket="mybucket", Body=b"", Key="folder/")
 
     # Ensure that _get_s3_client returns our mocked client.
-    monkeypatch.setattr("dpytools.s3.basic._get_s3_client", lambda profile_name=None: mock_s3_client)
+    monkeypatch.setattr(
+        "dpytools.s3.basic._get_s3_client", lambda profile_name=None: mock_s3_client
+    )
 
     # Prepare a list to capture the keys passed to download_fileobj.
     downloaded_keys = []
     original_download_fileobj = mock_s3_client.download_fileobj
 
-    def fake_download_fileobj(Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None):
+    def fake_download_fileobj(
+        Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None
+    ):
         downloaded_keys.append(Key)
-        return original_download_fileobj(Bucket, Key, Fileobj, ExtraArgs, Callback, Config)
+        return original_download_fileobj(
+            Bucket, Key, Fileobj, ExtraArgs, Callback, Config
+        )
 
     # Override the download_fileobj method on our mocked client.
     mock_s3_client.download_fileobj = fake_download_fileobj
@@ -189,4 +199,3 @@ def test_s3_folder_recieved_downloads_files(mock_s3_client, tmp_path, monkeypatc
     assert "folder/file2.txt" in downloaded_keys
     # The folder marker key should not trigger a download.
     assert "folder/" not in downloaded_keys
-

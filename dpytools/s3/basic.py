@@ -1,5 +1,4 @@
 import json
-import tarfile
 import tempfile
 from pathlib import Path
 from typing import Optional, Union
@@ -80,7 +79,7 @@ def s3_folder_recieved(
     object_name: str, directory: Union[str, Path], profile_name: Optional[str] = None
 ):
     """
-    Given a url to an s3 object a folder contaning files, 
+    Given a url to an s3 object a folder contaning files,
     download content to provided directory path.
     """
     if isinstance(directory, str):
@@ -92,7 +91,7 @@ def s3_folder_recieved(
 
     client = _get_s3_client(profile_name)
     list_objects = client.list_objects_v2(Bucket=bucket_name, Prefix=object_key)
-    
+
     tmp_file = tempfile.NamedTemporaryFile()
     with open(tmp_file.name, "wb") as f:
         for c in list_objects["Contents"]:
@@ -102,5 +101,6 @@ def s3_folder_recieved(
     for c in list_objects["Contents"]:
         if c["Key"].startswith(object_key) and not c["Key"].endswith("/"):
             filename = c["Key"].split("/")[1]
-            client.download_file(bucket_name, c["Key"], Filename=str(directory) + "/" + filename)
-
+            client.download_file(
+                bucket_name, c["Key"], Filename=str(directory) + "/" + filename
+            )
