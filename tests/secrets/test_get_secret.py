@@ -1,10 +1,12 @@
+import base64
 from datetime import datetime
 from unittest.mock import patch
 
 import pytest
 from botocore.exceptions import ClientError
 
-from dpytools.secrets.secrets_client import SecretsClient
+from dpytools.secrets.secret import _NO_SECRET_ERROR
+from dpytools.secrets.secrets_client import _NO_RESPONSE_ERROR, SecretsClient
 
 
 @patch("boto3.client")
@@ -29,6 +31,7 @@ def test_retrieves_secret_string(mock_secrets_manager_client):
     assert secret.success is True
     assert secret.value == secret_value
     assert secret.error is None
+    assert secret.id == secret_id
 
 
 @patch("boto3.client")
@@ -39,7 +42,7 @@ def test_retrieves_secret_binary(mock_secrets_manager_client):
     mock_secrets_manager_client.return_value.get_secret_value.return_value = {
         "ARN": "string",
         "Name": secret_id,
-        "SecretBinary": secret_value,
+        "SecretBinary": base64.b64encode(secret_value),
         "VersionStages": [
             "string",
         ],
@@ -47,12 +50,12 @@ def test_retrieves_secret_binary(mock_secrets_manager_client):
     }
 
     client = SecretsClient()
-
     secret = client.get_secret(secret_id)
 
     assert secret.success is True
     assert secret.value == secret_value
     assert secret.error is None
+    assert secret.id == secret_id
 
 
 @patch("boto3.client")
@@ -72,7 +75,8 @@ def test_handles_no_secret_value(mock_secrets_manager_client):
 
     assert secret.success is False
     assert secret.value is None
-    assert "No secret was found" in secret.error
+    assert _NO_SECRET_ERROR in secret.error
+    assert secret.id == secret_id
 
 
 @patch("boto3.client")
@@ -83,13 +87,14 @@ def test_handles_unknown_error(mock_secrets_manager_client):
     )
 
     client = SecretsClient()
-
-    secret = client.get_secret("secret_id")
+    secret_id = "secret id to fetch"
+    secret = client.get_secret(secret_id)
 
     assert secret.success is False
     assert secret.value is None
     assert error_message in secret.error
     assert "An unknown error occurred retrieving the secret" in secret.error
+    assert secret.id == secret_id
 
 
 @patch("boto3.client")
@@ -97,11 +102,13 @@ def test_handles_none_response(mock_secrets_manager_client):
     mock_secrets_manager_client.return_value.get_secret_value.return_value = None
     client = SecretsClient()
 
-    secret = client.get_secret("secret_id")
+    secret_id = "secret_id"
+    secret = client.get_secret(secret_id)
 
     assert secret.success is False
     assert secret.value is None
-    assert "None value for get_secret_value_response" in secret.error
+    assert _NO_RESPONSE_ERROR in secret.error
+    assert secret.id == secret_id
 
 
 exception_secret_id = "secret_id"
@@ -132,9 +139,10 @@ def test_handles_client_exceptions(
     )
 
     client = SecretsClient()
-
-    secret = client.get_secret("secret_id")
+    secret_id = "secret_id"
+    secret = client.get_secret(secret_id)
 
     assert secret.success is False
     assert secret.value is None
     assert expected_error in secret.error
+    assert secret.id == secret_id

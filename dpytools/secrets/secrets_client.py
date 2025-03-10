@@ -1,9 +1,15 @@
+from typing import List
+
 import boto3
 from botocore.exceptions import ClientError
 
+from dpytools.secrets.batch_get_secrets_result import BatchGetSecretsResult
 from dpytools.secrets.secret import Secret
 
 _CLIENT_NAME = "secretsmanager"
+
+_NO_RESPONSE_ERROR = "Did not receive a response from AWS"
+
 
 class SecretsClient:
     """
@@ -27,16 +33,38 @@ class SecretsClient:
             get_secret_value_response = self.client.get_secret_value(SecretId=secret_id)
         except ClientError as e:
             error = self._get_error_message(secret_id, e)
-            return Secret(error=error)
+            return Secret(error=error, id=secret_id)
         except Exception as e:
             return Secret(
-                error=f"An unknown error occurred retrieving the secret {secret_id} from AWS Secrets Manager: {e}"
+                error=f"An unknown error occurred retrieving the secret {secret_id} from AWS Secrets Manager: {e}",
+                id=secret_id,
             )
 
         if get_secret_value_response is None:
-            return Secret(error="None value for get_secret_value_response")
+            return Secret(error=_NO_RESPONSE_ERROR, id=secret_id)
 
-        return Secret(value=get_secret_value_response)
+        return Secret(response=get_secret_value_response, id=secret_id)
+
+    def batch_get_secrets(self, secret_ids: List[str]) -> BatchGetSecretsResult:
+        """
+        Retrieve multiple secrets at once
+
+        :param secret_ids: Secret IDs to retrieve
+
+        :return: Parsed response
+        """
+        try:
+            response = self.client.batch_get_secret_value(SecretIdList=secret_ids)
+
+            if response is None:
+                return BatchGetSecretsResult(
+                    error=_NO_RESPONSE_ERROR, secret_ids=secret_ids
+                )
+
+            return BatchGetSecretsResult(aws_response=response, secret_ids=secret_ids)
+        except ClientError as e:
+            error = self._get_error_message(", ".join(secret_ids), e)
+            return BatchGetSecretsResult(error=error, secret_ids=secret_ids)
 
     def _get_error_message(self, secret_id: str, e: ClientError) -> str:
         """
