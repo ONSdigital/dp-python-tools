@@ -4,6 +4,7 @@ import sys
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
+from dpytools.logging.data_exception import DataException
 import requests
 import structlog
 
@@ -99,6 +100,8 @@ class DpLogger:
         else:
             r_dict = None
 
+        data, errors = self.get_error_and_data_dicts(error, data_dict)
+
         log_event = {
             "severity": level_to_severity(level),
             "event": event,
@@ -106,14 +109,37 @@ class DpLogger:
             "namespace": self.namespace,
             "trace_id": "not-implemented",
             "span_id": "not-implemented",
-            "data": data_dict,
+            "data": data,
             "response_dict": r_dict,
             "raw": raw,
-            "errors": create_error_dict(error) if error is not None else None,
+            "errors": errors
         }
         self._logger.log(**log_event)
         if self.flush_stdout_after_log_entry:
             sys.stdout.flush()
+
+    def get_error_and_data_dicts(self, error: Optional[Exception], data_dict: Optional[dict]) -> tuple[dict, dict]:
+        """
+        Converts error (if any)to dictionary, and adds additional error data from the exception to the data dictionary
+
+        :param error: 
+        :param data_dict:
+
+        :return: Tuple of dictionaries; [0] == error, [1] == data_dict
+        """
+        if error is None:
+            return (None, data_dict)
+        
+        errors = create_error_dict(error)
+        data = data_dict
+        if isinstance(error, DataException):
+            try:
+                error_data = error.__getattribute__("data")
+                data = error_data if data is None else error_data | data
+            except Exception as e:
+                data = data
+
+        return data,errors
 
     def debug(
         self,
