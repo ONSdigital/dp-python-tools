@@ -168,7 +168,7 @@ class DpLogger:
     def error(
         self,
         event: str,
-        error: Exception,
+        error: Optional[Exception] = None,
         raw: str = None,
         data: Dict = None,
         response: requests.Response = None,
