@@ -3,6 +3,7 @@ from typing import Dict
 
 import pytest
 
+from dpytools.logging.data_exception import DataException
 from dpytools.logging.logger import DpLogger
 
 
@@ -129,10 +130,46 @@ def test_error_log_complex(logger: DpLogger, capfd):
         assert log["errors"][0]["stack_trace"]["file"].endswith(
             "test_logger.py"
         ), _view_log(log)
-        assert log["errors"][0]["stack_trace"]["line"] == 117, _view_log(log)
+        assert log["errors"][0]["stack_trace"]["line"] == 118, _view_log(log)
         assert (
             log["errors"][0]["stack_trace"]["function"] == "test_error_log_complex"
         ), _view_log(log)
+
+
+def test_error_handles_dataexception(logger: DpLogger, capfd):
+    message = "I am a message"
+    err_message = "I went boom"
+    raw = "arbitrary string data"
+    data = {"ghostbusters": ["Ray", "Egon", "Peter", "Winston"]}
+
+    error_data = {"this is": "the exception data"}
+    try:
+        raise DataException(err_message, data=error_data)
+    except Exception as err:
+        logger.error(message, err, raw=raw, data=data)
+
+        log: Dict = _get_captured_log(capfd)
+        assert log["event"] == message, _view_log(log)
+        assert log["namespace"] == "testing", _view_log(log)
+        assert log["severity"] == 1, _view_log(log)
+        assert log["raw"] == raw, _view_log(log)
+        assert log["data"]["level"] == "ERROR"
+        assert log["errors"][0]["message"] == err_message, _view_log(log)
+        assert log["errors"][0]["stack_trace"]["file"].endswith(
+            "test_logger.py"
+        ), _view_log(log)
+        assert log["errors"][0]["stack_trace"]["line"] == 147, _view_log(log)
+        assert (
+            log["errors"][0]["stack_trace"]["function"]
+            == "test_error_handles_dataexception"
+        ), _view_log(log)
+
+        for key in data.keys():
+            assert log["data"][key] == data[key], _view_log(log)
+
+        for key in error_data.keys():
+            assert key in log["data"], _view_log(log)
+            assert log["data"][key] == error_data[key], _view_log(log)
 
 
 def test_critical_log_complex(logger: DpLogger, capfd):
@@ -160,7 +197,7 @@ def test_critical_log_complex(logger: DpLogger, capfd):
         assert log["errors"][0]["stack_trace"]["file"].endswith(
             "test_logger.py"
         ), _view_log(log)
-        assert log["errors"][0]["stack_trace"]["line"] == 148, _view_log(log)
+        assert log["errors"][0]["stack_trace"]["line"] == 185, _view_log(log)
         assert (
             log["errors"][0]["stack_trace"]["function"] == "test_critical_log_complex"
         ), _view_log(log)
