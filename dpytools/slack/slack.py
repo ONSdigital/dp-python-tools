@@ -22,7 +22,7 @@ class SlackMessenger:
             response = self.http_client.post(self.webhook_url, json=msg_dict)
             response.raise_for_status()
         except Exception as err:
-            logger.error(f"Failed to send notification: {err}", data={"error": err})
+            logger.error(f"Failed to send notification: {err}", data={"error": err}, error=err)
 
     def msg_str(self, msg: str):
         """
