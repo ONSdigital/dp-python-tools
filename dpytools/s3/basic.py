@@ -153,4 +153,7 @@ def list_keys_in_path(bucket_name: str, path: str) -> List[str]:
     client = _get_s3_client()
     list_objects = client.list_objects_v2(Bucket=bucket_name, Prefix=path)
 
+    if list_objects is None or "Contents" not in list_objects:
+        return []
+    
     return [content["Key"] for content in list_objects["Contents"]]

@@ -294,7 +294,7 @@ def test_get_file_names_recursive():
         f"{test_path}/nested_directory/nested_nested_directory/local_directory4.json",
     }
 
-    assert len(file_name_list) == 6
+    assert len(file_name_list) == len(expected_file_names)
     assert set([str(f) for f in file_name_list]) == expected_file_names
 
 
