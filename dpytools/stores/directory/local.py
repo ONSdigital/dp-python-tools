@@ -17,7 +17,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
     in a given directory that has a path.
     """
 
-    def __init__(self, local_dir: Union[str, Path]):
+    def __init__(self, local_dir: Union[str, Path], recursive_search: bool = False):
         # Takes a path or a string representing a path as input
 
         # If it is not a path, pathify it
@@ -25,6 +25,8 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             local_dir_path = Path(local_dir)
         else:
             local_dir_path = local_dir
+
+        self.recursive_search = recursive_search
 
         # Make sure it exists and it's a directory.
         assert local_dir_path.exists(), f"Given path {local_dir_path} does not exist."
@@ -64,7 +66,6 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         """
 
         matching_files = self._files_that_match_pattern(pattern)
-
         if len(matching_files) == 1:  # 1 file matched
             return True
         elif len(matching_files) == 0:  # 0 file matched
@@ -86,10 +87,13 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
         matching_file_name = self._files_that_match_pattern(pattern)[0]
 
-        # Assemble the full path
-        matching_file_full_path = os.path.join(self.local_path, matching_file_name)
+        return self._add_local_path(matching_file_name)
 
-        return Path(matching_file_full_path)
+    def _add_local_path(self, path: Union[Path, str]) -> Path:
+        if str(self.local_path) not in str(path):
+            path = os.path.join(self.local_path, path)
+
+        return path if isinstance(path, Path) else Path(path)
 
     def save_lone_file_matching(
         self, pattern: str, destination: Optional[Union[Path, str]] = None
@@ -106,6 +110,32 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         file_to_save = self._files_that_match_pattern(pattern)[0]
         file_name = Path(file_to_save).name
 
+        save_path = self._get_save_path_for_destination(file_name, destination)
+
+        with open(file_to_save) as f:
+            file_data = f.read()
+
+        with open(save_path, "w") as f:
+            f.write(file_data)
+
+        return save_path
+
+    def _get_save_path_for_destination(
+        self, file_name: str, destination: Optional[Union[Path, str]]
+    ) -> Path:
+        """
+        Get the path to save the file to
+
+        Args:
+            file_name: Name of file to save
+            destination: Target directory for file (otherwise local)
+
+        Returns:
+            Path representing the FS path to save the file to
+
+        Throws:
+            ValueError: For when file already exists
+        """
         # If a destination is given, save the matched file there.
         if destination is not None:
             if isinstance(destination, str):
@@ -113,6 +143,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
             assert (
                 destination.exists()
             ), f"Destination directory {destination} does not exist."
+
             save_path = Path(destination / file_name)
         # If no destination is given, save the matched file in the current directory.
         else:
@@ -121,13 +152,6 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         # If the file already exists in the save directory, raise an error.
         if save_path.exists():
             raise ValueError(f"Given file already exists in directory {save_path}")
-
-        file_path_to_save = self.local_path / file_to_save
-        with open(file_path_to_save) as f:
-            file_data = f.read()
-
-        with open(save_path, "w") as f:
-            f.write(file_data)
 
         return save_path
 
@@ -139,9 +163,7 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         """
         # Assert 1 file matches
         if self.has_lone_file_matching(pattern):
-            file_path = Path(
-                self.local_path / self._files_that_match_pattern(pattern)[0]
-            )
+            file_path = self._files_that_match_pattern(pattern)[0]
 
             # use json.load to put contents of file into variable and return dict.
             with open(file_path) as f:
@@ -152,7 +174,12 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         """
         Returns a list of the files in the store.
         """
-        file_names = os.listdir(self.local_path)  # grab list of full paths to files,
+        # grab list of full paths to files,
+        file_names = (
+            list(self.local_path.rglob("*"))
+            if self.recursive_search
+            else [self._add_local_path(file) for file in os.listdir(self.local_path)]
+        )
         if len(file_names) == 0:
             return []
         else:
@@ -163,9 +190,11 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         Private utility function that retrieves all matching files in the directory.
         Used in other functions to avoid repetition.
         """
-        matching_files = [f for f in self.get_file_names() if re.search(pattern, f)]
-
-        return matching_files
+        return [
+            self._add_local_path(file)
+            for file in self.get_file_names()
+            if re.search(pattern, str(file))
+        ]
 
     def get_current_source_pathlike(self) -> str:
         """

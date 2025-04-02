@@ -1,15 +1,13 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import boto3
 
 
-def _get_s3_client(profile_name):
-    client = boto3.Session(profile_name=profile_name).client("s3")
-    return client
-
+def _get_s3_client(profile_name: str | None = None):
+    return boto3.Session(profile_name=profile_name).client("s3")
 
 def get_s3_object(object_name: str, profile_name: Optional[str] = None) -> dict:
     """
@@ -63,6 +61,25 @@ def upload_local_file_to_s3(
     """
     Uploads the provided file from local to s3 as the provided object name.
     """
+    bucket_name, key = object_name.split("/", 1)
+    return upload_local_file_to_s3_exact(local_file, bucket_name, key, profile_name)
+
+
+def upload_local_file_to_s3_exact(
+    local_file: Union[str, Path],
+    bucket_name: str,
+    object_key: str,
+    profile_name: Optional[str] = None,
+):
+    """
+    Uploads the provided file from local file-system to an S3 bucket
+
+    Args:
+        local_file: The path of the local file to upload
+        bucket_name: The name of the S3 bucket to upload to
+        object_key: The object key of the file to create
+        profile_name: Optional AWS profile name to use for session
+    """
     if not isinstance(local_file, Path):
         local_file = Path(local_file)
 
@@ -70,9 +87,8 @@ def upload_local_file_to_s3(
     client = _get_s3_client(profile_name)
 
     boto3.setup_default_session(profile_name=profile_name)
-    bucket_name, key = object_name.split("/", 1)
     with open(local_file) as f:
-        client.put_object(Body=f.read(), Bucket=bucket_name, Key=key)
+        client.put_object(Body=f.read(), Bucket=bucket_name, Key=object_key)
 
 
 def s3_folder_recieved(
@@ -104,3 +120,40 @@ def s3_folder_recieved(
             client.download_file(
                 bucket_name, c["Key"], Filename=str(directory) + "/" + filename
             )
+
+
+def move_s3_object(bucket_name: str, origin_object_key: str, target_object_key: str):
+    """
+    Copy a file on S3 bucket to another location, then delete the original file.
+
+    Args:
+        origin_object_key: Key of the object to copy
+        target_object_key: Where to move the file to
+    """
+    client = _get_s3_client()
+
+    client.copy_object(
+        Bucket=bucket_name,
+        Key=target_object_key,
+        CopySource={"Bucket": bucket_name, "Key": origin_object_key},
+    )
+
+    client.delete_object(Bucket=bucket_name, Key=origin_object_key)
+
+
+def list_keys_in_path(bucket_name: str, path: str) -> List[str]:
+    """
+    Get all keys for all objects in an S3 bucket that start with the given path.
+
+    Args:
+        bucket_name: Bucket to retrieve files under
+        path: Key prefix to filter by
+
+    """
+    client = _get_s3_client()
+    list_objects = client.list_objects_v2(Bucket=bucket_name, Prefix=path)
+
+    if list_objects is None or "Contents" not in list_objects:
+        return []
+    
+    return [content["Key"] for content in list_objects["Contents"]]
