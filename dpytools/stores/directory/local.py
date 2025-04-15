@@ -28,9 +28,9 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
 
         # Make sure it exists and it's a directory.
         assert local_dir_path.exists(), f"Given path {local_dir_path} does not exist."
-        assert (
-            local_dir_path.is_dir()
-        ), f"Given path {local_dir_path} is not a directory."
+        assert local_dir_path.is_dir(), (
+            f"Given path {local_dir_path} is not a directory."
+        )
 
         # Store that location against the class
 
@@ -110,9 +110,9 @@ class LocalDirectoryStore(BaseWritableSingleDirectoryStore):
         if destination is not None:
             if isinstance(destination, str):
                 destination = Path(destination)
-            assert (
-                destination.exists()
-            ), f"Destination directory {destination} does not exist."
+            assert destination.exists(), (
+                f"Destination directory {destination} does not exist."
+            )
             save_path = Path(destination / file_name)
         # If no destination is given, save the matched file in the current directory.
         else:
