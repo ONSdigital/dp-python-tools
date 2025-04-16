@@ -1,3 +1,4 @@
+import datetime
 import os
 from unittest.mock import MagicMock, patch
 
@@ -33,9 +34,19 @@ def test_post_json_success(mock_request):
     # Mock the token authentication response
     mock_token_response = setup_mock_token_auth(mock_request)
 
+    url = "http://test_url/test_dataset_path/editions/test_edition_path/versions"
     mock_response = MagicMock(Response)
     mock_response.status_code = 201
     mock_response.content = b"Test response content"
+    mock_response.url = url
+    mock_response.headers = {
+        "Date": str(datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT"))
+    }
+    mock_response.elapsed = datetime.timedelta(seconds=1)
+
+    mock_response_request_mock = MagicMock()
+    mock_response.request = mock_response_request_mock
+    mock_response_request_mock.method = "POST"
     mock_request.side_effect = [mock_token_response, mock_response]
 
     mock_client = DatasetAPIClient(
@@ -80,6 +91,8 @@ def test_put_json_success(mock_request):
     """
     Test that the put_json method sends the correct payload to the correct URL
     """
+    url = "http://test_url/test_dataset_path/editions/test_edition_path/versions"
+
     # Mock the token authentication response
     mock_token_response = setup_mock_token_auth(mock_request)
 
@@ -87,6 +100,15 @@ def test_put_json_success(mock_request):
     mock_response.status_code = 200
     mock_response.content = b"Test response content"
     mock_request.side_effect = [mock_token_response, mock_response]
+    mock_response.url = url
+    mock_response.headers = {
+        "Date": str(datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT"))
+    }
+    mock_response.elapsed = datetime.timedelta(seconds=1)
+
+    mock_response_request_mock = MagicMock()
+    mock_response.request = mock_response_request_mock
+    mock_response_request_mock.method = "PUT"
 
     mock_client = DatasetAPIClient(
         "http://test_url", "test_dataset_path", "test_edition_path"
@@ -98,7 +120,7 @@ def test_put_json_success(mock_request):
     assert response.content.decode() == "Test response content"
     mock_request.assert_called_with(
         "PUT",
-        "http://test_url/test_dataset_path/editions/test_edition_path/versions",
+        url,
         headers=mock_client.token_auth.get_auth_header(),
         json={"key": "value"},
         verify=True,
@@ -127,12 +149,23 @@ def test_put_json_failure(mock_request):
 
 @patch("requests.request")
 def test_get_path_success(mock_request):
+    url = "http://test_url/test_dataset_path/editions/test_edition_path/versions"
     mock_token_response = setup_mock_token_auth(mock_request)
 
     mock_response = MagicMock(Response)
     mock_response.status_code = 200
     mock_response.content = b"Test response content"
     mock_request.side_effect = [mock_token_response, mock_response]
+
+    mock_response.url = url
+    mock_response.headers = {
+        "Date": str(datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT"))
+    }
+    mock_response.elapsed = datetime.timedelta(seconds=1)
+
+    mock_response_request_mock = MagicMock()
+    mock_response.request = mock_response_request_mock
+    mock_response_request_mock.method = "GET"
 
     mock_client = DatasetAPIClient(
         "http://test_url", "test_dataset_path", "test_edition_path"
@@ -143,7 +176,7 @@ def test_get_path_success(mock_request):
     assert response.content.decode() == "Test response content"
     mock_request.assert_called_with(
         "GET",
-        "http://test_url/test_dataset_path/editions/test_edition_path/versions",
+        url,
         headers=mock_client.token_auth.get_auth_header(),
         params={"key": "value"},
         verify=True,
