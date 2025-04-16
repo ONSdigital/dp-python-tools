@@ -6,9 +6,9 @@ def str_to_bool(should_be_bool: str) -> bool:
     Raise if we've an unexpected value.
     """
 
-    assert isinstance(
-        should_be_bool, str
-    ), f"Function str_to_bool only accepts strings, got {type(should_be_bool)}"
+    assert isinstance(should_be_bool, str), (
+        f"Function str_to_bool only accepts strings, got {type(should_be_bool)}"
+    )
 
     consistent_should_be_bool = should_be_bool.strip().lower()
 

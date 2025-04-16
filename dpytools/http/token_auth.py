@@ -35,15 +35,15 @@ class TokenAuth(BaseHttpClient):
         self.florence_password = os.environ.get("FLORENCE_PASSWORD", None)
         self.identity_api_url = os.environ.get("IDENTITY_API_URL", None)
 
-        assert (
-            self.florence_user is not None
-        ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_USER must be provided"
-        assert (
-            self.florence_password is not None
-        ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_PASSOWRD must be provided"
-        assert (
-            self.identity_api_url is not None
-        ), "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var IDENTITY_API_URL must be provided"
+        assert self.florence_user is not None, (
+            "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_USER must be provided"
+        )
+        assert self.florence_password is not None, (
+            "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var FLORENCE_PASSOWRD must be provided"
+        )
+        assert self.identity_api_url is not None, (
+            "Where env var SERVICE_TOKEN_FOR_UPLOAD is None, env var IDENTITY_API_URL must be provided"
+        )
 
         # https://github.com/ONSdigital/dp-identity-api/blob/develop/swagger.yaml
         token_url = f"{self.identity_api_url}/tokens"

@@ -127,9 +127,9 @@ def test_error_log_complex(logger: DpLogger, capfd):
         assert log["data"]["level"] == "ERROR", _view_log(log)
         assert log["data"]["ghostbusters"] == data["ghostbusters"], _view_log(log)
         assert log["errors"][0]["message"] == err_message, _view_log(log)
-        assert log["errors"][0]["stack_trace"]["file"].endswith(
-            "test_logger.py"
-        ), _view_log(log)
+        assert log["errors"][0]["stack_trace"]["file"].endswith("test_logger.py"), (
+            _view_log(log)
+        )
         assert log["errors"][0]["stack_trace"]["line"] == 118, _view_log(log)
         assert (
             log["errors"][0]["stack_trace"]["function"] == "test_error_log_complex"
@@ -155,9 +155,9 @@ def test_error_handles_dataexception(logger: DpLogger, capfd):
         assert log["raw"] == raw, _view_log(log)
         assert log["data"]["level"] == "ERROR"
         assert log["errors"][0]["message"] == err_message, _view_log(log)
-        assert log["errors"][0]["stack_trace"]["file"].endswith(
-            "test_logger.py"
-        ), _view_log(log)
+        assert log["errors"][0]["stack_trace"]["file"].endswith("test_logger.py"), (
+            _view_log(log)
+        )
         assert log["errors"][0]["stack_trace"]["line"] == 147, _view_log(log)
         assert (
             log["errors"][0]["stack_trace"]["function"]
@@ -194,9 +194,9 @@ def test_critical_log_complex(logger: DpLogger, capfd):
         assert log["data"]["level"] == "CRITICAL", _view_log(log)
         assert log["data"]["ghostbusters"] == data["ghostbusters"], _view_log(log)
         assert log["errors"][0]["message"] == err_message, _view_log(log)
-        assert log["errors"][0]["stack_trace"]["file"].endswith(
-            "test_logger.py"
-        ), _view_log(log)
+        assert log["errors"][0]["stack_trace"]["file"].endswith("test_logger.py"), (
+            _view_log(log)
+        )
         assert log["errors"][0]["stack_trace"]["line"] == 185, _view_log(log)
         assert (
             log["errors"][0]["stack_trace"]["function"] == "test_critical_log_complex"

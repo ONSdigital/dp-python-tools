@@ -18,9 +18,9 @@ class Config:
 
         for env_var_name, value in config_dict.items():
             value_for_property = os.environ.get(env_var_name, None)
-            assert (
-                value_for_property is not None
-            ), f'Required environment value "{env_var_name}" could not be found.'
+            assert value_for_property is not None, (
+                f'Required environment value "{env_var_name}" could not be found.'
+            )
 
             if value["class"] == StringProperty:
                 if value["kwargs"]:

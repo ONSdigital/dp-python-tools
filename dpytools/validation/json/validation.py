@@ -36,12 +36,12 @@ def validate_json_schema(
         schema_from_path = json.load(f)
 
     # Confirm that *either* `data_dict` *or* `data_path` has been provided, otherwise raise ValueError
-    assert not all(
-        [data_dict, data_path]
-    ), "Both a dictionary and file path of data have been provided - please specify either one or the other, not both."
-    assert any(
-        [data_dict, data_path]
-    ), "Please provide either a dictionary or a file path of the data to be validated against the schema."
+    assert not all([data_dict, data_path]), (
+        "Both a dictionary and file path of data have been provided - please specify either one or the other, not both."
+    )
+    assert any([data_dict, data_path]), (
+        "Please provide either a dictionary or a file path of the data to be validated against the schema."
+    )
 
     # Load data to be validated
     if data_dict:

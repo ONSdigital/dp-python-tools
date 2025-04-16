@@ -55,9 +55,11 @@ def create_secret(
     version_stages: Optional[List[str]] = ["AWSCURRENT"],
 ) -> dict:
     return {
-        "ARN": arn
-        if arn is not None
-        else f"arn:aws:secretsmanager:eu-west-2:000000000000:secret:{name}-{create_random_string(length=5, choices=[string.ascii_lowercase, string.ascii_uppercase])}",
+        "ARN": (
+            arn
+            if arn is not None
+            else f"arn:aws:secretsmanager:eu-west-2:000000000000:secret:{name}-{create_random_string(length=5, choices=[string.ascii_lowercase, string.ascii_uppercase])}"
+        ),
         "Name": name,
         "VersionId": version_id if version_id is not None else uuid.uuid4(),
         "SecretBinary": secret_bytes,

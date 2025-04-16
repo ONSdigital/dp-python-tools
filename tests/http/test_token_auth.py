@@ -90,9 +90,10 @@ def test_refresh_user_token():
         "ID": "new_id_token",
         "Refresh": "test_refresh_token",
     }
-    with patch.object(
-        TokenAuth, "put", return_value=mock_response
-    ) as mock_put, patch.object(TokenAuth, "post", return_value=mock_response):
+    with (
+        patch.object(TokenAuth, "put", return_value=mock_response) as mock_put,
+        patch.object(TokenAuth, "post", return_value=mock_response),
+    ):
         token_auth = TokenAuth()
         token_auth.refresh_user_token()
         assert token_auth.auth_token.split()[1] == "new_auth_token"
@@ -109,9 +110,11 @@ def test_refresh_user_token_failure():
     os.environ["IDENTITY_API_URL"] = "http://test_url"
     mock_response = MagicMock()
     mock_response.status_code = 400
-    with patch.object(TokenAuth, "put", return_value=mock_response), patch.object(
-        TokenAuth, "post", return_value=mock_response
-    ), patch.object(TokenAuth, "set_user_tokens"):
+    with (
+        patch.object(TokenAuth, "put", return_value=mock_response),
+        patch.object(TokenAuth, "post", return_value=mock_response),
+        patch.object(TokenAuth, "set_user_tokens"),
+    ):
         token_auth = TokenAuth()
         # Manually set the necessary attributes
         token_auth.refresh_token = "test_refresh_token"
