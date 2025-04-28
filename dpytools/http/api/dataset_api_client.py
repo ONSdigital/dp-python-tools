@@ -1,5 +1,4 @@
 from typing import Dict, Optional, Union
-from urllib import response
 
 from requests import Response
 from requests.exceptions import HTTPError
@@ -7,7 +6,6 @@ from requests.exceptions import HTTPError
 from dpytools.http.base_http import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth
 from dpytools.logging.logger import DpLogger
-from dpytools.logging.response_error import DatasetResponseError
 
 logger = DpLogger("dpytools")
 
@@ -100,7 +98,6 @@ class DatasetAPIClient(BaseHttpClient):
             logger.error(
                 f"{request_method} failed", data=data, error=err, response=response
             )
-            # Map error details to ResponseError object here?
             raise Exception(
                 f"{request_method} failed with status code: {response.status_code}"
             ) from err
