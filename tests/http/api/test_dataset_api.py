@@ -6,7 +6,10 @@ import pytest
 from requests import Response
 
 from dpytools.http.api.dataset_api_client import DatasetAPIClient
-from dpytools.logging.response_error import DatasetResponseError, map_error_json_to_object
+from dpytools.logging.response_error import (
+    DatasetResponseError,
+    map_error_json_to_object,
+)
 
 
 def setup_mock_token_auth(mock_request):
@@ -192,7 +195,7 @@ def test_map_error_json_to_object():
     error_dict = {
         "Cause": "Error cause",
         "Code": "TestErrorCode",
-        "Description": "Error description"
+        "Description": "Error description",
     }
 
     test_cause = error_dict["Cause"]
