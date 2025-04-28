@@ -6,6 +6,7 @@ import pytest
 from requests import Response
 
 from dpytools.http.api.dataset_api_client import DatasetAPIClient
+from dpytools.logging.response_error import DatasetResponseError, map_error_json_to_object
 
 
 def setup_mock_token_auth(mock_request):
@@ -181,3 +182,26 @@ def test_get_path_success(mock_request):
         params={"key": "value"},
         verify=True,
     )
+
+
+def test_map_error_json_to_object():
+    """
+    Tests that a a json error message matching the expected structure
+    is successfully mapped to a DatasetResponseError object.
+    """
+    error_dict = {
+        "Cause": "Error cause",
+        "Code": "TestErrorCode",
+        "Description": "Error description"
+    }
+
+    test_cause = error_dict["Cause"]
+    test_error_code = error_dict["Code"]
+    test_description = error_dict["Description"]
+
+    test_error_response = map_error_json_to_object(error_dict)
+
+    assert test_error_response
+    assert test_error_response.cause == "Error cause"
+    assert test_error_response.error_code == "TestErrorCode"
+    assert test_error_response.description == "Error description"
