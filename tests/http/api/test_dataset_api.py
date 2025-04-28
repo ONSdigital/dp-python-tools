@@ -198,10 +198,6 @@ def test_map_error_json_to_object():
         "Description": "Error description",
     }
 
-    test_cause = error_dict["Cause"]
-    test_error_code = error_dict["Code"]
-    test_description = error_dict["Description"]
-
     test_error_response = map_error_json_to_object(error_dict)
 
     assert test_error_response
