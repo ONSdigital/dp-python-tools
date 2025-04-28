@@ -217,7 +217,7 @@ def test_map_error_json_to_object_wrong_field():
     }
 
     with pytest.raises(ValueError) as e:
-        test_error_response = map_error_json_to_object(error_dict)
+        map_error_json_to_object(error_dict)
     
     assert "Error dict does not contain expected error keys (Cause, Code, Description). Dictionary contents: {'Wrong field': 'Error message'}" == str(e.value)
 
@@ -234,6 +234,6 @@ def test_map_error_json_to_object_missing_field():
     }
 
     with pytest.raises(ValueError) as e:
-        test_error_response = map_error_json_to_object(error_dict)
+        map_error_json_to_object(error_dict)
     
     assert "Error dict does not contain expected error keys (Cause, Code, Description). Dictionary contents: {'Cause': 'Error cause', 'Code': 'TestErrorCode'}" == str(e.value)
