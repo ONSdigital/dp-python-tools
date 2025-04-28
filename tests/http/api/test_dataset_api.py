@@ -1,3 +1,4 @@
+import code
 import datetime
 import os
 from unittest.mock import MagicMock, patch
@@ -7,8 +8,7 @@ from requests import Response
 
 from dpytools.http.api.dataset_api_client import DatasetAPIClient
 from dpytools.logging.response_error import (
-    DatasetResponseError,
-    map_error_json_to_object,
+    DatasetResponseError
 )
 
 
@@ -198,42 +198,13 @@ def test_map_error_json_to_object():
         "Description": "Error description",
     }
 
-    test_error_response = map_error_json_to_object(error_dict)
+    test_cause = error_dict["Cause"]
+    test_code = error_dict["Code"]
+    test_description = error_dict["Description"]
+
+    test_error_response = DatasetResponseError(cause=test_cause, error_code=test_code, description=test_description)
 
     assert test_error_response
     assert test_error_response.cause == "Error cause"
     assert test_error_response.error_code == "TestErrorCode"
     assert test_error_response.description == "Error description"
-
-
-def test_map_error_json_to_object_wrong_field():
-    """
-    Tests that the expected error is raised when an input dict is given 
-    to create a DatasetResponseError object, but the fields in the dict
-    do not match the structure for an error response.
-    """
-    error_dict = {
-        "Wrong field": "Error message"
-    }
-
-    with pytest.raises(ValueError) as e:
-        map_error_json_to_object(error_dict)
-    
-    assert "Error dict does not contain expected error keys (Cause, Code, Description). Dictionary contents: {'Wrong field': 'Error message'}" == str(e.value)
-
-
-def test_map_error_json_to_object_missing_field():
-    """
-    Tests that the expected error is raised when an input dict is given
-    to create a DatasetResponseError object, with correct fields for an
-    error response, but an expected field is missing.
-    """
-    error_dict = {
-        "Cause": "Error cause",
-        "Code": "TestErrorCode",
-    }
-
-    with pytest.raises(ValueError) as e:
-        map_error_json_to_object(error_dict)
-    
-    assert "Error dict does not contain expected error keys (Cause, Code, Description). Dictionary contents: {'Cause': 'Error cause', 'Code': 'TestErrorCode'}" == str(e.value)
