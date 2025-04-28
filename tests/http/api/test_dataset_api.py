@@ -189,7 +189,7 @@ def test_get_path_success(mock_request):
 
 def test_map_error_json_to_object():
     """
-    Tests that a a json error message matching the expected structure
+    Tests that an input error dictionary matching the expected structure
     is successfully mapped to a DatasetResponseError object.
     """
     error_dict = {
@@ -204,3 +204,36 @@ def test_map_error_json_to_object():
     assert test_error_response.cause == "Error cause"
     assert test_error_response.error_code == "TestErrorCode"
     assert test_error_response.description == "Error description"
+
+
+def test_map_error_json_to_object_wrong_field():
+    """
+    Tests that the expected error is raised when an input dict is given 
+    to create a DatasetResponseError object, but the fields in the dict
+    do not match the structure for an error response.
+    """
+    error_dict = {
+        "Wrong field": "Error message"
+    }
+
+    with pytest.raises(ValueError) as e:
+        test_error_response = map_error_json_to_object(error_dict)
+    
+    assert "Error dict does not contain expected error keys (Cause, Code, Description). Dictionary contents: {'Wrong field': 'Error message'}" == str(e.value)
+
+
+def test_map_error_json_to_object_missing_field():
+    """
+    Tests that the expected error is raised when an input dict is given
+    to create a DatasetResponseError object, with correct fields for an
+    error response, but an expected field is missing.
+    """
+    error_dict = {
+        "Cause": "Error cause",
+        "Code": "TestErrorCode",
+    }
+
+    with pytest.raises(ValueError) as e:
+        test_error_response = map_error_json_to_object(error_dict)
+    
+    assert "Error dict does not contain expected error keys (Cause, Code, Description). Dictionary contents: {'Cause': 'Error cause', 'Code': 'TestErrorCode'}" == str(e.value)
