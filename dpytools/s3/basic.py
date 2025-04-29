@@ -71,7 +71,7 @@ def upload_local_file_to_s3(
 
     boto3.setup_default_session(profile_name=profile_name)
     bucket_name, key = object_name.split("/", 1)
-    with open(local_file) as f:
+    with open(local_file, "rb") as f:
         client.put_object(Body=f.read(), Bucket=bucket_name, Key=key)
 
 
