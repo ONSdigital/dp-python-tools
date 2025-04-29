@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "dpytools"
-version = "0.6.0"
-description = "Simple reusable python resources for digital publishing"
+version = "0.8.0"
+description = "Simple reusable Python resources for digital publishing"
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
