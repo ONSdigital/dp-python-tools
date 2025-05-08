@@ -1,4 +1,3 @@
-import code
 import datetime
 import os
 from unittest.mock import MagicMock, patch
@@ -7,9 +6,7 @@ import pytest
 from requests import Response
 
 from dpytools.http.api.dataset_api_client import DatasetAPIClient
-from dpytools.logging.response_error import (
-    DatasetResponseError
-)
+from dpytools.logging.response_error import DatasetResponseError
 
 
 def setup_mock_token_auth(mock_request):
@@ -202,7 +199,9 @@ def test_map_error_json_to_object():
     test_code = error_dict["Code"]
     test_description = error_dict["Description"]
 
-    test_error_response = DatasetResponseError(cause=test_cause, error_code=test_code, description=test_description)
+    test_error_response = DatasetResponseError(
+        cause=test_cause, error_code=test_code, description=test_description
+    )
 
     assert test_error_response
     assert test_error_response.cause == "Error cause"

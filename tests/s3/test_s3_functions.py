@@ -36,7 +36,7 @@ def path_to_mostly_empty_json():
 @mock_aws
 def test_get_s3_object(mock_s3_client):
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
     mock_s3_client.put_object(Bucket="mybucket", Body="myvalue", Key="mykey")
 
@@ -47,7 +47,7 @@ def test_get_s3_object(mock_s3_client):
 @mock_aws
 def test_read_s3_file_content(mock_s3_client):
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
     mock_s3_client.put_object(Bucket="mybucket", Body="myvalue", Key="mykey")
     result = read_s3_file_content("mybucket/mykey")
@@ -57,7 +57,7 @@ def test_read_s3_file_content(mock_s3_client):
 @mock_aws
 def test_read_s3_file_content_as_dict(mock_s3_client):
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
     mock_s3_client.put_object(
         Bucket="mybucket", Body=b'{"key":"value"}', Key="mykey.json"
@@ -81,7 +81,7 @@ def test_read_s3_file_content_as_dict_raises_without_json_extension():
 @mock_aws
 def test_download_s3_object_to_local(mock_s3_client, tmp_path):
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
     mock_s3_client.put_object(Bucket="mybucket", Body=b"myvalue", Key="mykey")
     local_path = tmp_path / "mykey"
@@ -98,7 +98,7 @@ def test_upload_local_file_to_s3_with_path(mock_s3_client, tmp_path):
     of a Path.
     """
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
     local_file = tmp_path / "myfile"
     local_file.write_text("myvalue")
@@ -117,7 +117,7 @@ def test_upload_local_file_to_s3_with_str_as_path(mock_s3_client, tmp_path):
     of str representing a Path.
     """
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
     local_file = tmp_path / "myfile"
     local_file.write_text("myvalue")
@@ -136,7 +136,7 @@ def test_upload_local_file_to_s3_raise_for_file_doesnt_exist(mock_s3_client):
     uploaded does not exist
     """
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
 
     with pytest.raises(AssertionError) as e:
@@ -153,7 +153,7 @@ def test_s3_folder_recieved_downloads_files(mock_s3_client, tmp_path, monkeypatc
     """
     # Create the bucket.
     mock_s3_client.create_bucket(
-        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-1"}
+        Bucket="mybucket", CreateBucketConfiguration={"LocationConstraint": "eu-west-2"}
     )
     # Upload two file objects and one folder marker.
     mock_s3_client.put_object(
