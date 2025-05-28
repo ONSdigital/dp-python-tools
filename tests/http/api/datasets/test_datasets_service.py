@@ -1,5 +1,5 @@
 import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from requests import Response
@@ -7,20 +7,21 @@ from requests import Response
 from dpytools.http.api.datasets.datasets_service import DatasetsService
 from dpytools.http.api.models.dataset import DatasetType
 
+
 @pytest.fixture
 def datasets_service():
     logger = MagicMock()
     http_client = MagicMock()
     token_auth = MagicMock()
-    mock_service = DatasetsService(
-        "http://test_url", logger, http_client, token_auth
-    )
-    
+    mock_service = DatasetsService("http://test_url", logger, http_client, token_auth)
+
     return mock_service
+
 
 def raise_for_status(mock_response: Response):
     if mock_response.status_code < 200 or mock_response.status_code > 299:
         raise Exception("Error")
+
 
 def test_get_dataset_success(datasets_service: DatasetsService):
     dataset_id = "test_dataset_path"

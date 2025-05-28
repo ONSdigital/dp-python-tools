@@ -7,8 +7,15 @@ from requests.exceptions import HTTPError
 from dpytools.http.token_auth import TokenAuth
 from dpytools.logging.logger import DpLogger
 
+
 class BaseDatasetAPIClient:
-    def __init__(self, dataset_api_url: str, logger: DpLogger, http_client: BaseHttpClient, token_auth: TokenAuth):
+    def __init__(
+        self,
+        dataset_api_url: str,
+        logger: DpLogger,
+        http_client: BaseHttpClient,
+        token_auth: TokenAuth,
+    ):
         self._dataset_api_url = dataset_api_url
         self._logger = logger
         self._http_client = http_client
@@ -16,15 +23,22 @@ class BaseDatasetAPIClient:
 
     def _get_request_headers(self) -> Dict[str, str]:
         return self._token_auth.get_auth_header()
-    
+
     def _handle_response(
-        self, response: Response, request_method: str, url: str, body: Optional[Dict] = None
+        self,
+        response: Response,
+        request_method: str,
+        url: str,
+        body: Optional[Dict] = None,
     ) -> Response:
         """
         Log response and raise exception for Response status if appropriate.
         """
         data = self._get_log_data(
-            request_method=request_method, url=url, body=body, response=str(response.content)
+            request_method=request_method,
+            url=url,
+            body=body,
+            response=str(response.content),
         )
         try:
             self._logger.debug(
@@ -42,7 +56,7 @@ class BaseDatasetAPIClient:
                 f"{request_method} failed with status code: {response.status_code}"
             ) from err
 
-    def _log_request(self, request_method: str,url: str, body: Optional[Dict] = None):
+    def _log_request(self, request_method: str, url: str, body: Optional[Dict] = None):
         """
         Log request data
         """

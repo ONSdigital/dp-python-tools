@@ -1,12 +1,12 @@
 import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from requests import Response
 
-from dpytools.http.api.models.version import GetDatasetVersionsResponse
 from dpytools.http.api.versions.dataset_versions_service import DatasetVersionsService
 from dpytools.logging.response_error import DatasetResponseError
+
 
 @pytest.fixture
 def dataset_versions_service():
@@ -16,12 +16,14 @@ def dataset_versions_service():
     mock_service = DatasetVersionsService(
         "http://test_url", logger, http_client, token_auth
     )
-    
+
     return mock_service
+
 
 def raise_for_status(mock_response: Response):
     if mock_response.status_code < 200 or mock_response.status_code > 299:
         raise Exception("Error")
+
 
 def test_create_version_success(dataset_versions_service: DatasetVersionsService):
     """
@@ -42,14 +44,16 @@ def test_create_version_success(dataset_versions_service: DatasetVersionsService
     mock_response_request_mock = MagicMock()
     mock_response.request = mock_response_request_mock
     mock_response_request_mock.method = "POST"
-    
+
     dataset_versions_service._http_client.post.return_value = mock_response
 
     mock_client = dataset_versions_service
-    
+
     dataset_id = "test_dataset_path"
     edition_id = "test_edition_path"
-    response = mock_client.create_version({"key": "value"}, dataset_id=dataset_id, edition_id=edition_id)
+    response = mock_client.create_version(
+        {"key": "value"}, dataset_id=dataset_id, edition_id=edition_id
+    )
 
     assert response.status_code == 201
     # Verify response content
@@ -60,6 +64,7 @@ def test_create_version_success(dataset_versions_service: DatasetVersionsService
         json={"key": "value"},
         verify=True,
     )
+
 
 def test_create_version_failure(dataset_versions_service: DatasetVersionsService):
     """
@@ -154,8 +159,8 @@ def test_get_versions_success(dataset_versions_service: DatasetVersionsService):
             }
         ]
     }
-    
-    mock_response.json.side_effect = lambda cls: mock_versions
+
+    mock_response.json.side_effect = lambda: mock_versions
     dataset_versions_service._http_client.get.return_value = mock_response
     mock_response.url = url
     mock_response.headers = {

@@ -78,7 +78,7 @@ class RelatedDataset(BaseModel):
     description: Optional[str] = None
 
 
-class DatasetType(Enum):
+class DatasetType(str, Enum):
     FILTERABLE = "filterable"
     CANTABULAR_FLEXIBLE_TABLE = "cantabular_flexible_table"
     CANTABULAR_MULTIVARIATE_TABLE = "cantabular_multivariate_table"

@@ -1,21 +1,29 @@
 from typing import Dict, Union
 
 from requests import Response
-from dpytools.http.api.models.decoders import EnumDecoder
 from dpytools.http.api.models.version import GetDatasetVersionsResponse
 from dpytools.http.base_http import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth
 from dpytools.logging.logger import DpLogger
 from dpytools.http.api.base_dataset_api_client import BaseDatasetAPIClient
 
+
 class DatasetVersionsService(BaseDatasetAPIClient):
-    def __init__(self, dataset_api_url: str, logger: DpLogger, http_client: BaseHttpClient, token_auth: TokenAuth):
+    def __init__(
+        self,
+        dataset_api_url: str,
+        logger: DpLogger,
+        http_client: BaseHttpClient,
+        token_auth: TokenAuth,
+    ):
         super().__init__(dataset_api_url, logger, http_client, token_auth)
 
     def _build_full_url(self, dataset_id: str, edition_id: str) -> str:
         return f"{self._dataset_api_url}/{dataset_id}/editions/{edition_id}/versions"
 
-    def get_versions(self, dataset_id: str, edition_id:str, params: Union[Dict, None] = None) -> GetDatasetVersionsResponse:
+    def get_versions(
+        self, dataset_id: str, edition_id: str, params: Union[Dict, None] = None
+    ) -> GetDatasetVersionsResponse:
         """
         Send a GET request to the specified URL.
         :param  params: The params to include in the GET request.
@@ -34,10 +42,13 @@ class DatasetVersionsService(BaseDatasetAPIClient):
         response = self._handle_response(
             response=response, request_method=request_method, url=url
         )
-        json = response.json(cls=EnumDecoder)
+
+        json = response.json()
         return GetDatasetVersionsResponse(**json)
 
-    def create_version(self, json_data: Dict, dataset_id: str, edition_id: str) -> Response:
+    def create_version(
+        self, json_data: Dict, dataset_id: str, edition_id: str
+    ) -> Response:
         """
         Send a POST request with JSON data to the specified URL.
 
@@ -46,7 +57,7 @@ class DatasetVersionsService(BaseDatasetAPIClient):
         """
         request_method = "POST"
         url = self._build_full_url(dataset_id, edition_id)
-        self._log_request(request_method=request_method, body=json_data,url=url)
+        self._log_request(request_method=request_method, body=json_data, url=url)
         response = self._http_client.post(
             url,
             headers=self._get_request_headers(),
@@ -55,10 +66,12 @@ class DatasetVersionsService(BaseDatasetAPIClient):
         )
 
         return self._handle_response(
-            response=response, request_method=request_method, body=json_data,url=url
+            response=response, request_method=request_method, body=json_data, url=url
         )
 
-    def update_version(self, json_data: Dict, dataset_id: str, edition_id: str) -> Response:
+    def update_version(
+        self, json_data: Dict, dataset_id: str, edition_id: str
+    ) -> Response:
         """
         Send a PUT request with JSON data to the specified URL.
 
@@ -67,7 +80,7 @@ class DatasetVersionsService(BaseDatasetAPIClient):
         """
         request_method = "PUT"
         url = self._build_full_url(dataset_id, edition_id)
-        self._log_request(request_method=request_method, body=json_data,url=url)
+        self._log_request(request_method=request_method, body=json_data, url=url)
 
         response = self._http_client.put(
             url,
@@ -77,5 +90,5 @@ class DatasetVersionsService(BaseDatasetAPIClient):
         )
 
         return self._handle_response(
-            response=response, request_method=request_method, body=json_data,url=url
+            response=response, request_method=request_method, body=json_data, url=url
         )

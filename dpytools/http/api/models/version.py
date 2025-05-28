@@ -12,16 +12,20 @@ class Distribution(BaseModel):
     download_url: Optional[str] = Field(default=None, init=False)
     media_type: Optional[str] = Field(default=None, init=False)
 
+
 class Alert(BaseModel):
     type: Optional[str] = None
     description: Optional[str] = None
+
 
 class UsageNote(BaseModel):
     title: Optional[str] = None
     note: Optional[str] = None
 
+
 class SubmissionContact(BaseModel):
     email: EmailStr
+
 
 class DatasetVersion(BaseModel):
     edition_title: Optional[str] = None
@@ -33,6 +37,7 @@ class DatasetVersion(BaseModel):
     alerts: Optional[List[Alert]] = Field(default_factory=list)
     state: DatasetState
     version: int = 0
+
 
 class GetDatasetVersionsResponse(BaseModel):
     items: List[DatasetVersion] = Field(default_factory=list)
@@ -48,9 +53,7 @@ class GetDatasetVersionsResponse(BaseModel):
         self, expected_state: DatasetState = DatasetState.PUBLISHED
     ) -> bool:
         latest_version = self.get_latest_version()
-        
+
         return (
-            True
-            if latest_version is None
-            else latest_version.state == expected_state
+            True if latest_version is None else latest_version.state == expected_state
         )
