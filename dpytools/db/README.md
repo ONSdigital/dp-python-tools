@@ -2,16 +2,26 @@
 
 ## Usage
 
-These database clients provide a set of tools for interacting with MongoDB databases, including managing database connections, getting databases and collections, and performing database operations (creat/read/update) on specified collections.
+These database clients provide a set of tools for interacting with MongoDB databases, including managing database connections, getting databases and collections, and performing database operations (create/read/update) on specified collections.
 
 ### DocumentDBClient
 
-The `DocumentDBClient` class facilitates the process of connecting to a MongoDB database by allowing users to specify the `host` and `port` of the database to connect to. Calling the `connect()` method creates a `pymongo.MongoClient`, which automatically connects to the specified database.
+The `DocumentDBClient` class facilitates the process of connecting to a MongoDB database by allowing users to specify the arguments required to connect to a database. These arguments are provided in the form of a `DocumentDBClientOptions` object. This allows users to configure database access according to their own needs (e.g. connect to a local instance using Docker, or provide a full connection string using AWS Secrets Manager).
+
+Calling the `DocumentDBClient.connect()` method creates a `pymongo.MongoClient`, which automatically connects to the specified database. The example below shows a local database running in a Docker container. To replicate this run the following command in the terminal:
+
+`docker run -d -p 27017:27017 --name mongo-db mongo:latest`
 
 ```python
-from dpytools.db.documentdb_client import DocumentDBClient
+from dpytools.db.documentdb_client import DocumentDBClient, DocumentDBClientOptions
 
-client = DocumentDBClient("localhost", 27017)
+client_options = DocumentDBClientOptions(
+    host="localhost",
+    port="27017",
+)
+client = DocumentDBClient(
+    client_options=client_options,
+    database_name="state")
 client.connect()
 
 # Additional args and kwargs can be passed to the `connect()` method depending on the configuration of the target database
@@ -19,19 +29,15 @@ client.connect()
 client.connect(uuidRepresentation="standard")
 ```
 
-The client also has `get_database()` and `get_collection()` methods:
+The client also has a `get_collection()` method:
 
 ```python
-db = client.get_database("test-db")
 collection = client.get_collection(
-    db=db, 
     collection_name="test-collection"
 )
 ```
 
-The `get_database` method returns a `pymongo.synchronous.Database`.
-
-The `get_collection` method returns a `DBCollection` object, which is a thin wrapper for a `pymongo.synchronous.Collection` object - see the [DBCollection](#dbcollection) section for more details.
+This method returns a `DBCollection` object, which is a thin wrapper for a `pymongo.synchronous.Collection` object - see the [DBCollection](#dbcollection) section for more details.
 
 Finally, there is a `close()` method provided to close the connection:
 

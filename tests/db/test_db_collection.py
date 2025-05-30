@@ -105,7 +105,7 @@ def test_create_many_documents(
     assert mock_collection_without_data.count_documents({}) == 5
 
 
-def test_read_many_documents(db_collection_with_duplicate_data):
+def test_read_many_documents_with_filter(db_collection_with_duplicate_data):
     """
     Test that `DBCollection.read_many_documents` returns multiple results that match the given filter values.
     """
@@ -114,6 +114,12 @@ def test_read_many_documents(db_collection_with_duplicate_data):
     )
 
     assert len(results_list) == 2
+
+
+def test_read_many_documents_without_filter(db_collection_with_data):
+    results_list = db_collection_with_data.read_many_documents()
+
+    assert len(results_list) == 5
 
 
 def test_update_many_documents(db_collection_with_duplicate_data):
