@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+from requests import HTTPError
+import pytest
 
 from dpytools.http.upload.upload_service_client import UploadServiceClient
 
@@ -113,3 +115,33 @@ def test_upload_new(
         ["chunk1", "chunk2"], {"Path": "test_path"}
     )
     mock_delete_temp_chunks.assert_called_once_with(["chunk1", "chunk2"])
+
+
+@patch("dpytools.http.upload.upload_service_client._create_temp_chunks")
+@patch("dpytools.http.upload.upload_service_client._delete_temp_chunks")
+@patch("dpytools.http.upload.upload_service_client._generate_upload_new_params")
+@patch(
+    "dpytools.http.upload.upload_service_client.UploadServiceClient._upload_file_chunks"
+)
+@patch("requests.request", side_effect=mock_successful_token_response)
+def test_upload_file_chunks_fails_http_error(
+    mock_request,
+    mock_upload_file_chunks,
+    mock_generate_upload_new_params,
+    mock_delete_temp_chunks,
+    mock_create_temp_chunks,
+):
+    """
+    Ensures that the _upload_file_chunks captures error correctly.
+    """
+
+    client = UploadServiceClient(upload_url="http://example.com/upload")
+    mock_create_temp_chunks.return_value = ["chunk1", "chunk2"]
+    mock_generate_upload_new_params.return_value = {"Path": "test_path"}
+    mock_upload_file_chunks.side_effect = HTTPError
+
+    with pytest.raises(HTTPError):
+        response = client._upload_file_chunks(
+            mock_create_temp_chunks,
+            mock_generate_upload_new_params
+        )
