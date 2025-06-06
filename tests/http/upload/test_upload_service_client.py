@@ -141,7 +141,7 @@ def test_upload_file_chunks_fails_http_error(
     mock_upload_file_chunks.side_effect = HTTPError
 
     with pytest.raises(HTTPError):
-        response = client._upload_file_chunks(
+        client._upload_file_chunks(
             mock_create_temp_chunks,
             mock_generate_upload_new_params
         )
