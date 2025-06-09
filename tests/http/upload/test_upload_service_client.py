@@ -20,6 +20,25 @@ def mock_successful_token_response(*args, **kwargs):
     }
     return mock_response
 
+def mock_successful_response_chunk_upload(*args, **kwargs):
+    """
+    Mocks a successful response for _upload_file_chunk.
+    """
+    mock_response = MagicMock()
+    mock_response.status_code = 201
+
+    return mock_response
+
+
+def mock_bad_response_chunk_upload(*args, **kwargs):
+    """
+    Mocks a bad response for _upload_file_chunk.
+    """
+    mock_response = MagicMock()
+    mock_response.status_code = 400
+
+    return mock_response
+
 
 @patch("dpytools.http.upload.upload_service_client._create_temp_chunks")
 @patch("dpytools.http.upload.upload_service_client._delete_temp_chunks")
@@ -118,28 +137,41 @@ def test_upload_new(
 
 
 @patch("dpytools.http.upload.upload_service_client._create_temp_chunks")
-@patch("dpytools.http.upload.upload_service_client._delete_temp_chunks")
 @patch("dpytools.http.upload.upload_service_client._generate_upload_new_params")
 @patch(
-    "dpytools.http.upload.upload_service_client.UploadServiceClient._upload_file_chunks"
+    "requests.request", side_effect=[
+        mock_successful_token_response, 
+        mock_successful_response_chunk_upload, 
+        mock_successful_response_chunk_upload, 
+        mock_bad_response_chunk_upload
+        ]
 )
-@patch("requests.request", side_effect=mock_successful_token_response)
-def test_upload_file_chunks_fails_http_error(
+def test_upload_file_chunks(
     mock_request,
-    mock_upload_file_chunks,
     mock_generate_upload_new_params,
-    mock_delete_temp_chunks,
     mock_create_temp_chunks,
 ):
     """
     Ensures that the _upload_file_chunks captures error correctly.
     """
 
+    os.environ["FLORENCE_USER"] = "test_user"
+    os.environ["FLORENCE_PASSWORD"] = "test_password"
+    os.environ["IDENTITY_API_URL"] = "http://test_url"
+
     client = UploadServiceClient(upload_url="http://example.com/upload")
     mock_create_temp_chunks.return_value = ["chunk1", "chunk2"]
     mock_generate_upload_new_params.return_value = {"Path": "test_path"}
-    mock_upload_file_chunks.side_effect = HTTPError
 
+    # expecting a succesful upload from first call of _upload_file_chunks
+    response = client._upload_file_chunks(
+        mock_create_temp_chunks,
+        mock_generate_upload_new_params
+    )
+
+    assert response.status_code == 201
+    
+    # expecting a failed upload from second call of _upload_file_chunks
     with pytest.raises(HTTPError):
         client._upload_file_chunks(
             mock_create_temp_chunks,
