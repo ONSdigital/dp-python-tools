@@ -138,8 +138,7 @@ def test_upload_new(
 
 @patch("dpytools.http.upload.upload_service_client._create_temp_chunks")
 @patch("dpytools.http.upload.upload_service_client._generate_upload_new_params")
-@patch(
-    "requests.request", side_effect=[
+@patch("requests.request", side_effect=[
         mock_successful_token_response, 
         mock_successful_response_chunk_upload, 
         mock_successful_response_chunk_upload, 
