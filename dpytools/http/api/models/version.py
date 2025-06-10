@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, EmailStr, Field
 
-from dpytools.http.api.models.common import DatasetState
+from dpytools.http.api.models.common import DatasetState, DefaultedDatasetStateField
 
 
 class Distribution(BaseModel):
@@ -31,11 +31,11 @@ class DatasetVersion(BaseModel):
     edition_title: Optional[str] = None
     edition: Optional[str] = None
     distributions: List[Distribution] = Field(default_factory=list)
-    release_date: datetime
+    release_date: Optional[datetime] = None
     quality_designation: Optional[str] = None
     usage_notes: Optional[List[UsageNote]] = Field(default_factory=list)
     alerts: Optional[List[Alert]] = Field(default_factory=list)
-    state: DatasetState
+    state: DatasetState = DefaultedDatasetStateField
     version: int = 0
 
 

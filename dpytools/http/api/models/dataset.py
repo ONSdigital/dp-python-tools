@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel, Field
-
-from dpytools.http.api.models.common import DatasetState
+from dpytools.http.api.models.common import DatasetState, DefaultedDatasetStateField
 
 
 class Contact(BaseModel):
@@ -78,11 +77,15 @@ class RelatedDataset(BaseModel):
     description: Optional[str] = None
 
 
-class DatasetType(str, Enum):
+class DatasetType(Enum):
+    NOT_SET = "not_set"
     FILTERABLE = "filterable"
     CANTABULAR_FLEXIBLE_TABLE = "cantabular_flexible_table"
     CANTABULAR_MULTIVARIATE_TABLE = "cantabular_multivariate_table"
     STATIC = "static"
+
+
+DefaultedDatasetTypeField = Field(default=DatasetType.NOT_SET)
 
 
 class Dataset(BaseModel):
@@ -104,12 +107,12 @@ class Dataset(BaseModel):
     related_datasets: List[RelatedDataset] = Field(default_factory=list)
     related_content: List[RelatedContent] = Field(default_factory=list)
     release_frequency: Optional[str] = None
-    state: DatasetState
+    state: DatasetState = DefaultedDatasetStateField
     subtopics: List[str] = Field(default_factory=list)
     survey: Optional[str] = None
     title: Optional[str] = None
     topics: List[str] = Field(default_factory=list)
-    type: DatasetType
+    type: DatasetType = DefaultedDatasetTypeField
     unit_of_measure: Optional[str] = None
 
 
