@@ -155,6 +155,8 @@ def test_upload_new(
     mock_delete_temp_chunks.assert_called_once_with(["chunk1", "chunk2"])
 
 
+@patch("builtins.open")
+@patch("os.path.getsize")
 @patch("requests.request", side_effect=[
         mock_successful_token_response(), 
         mock_successful_response_chunk_upload(), 
@@ -164,6 +166,8 @@ def test_upload_new(
 )
 def test_upload_file_chunks(
     mock_request,
+    mock_get_pathsize,
+    mock_open_file
 ):
     """
     Ensures that the _upload_file_chunks captures error correctly.
