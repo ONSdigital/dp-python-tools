@@ -144,6 +144,7 @@ class UploadServiceClient(BaseHttpClient):
                     files=file,
                     verify=True,
                 )
+                response.raise_for_status()
                 logger.info(
                     "File chunk posted",
                     data={

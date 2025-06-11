@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+from requests import HTTPError
+import pytest
 
 from dpytools.http.upload.upload_service_client import UploadServiceClient
 
@@ -16,6 +18,44 @@ def mock_successful_token_response(*args, **kwargs):
         "Authorization": "Bearer test_auth_token",
         "ID": "test_id_token",
     }
+    return mock_response
+
+def mock_successful_response_chunk_upload(*args, **kwargs):
+    """
+    Mocks a successful response for _upload_file_chunk.
+    """
+    mock_response = MagicMock()
+    mock_response.status_code = 201
+
+    return mock_response
+
+def mock_bad_response_chunk_upload(*args, **kwargs):
+    """
+    Mocks a bad response for _upload_file_chunk.
+    """
+    mock_response = MagicMock()
+    mock_response.status_code = 400
+    mock_response.raise_for_status.side_effect = HTTPError
+
+    return mock_response
+
+def mock_get_size_of_chunk_file(*args, **kwargs):
+    """
+    Mocks os.path.getsize
+    """
+    mock_response = MagicMock()
+    mock_response.return_value = 1024
+
+    return mock_response
+
+def mock_open_file(*args, **kwargs):
+    """
+    Mocks builtins.open
+    only returning an empty string as file is only used in POST request, which is being mocked
+    """
+    mock_response = MagicMock()
+    mock_response.return_value = ''
+
     return mock_response
 
 
@@ -113,3 +153,73 @@ def test_upload_new(
         ["chunk1", "chunk2"], {"Path": "test_path"}
     )
     mock_delete_temp_chunks.assert_called_once_with(["chunk1", "chunk2"])
+
+
+@patch("builtins.open")
+@patch("os.path.getsize")
+@patch("requests.request", side_effect=[
+        mock_successful_token_response(), 
+        mock_successful_response_chunk_upload(), 
+        mock_successful_response_chunk_upload()
+        ]
+)
+def test_upload_file_chunks_success(
+    mock_request,
+    mock_get_pathsize,
+    mock_open_file
+):
+    """
+    Ensures that the _upload_file_chunks captures error correctly.
+    """
+
+    os.environ["FLORENCE_USER"] = "test_user"
+    os.environ["FLORENCE_PASSWORD"] = "test_password"
+    os.environ["IDENTITY_API_URL"] = "http://test_url"
+
+    client = UploadServiceClient(upload_url="http://example.com/upload")
+
+    temp_chunk = ["chunk1", "chunk2"]
+    # only need an empty dict for upload_params
+    upload_params = {}
+
+    # expecting a succesful upload from _upload_file_chunks
+    response = client._upload_file_chunks(
+        temp_chunk,
+        upload_params
+    )
+
+    assert response.status_code == 201
+    
+
+@patch("builtins.open")
+@patch("os.path.getsize")
+@patch("requests.request", side_effect=[
+        mock_successful_token_response(),
+        mock_bad_response_chunk_upload()
+        ]
+)
+def test_upload_file_chunks_failure(
+    mock_request,
+    mock_get_pathsize,
+    mock_open_file
+):
+    """
+    Ensures that the _upload_file_chunks captures error correctly.
+    """
+
+    os.environ["FLORENCE_USER"] = "test_user"
+    os.environ["FLORENCE_PASSWORD"] = "test_password"
+    os.environ["IDENTITY_API_URL"] = "http://test_url"
+
+    client = UploadServiceClient(upload_url="http://example.com/upload")
+
+    temp_chunk = ["chunk1", "chunk2"]
+    # only need an empty dict for upload_params
+    upload_params = {}
+    
+    # expecting a failed upload from _upload_file_chunks
+    with pytest.raises(HTTPError):
+        client._upload_file_chunks(
+            temp_chunk,
+            upload_params
+        )
