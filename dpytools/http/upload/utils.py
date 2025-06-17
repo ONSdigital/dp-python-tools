@@ -1,35 +1,7 @@
 import os
-from datetime import datetime
 from math import ceil
 from pathlib import Path
 from tempfile import TemporaryDirectory
-
-
-def _generate_upload_params(file_path: Path, mimetype: str, chunk_size: int) -> dict:
-    """
-    Generate request parameters that do not change when iterating through the list of file chunks.
-
-    To be used with the `upload` endpoint.
-    """
-    # Get total size of file to be uploaded
-    total_size = os.path.getsize(file_path)
-
-    # Get filename from csv filepath
-    filename = str(file_path).split("/")[-1]
-
-    # Get timestamp to create `resumableIdentifier` value in `POST` params
-    timestamp = datetime.now().strftime("%d%m%y%H%M%S")
-
-    # Generate upload request params
-    upload_params = {
-        "resumableTotalChunks": ceil(total_size / chunk_size),
-        "resumableChunkSize": chunk_size,
-        "resumableTotalSize": total_size,
-        "resumableType": mimetype,
-        "resumableIdentifier": f"{timestamp}-{filename.replace('.', '-')}",
-        "resumableFilename": filename,
-    }
-    return upload_params
 
 
 def _generate_upload_new_params(
@@ -42,6 +14,8 @@ def _generate_upload_new_params(
     licence: str,
     licence_url: str,
     collection_id: str,
+    upload_path: str,
+    identifier: str,
 ) -> dict:
     """
     Generate request parameters that do not change when iterating through the list of file chunks.
@@ -51,15 +25,10 @@ def _generate_upload_new_params(
     # Get total size of file to be uploaded
     total_size = os.path.getsize(file_path)
 
-    # Get timestamp to create `resumableIdentifier` value in `upload_params`
-    timestamp = datetime.now().strftime("%d%m%y%H%M%S")
-
-    # Create identifier from timestamp and filename
-    identifier = f"{timestamp}-{file_path.name.replace('.', '-')}"
-
+    file_name = file_path.name.replace(" ", "_")
     # Generate upload request params
     upload_params = {
-        "resumableFilename": file_path.name,
+        "resumableFilename": file_name,
         "resumableType": mimetype,
         "resumableTotalChunks": ceil(total_size / chunk_size),
         "resumableChunkSize": chunk_size,
@@ -70,10 +39,9 @@ def _generate_upload_new_params(
         "LicenceUrl": licence_url,
         "isPublishable": is_publishable,
         "Title": title,
-        "SizeInBytes": total_size,
         "Type": mimetype,
         "Licence": licence,
-        "Path": f"datasets/{identifier}",
+        "Path": upload_path,
         # TODO: Get collectionId from metadata?
         "collectionId": collection_id,
     }

@@ -1,7 +1,7 @@
 import sys
 import traceback
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict
 from urllib.parse import urlparse
 
 from requests import Response
@@ -22,7 +22,7 @@ def level_to_severity(level: int) -> int:
         return 3
 
 
-def create_error_dict(error: Exception) -> List[Dict]:
+def create_error_dict(error: Exception) -> Dict:
     """
     Take a python Exception and create a sub dict/document
     matching DP logging standards expression of a captured
@@ -34,7 +34,7 @@ def create_error_dict(error: Exception) -> List[Dict]:
     tb = traceback.extract_tb(error.__traceback__)
 
     if not tb:
-        return [{"error_message": str(error), "error_trace": ""}]
+        return {"error_message": str(error), "error_trace": ""}
 
     # Get the last exception where exceptions are chained.
     last_call = tb[-1]
@@ -52,8 +52,7 @@ def create_error_dict(error: Exception) -> List[Dict]:
         "data": {"full": formatted_traceback},
     }
 
-    # Listify in keeping with expected DP logging structures
-    return [error_dict]
+    return error_dict
 
 
 def get_scheme(url: str) -> str:
@@ -104,7 +103,7 @@ def get_end_date(time_delta: timedelta, date: str) -> str:
     return end_date.isoformat() + "Z"
 
 
-def calculate_duration_in_nanoseconds(time_delta: timedelta, date: str) -> int:
+def calculate_duration_in_nanoseconds(time_delta: timedelta, date: str) -> float:
     """This function will calculate the duration in nanoseconds."""
     strp_time = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
     end_date = strp_time + time_delta

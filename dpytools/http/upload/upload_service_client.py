@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Optional, Union
 
-from requests import Response
+from requests import HTTPError, Response
 
 from dpytools.http.base_http import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth
@@ -10,21 +10,15 @@ from dpytools.http.upload.utils import (
     _create_temp_chunks,
     _delete_temp_chunks,
     _generate_upload_new_params,
-    _generate_upload_params,
 )
 from dpytools.logging.logger import DpLogger
 
-# Dev note:
-
-# At time of writing (17/5/2024) there are two endpoints supported
-# by the Upload Service:
-# 1. /upload
-# 2. /upload-new
-
-# Putting aside the wisdom of "upload-new" we do need to support both of
-# these options so have by necessity adopted this nomenclature.
-
 logger = DpLogger("dpytools")
+
+
+class UploadFileResult:
+    def __init__(self, path: str):
+        self.path = path
 
 
 class UploadServiceClient(BaseHttpClient):
@@ -32,49 +26,19 @@ class UploadServiceClient(BaseHttpClient):
         self.token_auth = TokenAuth()
         self.upload_url = upload_url
 
-    def upload(
-        self, file_path: Union[Path, str], mimetype: str, chunk_size: int = 5242880
-    ) -> Response:
-        """
-        Upload files to the DP Upload Service `/upload` endpoint. A file of type `mimetype` (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket.
-        """
-        # Convert file_path string to Path
-        if isinstance(file_path, str):
-            file_path = Path(file_path).absolute()
-
-        # Create file chunks
-        file_chunks = _create_temp_chunks(file_path, chunk_size)
-        logger.info("File chunks created", data={"file_chunks": file_chunks})
-        # Generate upload request params
-        upload_params = _generate_upload_params(file_path, mimetype, chunk_size)
-        logger.info(
-            "Upload parameters generated", data={"upload_params": upload_params}
-        )
-        # Upload file chunks to S3
-        self._upload_file_chunks(file_chunks, upload_params)
-
-        # Delete temporary files
-        _delete_temp_chunks(file_chunks)
-        logger.info(
-            "Upload to s3 complete",
-            data={
-                "s3_key": upload_params["resumableIdentifier"],
-            },
-        )
-
     def upload_new(
         self,
         file_path: Union[Path, str],
         mimetype: str,
-        chunk_size: Optional[int] = 5242880,
+        upload_path: str,
+        identifier: str,
+        chunk_size: int = 5242880,
         alias_name: Optional[str] = None,
         title: Optional[str] = None,
-        is_publishable: Optional[bool] = False,
-        licence: Optional[str] = "Open Government Licence v3.0",
-        licence_url: Optional[
-            str
-        ] = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-        collection_id: Optional[str] = "collection-id",
+        is_publishable: bool = False,
+        licence: str = "Open Government Licence v3.0",
+        licence_url: str = "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+        collection_id: str = "collection-id",
     ) -> Response:
         """
         Upload files to the DP Upload Service `upload-new` endpoint. The file to be uploaded (located at `file_path`) is chunked (default chunk size 5242880 bytes) and uploaded to an S3 bucket. The file type should be specified as `mimetype` (e.g. "text/csv" for a CSV file). The remainder of the optional arguments are required for the request to the `/upload-new` endpoint to succeed. If these are not specified, defaults are set in the `_generate_upload_new_params` function call.
@@ -104,18 +68,28 @@ class UploadServiceClient(BaseHttpClient):
             licence,
             licence_url,
             collection_id,
+            upload_path,
+            identifier,
         )
         logger.info(
             "Upload parameters generated", data={"upload_params": upload_params}
         )
+        try:
+            # Upload file chunks to S3
+            response = self._upload_file_chunks(file_chunks, upload_params)
 
-        # Upload file chunks to S3
-        response = self._upload_file_chunks(file_chunks, upload_params)
-
-        # Delete temporary files
-        _delete_temp_chunks(file_chunks)
-        logger.info("Upload to s3 complete", data={"s3_key": upload_params["Path"]})
-        return response
+            # Delete temporary files
+            _delete_temp_chunks(file_chunks)
+            logger.info("Upload to s3 complete", data={"s3_key": upload_params["Path"]})
+            return response
+        except HTTPError as e:
+            logger.error(
+                "Error uploading file",
+                e,
+                response=e.response,
+                data={"upload_params": upload_params},
+            )
+            raise e
 
     def _upload_file_chunks(
         self,
@@ -126,6 +100,7 @@ class UploadServiceClient(BaseHttpClient):
         Upload file chunks to DP Upload Service with the specified upload parameters.
         """
         chunk_number = 1
+        response: Response = Response()
         for file_chunk in file_chunks:
             current_chunk_size = os.path.getsize(Path(file_chunk))
             with open(file_chunk, "rb") as f:
@@ -137,14 +112,28 @@ class UploadServiceClient(BaseHttpClient):
                 upload_params["resumableCurrentChunkSize"] = current_chunk_size
 
                 # Submit `POST` request to `self.upload_url`
-                response = self.post(
-                    self.upload_url,
-                    headers=self.token_auth.get_auth_header(),
-                    params=upload_params,
-                    files=file,
-                    verify=True,
-                )
-                response.raise_for_status()
+                try:
+                    response = self.post(
+                        self.upload_url,
+                        headers=self.token_auth.get_auth_header(),
+                        params=upload_params,
+                        files=file,
+                        verify=True,
+                    )
+
+                    if response.status_code > 299:
+                        response.raise_for_status()
+                except HTTPError as e:
+                    logger.error(
+                        "Error posting chunk to upload service",
+                        e,
+                        data={
+                            "upload_params": upload_params,
+                            "chunk_number": chunk_number,
+                        },
+                    )
+                    raise e
+
                 logger.info(
                     "File chunk posted",
                     data={

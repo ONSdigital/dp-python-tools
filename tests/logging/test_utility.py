@@ -28,13 +28,13 @@ def test_create_error_dict():
         raise ValueError("Test error")
     except Exception as e:
         error_dict = create_error_dict(e)
-        assert error_dict[0]["message"] == "Test error"
-        assert "stack_trace" in error_dict[0]
-        assert "file" in error_dict[0]["stack_trace"]
-        assert "function" in error_dict[0]["stack_trace"]
-        assert "line" in error_dict[0]["stack_trace"]
-        assert "data" in error_dict[0]
-        assert "full" in error_dict[0]["data"]
+        assert error_dict["message"] == "Test error"
+        assert "stack_trace" in error_dict
+        assert "file" in error_dict["stack_trace"]
+        assert "function" in error_dict["stack_trace"]
+        assert "line" in error_dict["stack_trace"]
+        assert "data" in error_dict
+        assert "full" in error_dict["data"]
 
 
 def test_get_scheme():
