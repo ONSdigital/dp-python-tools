@@ -4,7 +4,7 @@ import sys
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
-import requests
+from requests import Response
 import structlog
 
 from dpytools.logging.data_exception import DataException
@@ -73,8 +73,8 @@ class DpLogger:
         level,
         error: Optional[Exception] = None,
         data: Optional[Dict] = None,
-        raw: str = None,
-        response: Optional[requests.Response] = None,
+        raw: Optional[str] = None,
+        response: Optional[Response] = None,
     ):
         data_dict = data if data is not None else {}
         data_dict["level"] = logging.getLevelName(level)
@@ -82,23 +82,7 @@ class DpLogger:
         # Match DP logging structure
         # https://github.com/ONSdigital/dp-standards/blob/main/LOGGING_STANDARDS.md
 
-        if response is not None:
-            r_dict = {
-                "method": response.request.method,
-                "scheme": get_scheme(response.url),
-                "host": get_domain(response.url),
-                "port": get_port(response.url),
-                "path": response.request.path_url,
-                "status_code": response.status_code,
-                "started_at": get_start_date(response.headers["Date"]),
-                "ended_at": get_end_date(response.elapsed, response.headers["Date"]),
-                "duration": calculate_duration_in_nanoseconds(
-                    response.elapsed, response.headers["Date"]
-                ),
-                "response_content_length": len(response.content),
-            }
-        else:
-            r_dict = None
+        r_dict = self._get_response_log_data(response)
 
         errors, data_dict = self.get_error_and_data_dicts(error, data_dict)
 
@@ -118,9 +102,29 @@ class DpLogger:
         if self.flush_stdout_after_log_entry:
             sys.stdout.flush()
 
+    def _get_response_log_data(self, response: Optional[Response]):
+        if response is  None:
+            return None
+        
+        return {
+                "method": response.request.method,
+                "scheme": get_scheme(response.url),
+                "host": get_domain(response.url),
+                "port": get_port(response.url),
+                "path": response.request.path_url,
+                "status_code": response.status_code,
+                "started_at": get_start_date(response.headers["Date"]),
+                "ended_at": get_end_date(response.elapsed, response.headers["Date"]),
+                "duration": calculate_duration_in_nanoseconds(
+                    response.elapsed, response.headers["Date"]
+                ),
+                "response_content_length": len(response.content),
+                "content": response.content,
+            }
+
     def get_error_and_data_dicts(
         self, error: Optional[Exception], data_dict: Optional[dict]
-    ) -> tuple[dict, dict]:
+    ) -> tuple[Optional[dict], Optional[dict]]:
         """
         Converts error (if any)to dictionary, and adds additional error data from the exception to the data dictionary
 
@@ -145,9 +149,9 @@ class DpLogger:
     def debug(
         self,
         event: str,
-        raw: str = None,
-        data: Dict = None,
-        response: requests.Response = None,
+        raw: Optional[str] = None,
+        data: Optional[Dict] = None,
+        response: Optional[Response] = None,
     ):
         """
         Log at the debug level.
@@ -162,9 +166,9 @@ class DpLogger:
     def info(
         self,
         event: str,
-        raw: str = None,
-        data: Dict = None,
-        response: requests.Response = None,
+        raw: Optional[str] = None,
+        data: Optional[Dict] = None,
+        response: Optional[Response] = None,
     ):
         """
         Log at the info level.
@@ -173,14 +177,14 @@ class DpLogger:
         :param raw: Raw log data for a third party library.
         :param data: Additional context data such as arbitrary key-value pairs that may be of use in providing context.
         """
-        self._log(event, logging.INFO, raw=raw, data=data)
+        self._log(event, logging.INFO, response=response, raw=raw, data=data)
 
     def warning(
         self,
         event: str,
-        raw: str = None,
-        data: Dict = None,
-        response: requests.Response = None,
+        raw: Optional[str] = None,
+        data: Optional[Dict] = None,
+        response: Optional[Response] = None,
     ):
         """
         Log at the warning level.
@@ -196,9 +200,9 @@ class DpLogger:
         self,
         event: str,
         error: Exception,
-        raw: str = None,
-        data: Dict = None,
-        response: requests.Response = None,
+        raw: Optional[str] = None,
+        data: Optional[Dict] = None,
+        response: Optional[Response] = None,
     ):
         """
         Log at the error level.
@@ -217,9 +221,9 @@ class DpLogger:
         self,
         event: str,
         error: Exception,
-        raw: str = None,
-        data: Dict = None,
-        response: requests.Response = None,
+        raw: Optional[str] = None,
+        data: Optional[Dict] = None,
+        response: Optional[Response] = None,
     ):
         """
         IMPORTANT: You should only be logging at the critical level during
