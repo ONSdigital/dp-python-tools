@@ -31,7 +31,7 @@ class DatasetVersion(BaseModel):
     edition_title: Optional[str] = None
     edition: Optional[str] = None
     distributions: List[Distribution] = Field(default_factory=list)
-    release_date: Optional[datetime] = None
+    release_date: Optional[datetime | str] = None
     quality_designation: Optional[str] = None
     usage_notes: Optional[List[UsageNote]] = Field(default_factory=list)
     alerts: Optional[List[Alert]] = Field(default_factory=list)
