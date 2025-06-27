@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from dpytools.http.api.models.common import DatasetState, DefaultedDatasetStateField
@@ -77,7 +77,7 @@ class RelatedDataset(BaseModel):
     description: Optional[str] = None
 
 
-class DatasetType(Enum):
+class DatasetType(StrEnum):
     NOT_SET = "not_set"
     FILTERABLE = "filterable"
     CANTABULAR_FLEXIBLE_TABLE = "cantabular_flexible_table"
@@ -89,6 +89,7 @@ DefaultedDatasetTypeField = Field(default=DatasetType.NOT_SET)
 
 
 class Dataset(BaseModel):
+    id: str
     canonical_topic: Optional[str] = None
     collection_id: Optional[str] = None
     contacts: List[Contact] = Field(default_factory=list)

@@ -1,6 +1,7 @@
 from typing import Dict, Union
 
 from requests import Response
+from dpytools.http.api.models.common import DatasetState
 from dpytools.http.api.models.version import GetDatasetVersionsResponse
 from dpytools.http.base_http import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth
@@ -80,6 +81,28 @@ class DatasetVersionsService(BaseDatasetAPIClient):
         """
         request_method = "PUT"
         url = self._build_full_url(dataset_id, edition_id)
+        self._log_request(request_method=request_method, body=json_data, url=url)
+
+        response = self._http_client.put(
+            url,
+            headers=self._get_request_headers(),
+            json=json_data,
+            verify=True,
+        )
+
+        return self._handle_response(
+            response=response, request_method=request_method, body=json_data, url=url
+        )
+
+    def update_version_state(
+        self, dataset_id: str, edition_id: str, version: int | str, state: DatasetState
+    ) -> Response:
+        """
+        Update a version's state
+        """
+        request_method = "PUT"
+        url = self._build_full_url(dataset_id, edition_id) + f"/{version}/state"
+        json_data = {"state": state}
         self._log_request(request_method=request_method, body=json_data, url=url)
 
         response = self._http_client.put(

@@ -107,8 +107,10 @@ class BaseHttpClient:
 
     # Method to handle requests
     def _handle_request(self, method, url, *args, **kwargs) -> requests.Response:
-        logger.info(
-            f"Sending {method} request to {url}", data={"method": method, "url": url}
-        )
+        data = {"method": method, "url": url}
+
+        if "json" in kwargs:
+            data["json"] = kwargs["json"]
+        logger.info(f"Sending {method} request to {url}", data=data)
         response = requests.request(method, url, *args, **kwargs)
         return response

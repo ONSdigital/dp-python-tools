@@ -1,4 +1,4 @@
-from dpytools.http.api.models.dataset import GetDatasetResponse
+from dpytools.http.api.models.dataset import Dataset, GetDatasetResponse
 from dpytools.http.base_http import BaseHttpClient
 from dpytools.http.token_auth import TokenAuth
 from dpytools.logging.logger import DpLogger
@@ -35,3 +35,26 @@ class DatasetsService(BaseDatasetAPIClient):
         json = response.json()
 
         return GetDatasetResponse(**json)
+
+    def create_dataset(self, dataset: Dataset) -> Dataset:
+        request_method = "GET"
+        url = self._build_full_url(dataset.id)
+
+        dataset_json = dataset.model_dump(
+            exclude_none=True, exclude_unset=True, exclude_defaults=True
+        )
+
+        response = self._http_client.post(
+            url=url,
+            headers=self._get_request_headers(),
+            json=dataset_json,
+            verify=True,
+        )
+
+        response = self._handle_response(
+            response=response, request_method=request_method, url=url
+        )
+
+        json = response.json()
+
+        return json
